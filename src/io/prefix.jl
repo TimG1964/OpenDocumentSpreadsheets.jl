@@ -98,11 +98,16 @@ end
 content.xml inflated only as far as the end of `sheet` (a name or a 1-based number), or the
 whole document when that can't be told (a flat document, or a sheet not found by its exact
 name).
+
+The walk matches `table:table` as written. When the prefix read has a namespace prefix other
+than the usual ones (D-067), it may have stopped in the wrong place, and the whole part is
+read instead, with the usual prefixes.
 """
 function content_through_sheet(c::ODFContainer, sheet::Union{AbstractString,Integer})
     c.zip === nothing && return c.flat
     f = sheet isa Integer ? _SheetFinder(nothing, Int(sheet), 1, 0, 0, false) :
                             _SheetFinder(SheetCore.unquoteit(String(sheet)), 0, 1, 0, 0, false)
     # (want_name, want_index, scan, count, depth, found)
-    return readentry_prefix((data, n) -> _find_sheet_end!(f, data, n), c.zip, "content.xml")
+    s = readentry_prefix((data, n) -> _find_sheet_end!(f, data, n), c.zip, "content.xml")
+    return _ns_usual(s) ? s : read_part_text(c, "content.xml")
 end

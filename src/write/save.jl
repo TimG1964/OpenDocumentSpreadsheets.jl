@@ -148,7 +148,7 @@ end
 # An embedded object's content (a chart: `Object 1/content.xml`) with its references replayed
 # through the structural edits (phase 5); the original bytes when none changes.
 function _rewritten_part(xf::ODSFile, bytes::Vector{UInt8})
-    s = String(copy(bytes))
+    s = _ns_canonical(String(copy(bytes)))        # the rewriter matches names as written (D-067)
     out = IOBuffer()
     rewrite_xml(out, RefRewriter(xf.ops, s), s, 1, ncodeunits(s))
     new = take!(out)
@@ -157,17 +157,18 @@ end
 
 # A part's data in a patched save: content.xml written as it is made, styles.xml with the named
 # styles, settings.xml after sheet operations, embedded objects with their references replayed
-# (phase 5), everything else as it was.
+# (phase 5), everything else as it was. A part that is patched is patched from its text with the
+# usual namespace prefixes (D-067); one that isn't keeps its bytes, whatever its prefixes.
 function _patched_part_data(xf::ODSFile, name::String, content)
     cont = xf.container
     name == "content.xml" && return content
-    name == "styles.xml" && (has_named_styles(xf.styles) || _pages_edited(xf)) && return patched_styles(xf, String(read_bytes(cont, name)))
+    name == "styles.xml" && (has_named_styles(xf.styles) || _pages_edited(xf)) && return patched_styles(xf, read_part_text(cont, name))
     if name == "settings.xml" && _settings_edited(xf)
         b = read_bytes(cont, name)
-        s = patched_settings(xf, String(copy(b)))
+        s = patched_settings(xf, _ns_canonical(String(copy(b))))
         return codeunits(s) == b ? b : s
     end
-    name == "meta.xml" && _meta_edited(xf) && return _patched_meta(xf, String(read_bytes(cont, name)))   # phase 5 step 11
+    name == "meta.xml" && _meta_edited(xf) && return _patched_meta(xf, read_part_text(cont, name))   # phase 5 step 11
 !isempty(xf.ops) && endswith(name, "/content.xml") && return _rewritten_part(xf, read_bytes(cont, name))
     return read_bytes(cont, name)
 end

@@ -85,7 +85,7 @@ function _open_zip(bytes::Vector{UInt8})
     zr = ZipArchives.ZipReader(bytes)
     names = ZipArchives.zip_names(zr)
     manifest = "META-INF/manifest.xml" in names ?
-        parse_manifest(readentry_string(zr, "META-INF/manifest.xml")) : ManifestEntry[]
+        parse_manifest(_ns_canonical(readentry_string(zr, "META-INF/manifest.xml"))) : ManifestEntry[]
     mt = if "mimetype" in names
         strip(String(ZipArchives.zip_readentry(zr, "mimetype")))
     else
@@ -100,21 +100,32 @@ function _open_zip(bytes::Vector{UInt8})
     ODFContainer(mt == MEDIATYPE_OTS ? :ots : :ods, String(mt), zr, nothing, manifest)
 end
 
-function _open_flat(xml::String)
+# The root element of `xml`, its name and its `office:mimetype` attribute as written.
+function _flat_root(xml::String)
     c = XML.Cursor(xml)
     while XML.next!(c) !== nothing
         XML.nodetype(c) === XML.Element || continue
-        XML.tag(c) == "office:document" || throw(ArgumentError(
-            "not a flat OpenDocument file: the root element is <$(XML.tag(c))>, not <office:document>"))
         mt = nothing
         for (k, v) in XML.eachattribute!(c)
             k == "office:mimetype" && (mt = String(v))
         end
-        mt in SPREADSHEET_MEDIATYPES || throw(ArgumentError(
-            "not an OpenDocument spreadsheet: office:mimetype is $(repr(mt))"))
-        return ODFContainer(:fods, mt, nothing, xml, ManifestEntry[])
+        return XML.tag(c), mt
     end
     throw(ArgumentError("empty XML document"))
+end
+
+# A flat document's prefixes are made the usual ones (D-067). The media type is the root's
+# `office:mimetype` as written, whatever its prefixes: LibreOffice's type detection keys on
+# that name, and opens a file without it as plain XML, not as a spreadsheet (F-057).
+function _open_flat(xml::String)
+    _, mt = _flat_root(xml)
+    xml = _ns_canonical(xml)
+    tag, _ = _flat_root(xml)
+    tag == "office:document" || throw(ArgumentError(
+        "not a flat OpenDocument file: the root element is <$tag>, not <office:document>"))
+    mt in SPREADSHEET_MEDIATYPES || throw(ArgumentError(
+        "not an OpenDocument spreadsheet: office:mimetype is $(repr(mt))"))
+    return ODFContainer(:fods, mt, nothing, xml, ManifestEntry[])
 end
 
 """
@@ -163,6 +174,8 @@ Returns `nothing` if a zipped package does not have that part.
 A flat document keeps every part in one `office:document`, so the whole document is
 returned for any part. Readers look for the elements they need (for example `office:body`
 or `office:styles`) inside it.
+
+The text has the usual namespace prefixes ([`_ns_canonical`](@ref), D-067).
 """
 function read_xml(c::ODFContainer, part::Symbol)
     name = part === :content  ? "content.xml"  :
@@ -171,8 +184,15 @@ function read_xml(c::ODFContainer, part::Symbol)
            part === :settings ? "settings.xml" :
            throw(ArgumentError("unknown part $(repr(part)); expected :content, :styles, :meta or :settings"))
     c.flat !== nothing && return c.flat
-    haspart(c, name) ? readentry_string(c.zip, name) : nothing
+    haspart(c, name) ? read_part_text(c, name) : nothing
 end
+
+"""
+    read_part_text(c::ODFContainer, name) -> String
+
+A zipped XML part's text, with the usual namespace prefixes (D-067).
+"""
+read_part_text(c::ODFContainer, name::AbstractString) = _ns_canonical(readentry_string(c.zip, name))
 
 """
     read_bytes(c::ODFContainer, name) -> Vector{UInt8}

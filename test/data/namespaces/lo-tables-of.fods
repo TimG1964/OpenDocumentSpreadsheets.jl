@@ -1,0 +1,533 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<o:document xmlns:o="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:oo3="http://openoffice.org/2004/office" xmlns:f="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:xl="http://www.w3.org/1999/xlink" xmlns:g="urn:oasis:names:tc:opendocument:xmlns:config:1.0" xmlns:d="http://purl.org/dc/elements/1.1/" xmlns:m="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" xmlns:s="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:x="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:rpt="http://openoffice.org/2005/report" xmlns:dr="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0" xmlns:dr3d="urn:oasis:names:tc:opendocument:xmlns:dr3d:1.0" xmlns:v="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0" xmlns:chart="urn:oasis:names:tc:opendocument:xmlns:chart:1.0" xmlns:t="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:n="urn:oasis:names:tc:opendocument:xmlns:datastyle:1.0" xmlns:ooow="http://openoffice.org/2004/writer" xmlns:oooc="http://openoffice.org/2004/calc" xmlns:field="urn:openoffice:names:experimental:ooo-ms-interop:xmlns:field:1.0" xmlns:fm="urn:oasis:names:tc:opendocument:xmlns:of:1.2" xmlns:xforms="http://www.w3.org/2002/xforms" xmlns:tableooo="http://openoffice.org/2009/table" xmlns:c="urn:org:documentfoundation:names:experimental:calc:xmlns:calcext:1.0" xmlns:drawooo="http://openoffice.org/2010/draw" xmlns:l="urn:org:documentfoundation:names:experimental:office:xmlns:loext:1.0" xmlns:math="http://www.w3.org/1998/Math/MathML" xmlns:form="urn:oasis:names:tc:opendocument:xmlns:form:1.0" xmlns:script="urn:oasis:names:tc:opendocument:xmlns:script:1.0" xmlns:dom="http://www.w3.org/2001/xml-events" xmlns:formx="urn:openoffice:names:experimental:ooxml-odf-interop:xmlns:form:1.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:grddl="http://www.w3.org/2003/g/data-view#" xmlns:css3t="http://www.w3.org/TR/css3-text/" xmlns:presentation="urn:oasis:names:tc:opendocument:xmlns:presentation:1.0" o:version="1.4" o:mimetype="application/vnd.oasis.opendocument.spreadsheet">
+ <o:meta><m:document-statistic m:table-count="6" m:cell-count="54" m:object-count="0"/><m:generator>LibreOffice/26.8.3.1$Windows_X86_64 LibreOffice_project/861effc5289d539f15c4c18d1ba8579ffd78728b</m:generator></o:meta>
+ <o:settings>
+  <g:config-item-set g:name="ooo:view-settings">
+   <g:config-item g:name="VisibleAreaTop" g:type="int">452</g:config-item>
+   <g:config-item g:name="VisibleAreaLeft" g:type="int">2258</g:config-item>
+   <g:config-item g:name="VisibleAreaWidth" g:type="int">15804</g:config-item>
+   <g:config-item g:name="VisibleAreaHeight" g:type="int">3612</g:config-item>
+  </g:config-item-set>
+  <g:config-item-set g:name="ooo:configuration-settings">
+   <g:config-item g:name="AllowPrintJobCancel" g:type="boolean">true</g:config-item>
+   <g:config-item g:name="ApplyUserData" g:type="boolean">true</g:config-item>
+   <g:config-item g:name="AutoCalculate" g:type="boolean">true</g:config-item>
+   <g:config-item g:name="CharacterCompressionType" g:type="short">0</g:config-item>
+   <g:config-item g:name="EmbedAsianScriptFonts" g:type="boolean">true</g:config-item>
+   <g:config-item g:name="EmbedComplexScriptFonts" g:type="boolean">true</g:config-item>
+   <g:config-item g:name="EmbedFonts" g:type="boolean">false</g:config-item>
+   <g:config-item g:name="EmbedLatinScriptFonts" g:type="boolean">true</g:config-item>
+   <g:config-item g:name="EmbedOnlyUsedFonts" g:type="boolean">false</g:config-item>
+   <g:config-item g:name="GridColor" g:type="int">12632256</g:config-item>
+   <g:config-item g:name="HasColumnRowHeaders" g:type="boolean">true</g:config-item>
+   <g:config-item g:name="HasSheetTabs" g:type="boolean">true</g:config-item>
+   <g:config-item g:name="ImagePreferredDPI" g:type="int">0</g:config-item>
+   <g:config-item g:name="IsDocumentShared" g:type="boolean">false</g:config-item>
+   <g:config-item g:name="IsKernAsianPunctuation" g:type="boolean">false</g:config-item>
+   <g:config-item g:name="IsOutlineSymbolsSet" g:type="boolean">true</g:config-item>
+   <g:config-item g:name="IsRasterAxisSynchronized" g:type="boolean">true</g:config-item>
+   <g:config-item g:name="IsSnapToRaster" g:type="boolean">false</g:config-item>
+   <g:config-item g:name="LinkUpdateMode" g:type="short">3</g:config-item>
+   <g:config-item g:name="LoadReadonly" g:type="boolean">false</g:config-item>
+   <g:config-item g:name="ModifyPasswordHash" g:type="int">0</g:config-item>
+   <g:config-item g:name="PrinterName" g:type="string"/>
+   <g:config-item g:name="PrinterPaperFromSetup" g:type="boolean">false</g:config-item>
+   <g:config-item g:name="PrinterSetup" g:type="base64Binary"/>
+   <g:config-item g:name="RasterIsVisible" g:type="boolean">false</g:config-item>
+   <g:config-item g:name="RasterResolutionX" g:type="int">1000</g:config-item>
+   <g:config-item g:name="RasterResolutionY" g:type="int">1000</g:config-item>
+   <g:config-item g:name="RasterSubdivisionX" g:type="int">1</g:config-item>
+   <g:config-item g:name="RasterSubdivisionY" g:type="int">1</g:config-item>
+   <g:config-item g:name="SaveThumbnail" g:type="boolean">true</g:config-item>
+   <g:config-item g:name="SaveVersionOnClose" g:type="boolean">false</g:config-item>
+   <g:config-item g:name="ShowFormulasMarks" g:type="boolean">false</g:config-item>
+   <g:config-item g:name="ShowGrid" g:type="boolean">true</g:config-item>
+   <g:config-item g:name="ShowNoteAuthor" g:type="boolean">true</g:config-item>
+   <g:config-item g:name="ShowNotes" g:type="boolean">true</g:config-item>
+   <g:config-item g:name="ShowPageBreaks" g:type="boolean">true</g:config-item>
+   <g:config-item g:name="ShowZeroValues" g:type="boolean">true</g:config-item>
+   <g:config-item g:name="SyntaxStringRef" g:type="short">7</g:config-item>
+   <g:config-item g:name="UpdateFromTemplate" g:type="boolean">true</g:config-item>
+   <g:config-item-map-named g:name="ScriptConfiguration">
+    <g:config-item-map-entry g:name="Table">
+     <g:config-item g:name="CodeName" g:type="string">Sheet1</g:config-item>
+    </g:config-item-map-entry>
+    <g:config-item-map-entry g:name="Names">
+     <g:config-item g:name="CodeName" g:type="string">Names</g:config-item>
+    </g:config-item-map-entry>
+    <g:config-item-map-entry g:name="Merged">
+     <g:config-item g:name="CodeName" g:type="string">Merged</g:config-item>
+    </g:config-item-map-entry>
+    <g:config-item-map-entry g:name="Hidden">
+     <g:config-item g:name="CodeName" g:type="string">Hidden</g:config-item>
+    </g:config-item-map-entry>
+    <g:config-item-map-entry g:name="My sheet">
+     <g:config-item g:name="CodeName" g:type="string">My sheet</g:config-item>
+    </g:config-item-map-entry>
+    <g:config-item-map-entry g:name="Formulas">
+     <g:config-item g:name="CodeName" g:type="string">Formulas</g:config-item>
+    </g:config-item-map-entry>
+   </g:config-item-map-named>
+  </g:config-item-set>
+ </o:settings>
+ <o:scripts>
+  <o:script script:language="ooo:Basic">
+   <oo3:libraries xmlns:oo3="http://openoffice.org/2004/office" xmlns:xl="http://www.w3.org/1999/xlink"/>
+  </o:script>
+ </o:scripts>
+ <o:font-face-decls>
+  <s:font-face s:name="Liberation Sans" v:font-family="&apos;Liberation Sans&apos;" s:font-family-generic="swiss" s:font-pitch="variable"/>
+  <s:font-face s:name="Lucida Sans" v:font-family="&apos;Lucida Sans&apos;" s:font-family-generic="system" s:font-pitch="variable"/>
+  <s:font-face s:name="Microsoft YaHei" v:font-family="&apos;Microsoft YaHei&apos;" s:font-family-generic="system" s:font-pitch="variable"/>
+ </o:font-face-decls>
+ <o:styles>
+  <s:default-style s:family="table-cell">
+   <s:table-cell-properties f:wrap-option="no-wrap"/>
+   <s:paragraph-properties s:tab-stop-distance="1.25cm"/>
+   <s:text-properties s:font-name="Liberation Sans" f:font-size="10pt" f:language="en" f:country="GB" s:font-name-asian="Microsoft YaHei" s:font-size-asian="10pt" s:language-asian="zh" s:country-asian="CN" s:font-name-complex="Lucida Sans" s:font-size-complex="10pt" s:language-complex="hi" s:country-complex="IN"/>
+  </s:default-style>
+  <s:default-style s:family="graphic">
+   <s:graphic-properties v:stroke-color="#3465a4" dr:fill-color="#729fcf" f:wrap-option="no-wrap" dr:shadow-offset-x="0.3cm" dr:shadow-offset-y="0.3cm" s:writing-mode="page"/>
+   <s:paragraph-properties s:text-autospace="ideograph-alpha" s:punctuation-wrap="simple" s:line-break="strict" s:font-independent-line-spacing="false">
+    <s:tab-stops/>
+   </s:paragraph-properties>
+   <s:text-properties s:use-window-font-color="true" l:opacity="0%" f:font-family="&apos;Liberation Serif&apos;" s:font-family-generic="roman" s:font-pitch="variable" f:font-size="12pt" f:language="en" f:country="GB" s:letter-kerning="true" s:font-family-asian="&apos;Segoe UI&apos;" s:font-family-generic-asian="system" s:font-pitch-asian="variable" s:font-size-asian="12pt" s:language-asian="zh" s:country-asian="CN" s:font-family-complex="Tahoma" s:font-family-generic-complex="system" s:font-pitch-complex="variable" s:font-size-complex="12pt" s:language-complex="hi" s:country-complex="IN"/>
+  </s:default-style>
+  <s:style s:name="Default" s:family="graphic"/>
+  <s:style s:name="Note" s:family="graphic" s:parent-style-name="Default">
+   <s:graphic-properties dr:stroke="solid" dr:marker-start="Arrowheads_20_1" dr:marker-start-width="0.2cm" dr:marker-start-center="false" dr:fill="solid" dr:fill-color="#ffffc0" dr:auto-grow-height="true" dr:auto-grow-width="false" f:padding-top="0.1cm" f:padding-bottom="0.1cm" f:padding-left="0.1cm" f:padding-right="0.1cm" dr:shadow="visible" dr:shadow-offset-x="0.1cm" dr:shadow-offset-y="0.1cm"/>
+   <s:text-properties s:font-name="Liberation Sans" f:font-family="&apos;Liberation Sans&apos;" s:font-family-generic="swiss" s:font-pitch="variable" f:font-size="10pt" s:font-name-asian="Microsoft YaHei" s:font-family-asian="&apos;Microsoft YaHei&apos;" s:font-family-generic-asian="system" s:font-pitch-asian="variable" s:font-size-asian="10pt" s:font-name-complex="Lucida Sans" s:font-family-complex="&apos;Lucida Sans&apos;" s:font-family-generic-complex="system" s:font-pitch-complex="variable" s:font-size-complex="10pt"/>
+  </s:style>
+  <n:number-style s:name="N0">
+   <n:number n:min-integer-digits="1"/>
+  </n:number-style>
+  <s:style s:name="Default" s:family="table-cell"/>
+  <s:style s:name="Heading" s:family="table-cell" s:parent-style-name="Default">
+   <s:table-cell-properties f:wrap-option="no-wrap" s:shrink-to-fit="false"/>
+   <s:text-properties f:font-size="24pt" f:font-style="normal" f:font-weight="bold" s:font-size-asian="24pt" s:font-style-asian="normal" s:font-weight-asian="bold" s:font-size-complex="24pt" s:font-style-complex="normal" s:font-weight-complex="bold"/>
+  </s:style>
+  <s:style s:name="Heading_20_1" s:display-name="Heading 1" s:family="table-cell" s:parent-style-name="Heading">
+   <s:table-cell-properties f:wrap-option="no-wrap" s:shrink-to-fit="false"/>
+   <s:text-properties f:font-size="18pt" s:font-size-asian="18pt" s:font-size-complex="18pt"/>
+  </s:style>
+  <s:style s:name="Heading_20_2" s:display-name="Heading 2" s:family="table-cell" s:parent-style-name="Heading">
+   <s:table-cell-properties f:wrap-option="no-wrap" s:shrink-to-fit="false"/>
+   <s:text-properties f:font-size="12pt" s:font-size-asian="12pt" s:font-size-complex="12pt"/>
+  </s:style>
+  <s:style s:name="Text" s:family="table-cell" s:parent-style-name="Default">
+   <s:table-cell-properties f:wrap-option="no-wrap" s:shrink-to-fit="false"/>
+  </s:style>
+  <s:style s:name="Note" s:family="table-cell" s:parent-style-name="Text">
+   <s:table-cell-properties f:background-color="#ffffcc" s:diagonal-bl-tr="none" s:diagonal-tl-br="none" f:wrap-option="no-wrap" f:border="0.74pt solid #808080" s:shrink-to-fit="false"/>
+   <s:text-properties f:color="#333333"/>
+  </s:style>
+  <s:style s:name="Footnote" s:family="table-cell" s:parent-style-name="Text">
+   <s:table-cell-properties f:wrap-option="no-wrap" s:shrink-to-fit="false"/>
+   <s:text-properties f:color="#808080" f:font-style="italic" s:font-style-asian="italic" s:font-style-complex="italic"/>
+  </s:style>
+  <s:style s:name="Hyperlink" s:family="table-cell" s:parent-style-name="Text">
+   <s:table-cell-properties f:wrap-option="no-wrap" s:shrink-to-fit="false"/>
+   <s:text-properties f:color="#0000ee" s:text-underline-style="solid" s:text-underline-width="auto" s:text-underline-color="#0000ee"/>
+  </s:style>
+  <s:style s:name="Status" s:family="table-cell" s:parent-style-name="Default">
+   <s:table-cell-properties f:wrap-option="no-wrap" s:shrink-to-fit="false"/>
+  </s:style>
+  <s:style s:name="Good" s:family="table-cell" s:parent-style-name="Status">
+   <s:table-cell-properties f:background-color="#ccffcc" f:wrap-option="no-wrap" s:shrink-to-fit="false"/>
+   <s:text-properties f:color="#006600"/>
+  </s:style>
+  <s:style s:name="Neutral" s:family="table-cell" s:parent-style-name="Status">
+   <s:table-cell-properties f:background-color="#ffffcc" f:wrap-option="no-wrap" s:shrink-to-fit="false"/>
+   <s:text-properties f:color="#996600"/>
+  </s:style>
+  <s:style s:name="Bad" s:family="table-cell" s:parent-style-name="Status">
+   <s:table-cell-properties f:background-color="#ffcccc" f:wrap-option="no-wrap" s:shrink-to-fit="false"/>
+   <s:text-properties f:color="#cc0000"/>
+  </s:style>
+  <s:style s:name="Warning" s:family="table-cell" s:parent-style-name="Status">
+   <s:table-cell-properties f:wrap-option="no-wrap" s:shrink-to-fit="false"/>
+   <s:text-properties f:color="#cc0000"/>
+  </s:style>
+  <s:style s:name="Error" s:family="table-cell" s:parent-style-name="Status">
+   <s:table-cell-properties f:background-color="#cc0000" f:wrap-option="no-wrap" s:shrink-to-fit="false"/>
+   <s:text-properties f:color="#ffffff" f:font-weight="bold" s:font-weight-asian="bold" s:font-weight-complex="bold"/>
+  </s:style>
+  <s:style s:name="Accent" s:family="table-cell" s:parent-style-name="Default">
+   <s:table-cell-properties f:wrap-option="no-wrap" s:shrink-to-fit="false"/>
+   <s:text-properties f:font-weight="bold" s:font-weight-asian="bold" s:font-weight-complex="bold"/>
+  </s:style>
+  <s:style s:name="Accent_20_1" s:display-name="Accent 1" s:family="table-cell" s:parent-style-name="Accent">
+   <s:table-cell-properties f:background-color="#000000" f:wrap-option="no-wrap" s:shrink-to-fit="false"/>
+   <s:text-properties f:color="#ffffff"/>
+  </s:style>
+  <s:style s:name="Accent_20_2" s:display-name="Accent 2" s:family="table-cell" s:parent-style-name="Accent">
+   <s:table-cell-properties f:background-color="#808080" f:wrap-option="no-wrap" s:shrink-to-fit="false"/>
+   <s:text-properties f:color="#ffffff"/>
+  </s:style>
+  <s:style s:name="Accent_20_3" s:display-name="Accent 3" s:family="table-cell" s:parent-style-name="Accent">
+   <s:table-cell-properties f:background-color="#dddddd" f:wrap-option="no-wrap" s:shrink-to-fit="false"/>
+  </s:style>
+  <s:style s:name="Result" s:family="table-cell" s:parent-style-name="Default">
+   <s:table-cell-properties f:wrap-option="no-wrap" s:shrink-to-fit="false"/>
+   <s:text-properties f:font-style="italic" s:text-underline-style="solid" s:text-underline-width="auto" s:text-underline-color="font-color" f:font-weight="bold" s:font-style-asian="italic" s:font-weight-asian="bold" s:font-style-complex="italic" s:font-weight-complex="bold"/>
+  </s:style>
+  <dr:marker dr:name="Arrowheads_20_1" dr:display-name="Arrowheads 1" v:viewBox="0 0 20 30" v:d="M10 0l-10 30h20z"/>
+  <l:theme l:name="Office">
+   <l:theme-colors l:name="LibreOffice">
+    <l:color l:name="dark1" l:color="#000000"/>
+    <l:color l:name="light1" l:color="#ffffff"/>
+    <l:color l:name="dark2" l:color="#000000"/>
+    <l:color l:name="light2" l:color="#ffffff"/>
+    <l:color l:name="accent1" l:color="#18a303"/>
+    <l:color l:name="accent2" l:color="#0369a3"/>
+    <l:color l:name="accent3" l:color="#a33e03"/>
+    <l:color l:name="accent4" l:color="#8e03a3"/>
+    <l:color l:name="accent5" l:color="#c99c00"/>
+    <l:color l:name="accent6" l:color="#c9211e"/>
+    <l:color l:name="hyperlink" l:color="#0000ee"/>
+    <l:color l:name="followed-hyperlink" l:color="#551a8b"/>
+   </l:theme-colors>
+  </l:theme>
+ </o:styles>
+ <o:automatic-styles>
+  <s:style s:name="co1" s:family="table-column">
+   <s:table-column-properties f:break-before="auto" s:column-width="2.258cm"/>
+  </s:style>
+  <s:style s:name="ro1" s:family="table-row">
+   <s:table-row-properties s:row-height="0.452cm" f:break-before="auto" s:use-optimal-row-height="true"/>
+  </s:style>
+  <s:style s:name="taHidden" s:family="table" s:master-page-name="Default">
+   <s:table-properties t:display="false" s:writing-mode="lr-tb"/>
+  </s:style>
+  <s:style s:name="ta2" s:family="table" s:master-page-name="Default">
+   <s:table-properties t:display="true" s:writing-mode="lr-tb"/>
+  </s:style>
+  <n:number-style s:name="N2">
+   <n:number n:decimal-places="2" n:min-decimal-places="2" n:min-integer-digits="1"/>
+  </n:number-style>
+  <n:date-style s:name="N49">
+   <n:year n:style="long"/>
+   <n:text>-</n:text>
+   <n:month n:style="long"/>
+   <n:text>-</n:text>
+   <n:day n:style="long"/>
+  </n:date-style>
+  <n:boolean-style s:name="N99">
+   <n:boolean/>
+  </n:boolean-style>
+  <s:style s:name="cB" s:family="table-cell" s:parent-style-name="Default" s:data-style-name="N99"/>
+  <s:style s:name="cD" s:family="table-cell" s:parent-style-name="Default" s:data-style-name="N49"/>
+  <s:style s:name="ce3" s:family="table-cell" s:parent-style-name="Default" s:data-style-name="N49"/>
+  <s:style s:name="ce4" s:family="table-cell" s:parent-style-name="Default" s:data-style-name="N99"/>
+  <s:page-layout s:name="pm1">
+   <s:page-layout-properties s:writing-mode="lr-tb"/>
+   <s:header-style>
+    <s:header-footer-properties f:min-height="0.75cm" f:margin-left="0cm" f:margin-right="0cm" f:margin-bottom="0.25cm"/>
+   </s:header-style>
+   <s:footer-style>
+    <s:header-footer-properties f:min-height="0.75cm" f:margin-left="0cm" f:margin-right="0cm" f:margin-top="0.25cm"/>
+   </s:footer-style>
+  </s:page-layout>
+  <s:page-layout s:name="pm2">
+   <s:page-layout-properties s:writing-mode="lr-tb"/>
+   <s:header-style>
+    <s:header-footer-properties f:min-height="0.75cm" f:margin-left="0cm" f:margin-right="0cm" f:margin-bottom="0.25cm" f:border="1.5pt solid #000000" f:padding="0.018cm" f:background-color="#c0c0c0">
+     <s:background-image/>
+    </s:header-footer-properties>
+   </s:header-style>
+   <s:footer-style>
+    <s:header-footer-properties f:min-height="0.75cm" f:margin-left="0cm" f:margin-right="0cm" f:margin-top="0.25cm" f:border="1.5pt solid #000000" f:padding="0.018cm" f:background-color="#c0c0c0">
+     <s:background-image/>
+    </s:header-footer-properties>
+   </s:footer-style>
+  </s:page-layout>
+ </o:automatic-styles>
+ <o:master-styles>
+  <s:master-page s:name="Default" s:page-layout-name="pm1">
+   <s:header>
+    <x:p><x:sheet-name>???</x:sheet-name></x:p>
+   </s:header>
+   <s:header-left s:display="false"/>
+   <s:header-first s:display="false"/>
+   <s:footer>
+    <x:p>Page <x:page-number>1</x:page-number></x:p>
+   </s:footer>
+   <s:footer-left s:display="false"/>
+   <s:footer-first s:display="false"/>
+  </s:master-page>
+  <s:master-page s:name="Report" s:page-layout-name="pm2">
+   <s:header>
+    <s:region-left>
+     <x:p><x:sheet-name>???</x:sheet-name><x:s/>(<x:title>???</x:title>)</x:p>
+    </s:region-left>
+    <s:region-right>
+     <x:p><x:date s:data-style-name="N2" x:date-value="2026-11-18">00/00/0000</x:date>, <x:time>00:00:00</x:time></x:p>
+    </s:region-right>
+   </s:header>
+   <s:header-left s:display="false"/>
+   <s:header-first s:display="false"/>
+   <s:footer>
+    <x:p>Page <x:page-number>1</x:page-number><x:s/>/ <x:page-count>99</x:page-count></x:p>
+   </s:footer>
+   <s:footer-left s:display="false"/>
+   <s:footer-first s:display="false"/>
+  </s:master-page>
+ </o:master-styles>
+ <o:body>
+  <o:spreadsheet>
+   <t:table t:name="Table" t:style-name="ta2">
+    <t:table-column t:style-name="co1" t:number-columns-repeated="4" t:default-cell-style-name="Default"/>
+    <t:table-column t:style-name="co1" t:default-cell-style-name="ce3"/>
+    <t:table-column t:style-name="co1" t:default-cell-style-name="ce4"/>
+    <t:table-column t:style-name="co1" t:number-columns-repeated="2" t:default-cell-style-name="Default"/>
+    <t:table-row t:style-name="ro1">
+     <t:table-cell t:number-columns-repeated="4"/>
+     <t:table-cell t:style-name="Default" t:number-columns-repeated="2"/>
+     <t:table-cell t:number-columns-repeated="2"/>
+    </t:table-row>
+    <t:table-row t:style-name="ro1">
+     <t:table-cell/>
+     <t:table-cell o:value-type="string" c:value-type="string">
+      <x:p>id</x:p>
+     </t:table-cell>
+     <t:table-cell o:value-type="string" c:value-type="string">
+      <x:p>name</x:p>
+     </t:table-cell>
+     <t:table-cell o:value-type="string" c:value-type="string">
+      <x:p>value</x:p>
+     </t:table-cell>
+     <t:table-cell t:style-name="Default" o:value-type="string" c:value-type="string">
+      <x:p>day</x:p>
+     </t:table-cell>
+     <t:table-cell t:style-name="Default" o:value-type="string" c:value-type="string">
+      <x:p>flag</x:p>
+     </t:table-cell>
+     <t:table-cell t:number-columns-repeated="2"/>
+    </t:table-row>
+    <t:table-row t:style-name="ro1">
+     <t:table-cell/>
+     <t:table-cell o:value-type="float" o:value="1" c:value-type="float">
+      <x:p>1</x:p>
+     </t:table-cell>
+     <t:table-cell o:value-type="string" c:value-type="string">
+      <x:p>a</x:p>
+     </t:table-cell>
+     <t:table-cell o:value-type="float" o:value="1.5" c:value-type="float">
+      <x:p>1.5</x:p>
+     </t:table-cell>
+     <t:table-cell o:value-type="date" o:date-value="2024-01-01" c:value-type="date">
+      <x:p>2024-01-01</x:p>
+     </t:table-cell>
+     <t:table-cell o:value-type="boolean" o:boolean-value="true" c:value-type="boolean">
+      <x:p>TRUE</x:p>
+     </t:table-cell>
+     <t:table-cell/>
+     <t:table-cell o:value-type="string" c:value-type="string">
+      <x:p>note</x:p>
+     </t:table-cell>
+    </t:table-row>
+    <t:table-row t:style-name="ro1">
+     <t:table-cell/>
+     <t:table-cell o:value-type="float" o:value="2" c:value-type="float">
+      <x:p>2</x:p>
+     </t:table-cell>
+     <t:table-cell o:value-type="string" c:value-type="string">
+      <x:p>b</x:p>
+     </t:table-cell>
+     <t:table-cell o:value-type="float" o:value="2.5" c:value-type="float">
+      <x:p>2.5</x:p>
+     </t:table-cell>
+     <t:table-cell o:value-type="date" o:date-value="2024-01-02" c:value-type="date">
+      <x:p>2024-01-02</x:p>
+     </t:table-cell>
+     <t:table-cell o:value-type="boolean" o:boolean-value="false" c:value-type="boolean">
+      <x:p>FALSE</x:p>
+     </t:table-cell>
+     <t:table-cell t:number-columns-repeated="2"/>
+    </t:table-row>
+    <t:table-row t:style-name="ro1">
+     <t:table-cell/>
+     <t:table-cell o:value-type="float" o:value="3" c:value-type="float">
+      <x:p>3</x:p>
+     </t:table-cell>
+     <t:table-cell/>
+     <t:table-cell o:value-type="float" o:value="3" c:value-type="float">
+      <x:p>3</x:p>
+     </t:table-cell>
+     <t:table-cell o:value-type="date" o:date-value="2024-01-03" c:value-type="date">
+      <x:p>2024-01-03</x:p>
+     </t:table-cell>
+     <t:table-cell o:value-type="boolean" o:boolean-value="true" c:value-type="boolean">
+      <x:p>TRUE</x:p>
+     </t:table-cell>
+     <t:table-cell t:number-columns-repeated="2"/>
+    </t:table-row>
+    <t:table-row t:style-name="ro1">
+     <t:table-cell/>
+     <t:table-cell o:value-type="float" o:value="4" c:value-type="float">
+      <x:p>4</x:p>
+     </t:table-cell>
+     <t:table-cell o:value-type="string" c:value-type="string">
+      <x:p>d</x:p>
+     </t:table-cell>
+     <t:table-cell o:value-type="float" o:value="4.25" c:value-type="float">
+      <x:p>4.25</x:p>
+     </t:table-cell>
+     <t:table-cell o:value-type="date" o:date-value="2024-01-04" c:value-type="date">
+      <x:p>2024-01-04</x:p>
+     </t:table-cell>
+     <t:table-cell o:value-type="boolean" o:boolean-value="false" c:value-type="boolean">
+      <x:p>FALSE</x:p>
+     </t:table-cell>
+     <t:table-cell t:number-columns-repeated="2"/>
+    </t:table-row>
+    <t:table-row t:style-name="ro1">
+     <t:table-cell t:number-columns-repeated="4"/>
+     <t:table-cell t:style-name="Default" t:number-columns-repeated="2"/>
+     <t:table-cell t:number-columns-repeated="2"/>
+    </t:table-row>
+    <t:table-row t:style-name="ro1">
+     <t:table-cell/>
+     <t:table-cell o:value-type="float" o:value="6" c:value-type="float">
+      <x:p>6</x:p>
+     </t:table-cell>
+     <t:table-cell o:value-type="string" c:value-type="string">
+      <x:p>f</x:p>
+     </t:table-cell>
+     <t:table-cell o:value-type="float" o:value="6.5" c:value-type="float">
+      <x:p>6.5</x:p>
+     </t:table-cell>
+     <t:table-cell o:value-type="date" o:date-value="2024-01-06" c:value-type="date">
+      <x:p>2024-01-06</x:p>
+     </t:table-cell>
+     <t:table-cell o:value-type="boolean" o:boolean-value="true" c:value-type="boolean">
+      <x:p>TRUE</x:p>
+     </t:table-cell>
+     <t:table-cell t:number-columns-repeated="2"/>
+    </t:table-row>
+    <t:table-row t:style-name="ro1">
+     <t:table-cell/>
+     <t:table-cell o:value-type="float" o:value="7" c:value-type="float">
+      <x:p>7</x:p>
+     </t:table-cell>
+     <t:table-cell o:value-type="string" c:value-type="string">
+      <x:p>g</x:p>
+     </t:table-cell>
+     <t:table-cell o:value-type="float" o:value="7.5" c:value-type="float">
+      <x:p>7.5</x:p>
+     </t:table-cell>
+     <t:table-cell o:value-type="date" o:date-value="2024-01-07" c:value-type="date">
+      <x:p>2024-01-07</x:p>
+     </t:table-cell>
+     <t:table-cell o:value-type="boolean" o:boolean-value="false" c:value-type="boolean">
+      <x:p>FALSE</x:p>
+     </t:table-cell>
+     <t:table-cell t:number-columns-repeated="2"/>
+    </t:table-row>
+   </t:table>
+   <t:table t:name="Names" t:style-name="ta2">
+    <t:table-column t:style-name="co1" t:number-columns-repeated="3" t:default-cell-style-name="Default"/>
+    <t:table-row t:style-name="ro1">
+     <t:table-cell o:value-type="string" c:value-type="string">
+      <x:p>n1</x:p>
+     </t:table-cell>
+     <t:table-cell o:value-type="float" o:value="10" c:value-type="float">
+      <x:p>10</x:p>
+     </t:table-cell>
+     <t:table-cell o:value-type="float" o:value="20" c:value-type="float">
+      <x:p>20</x:p>
+     </t:table-cell>
+    </t:table-row>
+    <t:table-row t:style-name="ro1">
+     <t:table-cell o:value-type="string" c:value-type="string">
+      <x:p>n2</x:p>
+     </t:table-cell>
+     <t:table-cell o:value-type="float" o:value="30" c:value-type="float">
+      <x:p>30</x:p>
+     </t:table-cell>
+     <t:table-cell o:value-type="float" o:value="40" c:value-type="float">
+      <x:p>40</x:p>
+     </t:table-cell>
+    </t:table-row>
+    <t:named-expressions>
+     <t:named-range t:name="localr" t:base-cell-address="$Names.$A$1" t:cell-range-address="$Names.$B$1:.$C$2"/>
+    </t:named-expressions>
+   </t:table>
+   <t:table t:name="Merged" t:style-name="ta2">
+    <t:table-column t:style-name="co1" t:number-columns-repeated="3" t:default-cell-style-name="Default"/>
+    <t:table-row t:style-name="ro1">
+     <t:table-cell o:value-type="string" c:value-type="string" t:number-columns-spanned="2" t:number-rows-spanned="2">
+      <x:p>m</x:p>
+     </t:table-cell>
+     <t:covered-table-cell/>
+     <t:table-cell o:value-type="string" c:value-type="string">
+      <x:p>c1</x:p>
+     </t:table-cell>
+    </t:table-row>
+    <t:table-row t:style-name="ro1">
+     <t:covered-table-cell t:number-columns-repeated="2"/>
+     <t:table-cell/>
+    </t:table-row>
+   </t:table>
+   <t:table t:name="Hidden" t:style-name="taHidden">
+    <t:table-column t:style-name="co1" t:default-cell-style-name="Default"/>
+    <t:table-row t:style-name="ro1">
+     <t:table-cell o:value-type="string" c:value-type="string">
+      <x:p>secret</x:p>
+     </t:table-cell>
+    </t:table-row>
+   </t:table>
+   <t:table t:name="My sheet" t:style-name="ta2">
+    <t:table-column t:style-name="co1" t:number-columns-repeated="2" t:default-cell-style-name="Default"/>
+    <t:table-row t:style-name="ro1">
+     <t:table-cell o:value-type="float" o:value="5" c:value-type="float">
+      <x:p>5</x:p>
+     </t:table-cell>
+     <t:table-cell o:value-type="string" c:value-type="string">
+      <x:p>x</x:p>
+     </t:table-cell>
+    </t:table-row>
+   </t:table>
+   <t:table t:name="Formulas" t:style-name="ta2">
+    <t:table-column t:style-name="co1" t:number-columns-repeated="5" t:default-cell-style-name="Default"/>
+    <t:table-row t:style-name="ro1">
+     <t:table-cell t:formula="fm:=SUM([Table.D4:.D10])" o:value-type="float" o:value="23.75" c:value-type="float">
+      <x:p>23.75</x:p>
+     </t:table-cell>
+     <t:table-cell t:formula="fm:=[&apos;My sheet&apos;.A1]*2" o:value-type="float" o:value="10" c:value-type="float">
+      <x:p>10</x:p>
+     </t:table-cell>
+     <t:table-cell t:formula="fm:=1/0" o:value-type="string" o:string-value="" c:value-type="error">
+      <x:p>#DIV/0!</x:p>
+     </t:table-cell>
+     <t:table-cell t:formula="fm:=&quot;a&quot;&amp;&quot;b&quot;" o:value-type="string" o:string-value="ab" c:value-type="string">
+      <x:p>ab</x:p>
+     </t:table-cell>
+     <t:table-cell t:formula="fm:=myrange" o:value-type="string" o:string-value="" c:value-type="error">
+      <x:p>#VALUE!</x:p>
+     </t:table-cell>
+    </t:table-row>
+    <t:table-row t:style-name="ro1">
+     <t:table-cell t:formula="fm:=COM.MICROSOFT.CEILING(1.5;1)" o:value-type="float" o:value="2" c:value-type="float">
+      <x:p>2</x:p>
+     </t:table-cell>
+     <t:table-cell t:formula="fm:=SUM({1;2|3;4})" o:value-type="float" o:value="10" c:value-type="float">
+      <x:p>10</x:p>
+     </t:table-cell>
+     <t:table-cell t:formula="fm:=answer+1" o:value-type="float" o:value="43" c:value-type="float">
+      <x:p>43</x:p>
+     </t:table-cell>
+     <t:table-cell t:number-columns-repeated="2"/>
+    </t:table-row>
+   </t:table>
+   <t:named-expressions>
+    <t:named-expression t:name="answer" t:base-cell-address="$Names.$A$1" t:expression="42"/>
+    <t:named-expression t:name="greeting" t:base-cell-address="$Names.$A$1" t:expression="&quot;hi&quot;"/>
+    <t:named-expression t:name="listnm" t:base-cell-address="$Names.$B$1" t:expression="[$Names.$B$1] [$Names.$C$2]"/>
+    <t:named-range t:name="myrange" t:base-cell-address="$Table.$B$2" t:cell-range-address="$Table.$B$2:.$F$6"/>
+    <t:named-range t:name="onecell" t:base-cell-address="$Names.$B$1" t:cell-range-address="$Names.$B$1"/>
+   </t:named-expressions>
+  </o:spreadsheet>
+ </o:body>
+</o:document>

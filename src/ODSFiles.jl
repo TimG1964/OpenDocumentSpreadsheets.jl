@@ -46,6 +46,7 @@ file that is not an ODF spreadsheet, and so on. It is the shared core's `SheetCo
 const ODSError = SheetCoreError
 
 # container I/O (phase 0)
+include("io/namespaces.jl")
 include("io/container.jl")
 include("io/sheetindex.jl")
 include("io/prefix.jl")

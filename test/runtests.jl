@@ -28,6 +28,9 @@ lo_profile_url(path) = "file://" * (startswith(path, "/") ? "" : "/") * replace(
     end
     @testset "container" begin
         include("test_container.jl")
+        @testset "namespace prefixes" begin
+            include("test_namespaces.jl")
+        end
     end
     @testset "read model" begin
         @testset "values" begin
