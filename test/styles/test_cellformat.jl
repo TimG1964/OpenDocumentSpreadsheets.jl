@@ -2,7 +2,7 @@
 #
 # The first test sets are ported from XLSX.jl 0.13.4 (test/test_files/formatting/styles.jl:
 # "setFont", "setBorder", "setFill", "setAlignment", "UniformStyle"), MIT License, Copyright
-# (c) 2018-2026 Felipe Noronha Tavares and other contributors. Adapted to ODSFiles's model:
+# (c) 2018-2026 Felipe Noronha Tavares and other contributors. Adapted to OpenDocumentSpreadsheets's model:
 #   - getters report the style a cell resolves to (D-032): every font has a size and a name
 #     (LibreOffice's defaults, Liberation Sans 10, in a new file), there is no default
 #     colour, and an unformatted cell reports the defaults rather than `nothing`
@@ -11,7 +11,7 @@
 #   - pattern fills are blended into one colour (D-036); colours are rgb only
 #   - setters return the cell's style name for a single cell (D-032)
 
-using ODSFiles: ODSError, getFont, getFill, getBorder, getAlignment, getDefaultFont, setOutsideBorder, effective_style, style_name
+using OpenDocumentSpreadsheets: ODSError, getFont, getFill, getBorder, getAlignment, getDefaultFont, setOutsideBorder, effective_style, style_name
 import ZipArchives
 
 ctmp(name) = joinpath(mktempdir(), name)
@@ -27,7 +27,7 @@ side(style, rgb = "FF000000") = Dict("style" => style, "rgb" => rgb)
 bd(; left = nothing, right = nothing, top = nothing, bottom = nothing, diagonal = nothing) =
     Dict{String,Union{Nothing,Dict{String,String}}}("left" => left, "right" => right, "top" => top, "bottom" => bottom, "diagonal" => diagonal)
 al(ps...) = Dict{String,Union{Nothing,Dict{String,String}}}("alignment" => Dict{String,String}(ps...))
-cellstyle(s, ref) = style_name(ODSFiles.get_odsfile(s).styles, effective_style(s, row_number(CellRef(ref)), column_number(CellRef(ref))))
+cellstyle(s, ref) = style_name(OpenDocumentSpreadsheets.get_odsfile(s).styles, effective_style(s, row_number(CellRef(ref)), column_number(CellRef(ref))))
 
 @testset "setFont (XLSX.jl)" begin
     f = newods()
@@ -342,9 +342,9 @@ end
     @test getFill(ws, "D20").fill["patternFill"]["fgrgb"] == "FF00FF00"
     # a cell in a named style: the new style derives from it
     st = xf.styles
-    ODSFiles.restyle_cells!(_ -> ODSFiles.style_id(st, "Heading"), ws, 5:5, 1:1)
+    OpenDocumentSpreadsheets.restyle_cells!(_ -> OpenDocumentSpreadsheets.style_id(st, "Heading"), ws, 5:5, 1:1)
     setFont(ws, "A5"; italic = true)
-    cs = ODSFiles.cell_style(st, effective_style(ws, 5, 1))
+    cs = OpenDocumentSpreadsheets.cell_style(st, effective_style(ws, 5, 1))
     @test cs.parent == "Heading" && getFont(ws, "A5").font["sz"] == Dict("val" => "24") && haskey(getFont(ws, "A5").font, "i")
     back = openods(writeods(ctmp("named.ods"), xf))
     bw = back["S05-styled-empty"]
@@ -361,10 +361,10 @@ end
     @test getFont(ws, "A1").font["name"]["val"] isa String
     @test_throws ODSError setFont(ws, "A1"; bold = true)                       # read-only
     xt = openods(joinpath(DATA, "lo-tables.ods"))
-    for dn in ODSFiles.defined_names(xt)
+    for dn in OpenDocumentSpreadsheets.defined_names(xt)
         dn.range === nothing && continue
-        v = ODSFiles.get_defined_name_value(dn)
-        v isa ODSFiles.SheetCellRef && @test getFont(xt, dn.name).fontId isa String
+        v = OpenDocumentSpreadsheets.get_defined_name_value(dn)
+        v isa OpenDocumentSpreadsheets.SheetCellRef && @test getFont(xt, dn.name).fontId isa String
     end
 end
 
@@ -377,17 +377,17 @@ end
     orig = openods(src); back = openods(p)
     for k in 1:sheetcount(back)
         sheetnames(back)[k] == "S01-gaps" && continue
-        @test String(ODSFiles.XML.sourcetext(back[k].entry.node)) == String(ODSFiles.XML.sourcetext(orig[k].entry.node))
+        @test String(OpenDocumentSpreadsheets.XML.sourcetext(back[k].entry.node)) == String(OpenDocumentSpreadsheets.XML.sourcetext(orig[k].entry.node))
     end
     @test getFont(back["S01-gaps"], "C1").font["name"] == Dict("val" => "Courier New")
     @test back["S01-gaps"]["C1"] === Int64(3)
-    c = ODSFiles.read_xml(ODSFiles.open_container(read(p)), :content)
+    c = OpenDocumentSpreadsheets.read_xml(OpenDocumentSpreadsheets.open_container(read(p)), :content)
     @test count("<style:font-face style:name=\"Courier New\"", c) == 1         # declared once, with the others
 end
 
 @testset "LibreOffice keeps fonts, fills, borders and alignment" begin
     if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the cell format oracle (set ODSFILES_SOFFICE)"
+        @info "LibreOffice not found; skipping the cell format oracle (set ODS_SOFFICE)"
         @test_skip false
     else
         dir = mktempdir()
@@ -439,8 +439,8 @@ end
     @test occursin("number:decimal-places=\"2\"", c) && !occursin("number:decimal-places=\"3\"", c)
     @test count("style:family=\"table-column\"", c) == 1
     r = openods(p)[1]
-    @test ODSFiles.getText(r, "A1") == "1.50" && haskey(getFont(r, "A1").font, "b") && haskey(getFont(r, "A1").font, "i")
-    @test ODSFiles.getColumnWidth(r, "A1") ≈ 20.7109375
+    @test OpenDocumentSpreadsheets.getText(r, "A1") == "1.50" && haskey(getFont(r, "A1").font, "b") && haskey(getFont(r, "A1").font, "i")
+    @test OpenDocumentSpreadsheets.getColumnWidth(r, "A1") ≈ 20.7109375
     # the model keeps every style: a pruned one used again is written again
     s["B1"] = 2.5
     @test setFont(s, "B1"; bold = true) == n1

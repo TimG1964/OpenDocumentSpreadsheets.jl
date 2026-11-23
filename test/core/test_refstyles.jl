@@ -106,10 +106,10 @@ end
     @test b in SheetCore.NonContiguousRange{OD}("Sheet1.A1:C3")
 end
 
-@testset "ODSFiles binds the ODF style" begin
-    @test ODSFiles.SheetCellRef === SheetCore.SheetCellRef{OD}
-    @test string(ODSFiles.SheetCellRef("Sheet1!A1")) == "Sheet1.A1"
-    @test string(ODSFiles.SheetCellRange("'My sheet'.A1:'My sheet'.B2")) == "'My sheet'.A1:B2"
-    @test string(ODSFiles.parse_sheet_ref("Data!A1,Data!C3")) == "Data.A1~Data.C3"
-    @test ODSFiles.NonContiguousRange === SheetCore.NonContiguousRange{OD}
+@testset "OpenDocumentSpreadsheets binds the ODF style" begin
+    @test OpenDocumentSpreadsheets.SheetCellRef === SheetCore.SheetCellRef{OD}
+    @test string(OpenDocumentSpreadsheets.SheetCellRef("Sheet1!A1")) == "Sheet1.A1"
+    @test string(OpenDocumentSpreadsheets.SheetCellRange("'My sheet'.A1:'My sheet'.B2")) == "'My sheet'.A1:B2"
+    @test string(OpenDocumentSpreadsheets.parse_sheet_ref("Data!A1,Data!C3")) == "Data.A1~Data.C3"
+    @test OpenDocumentSpreadsheets.NonContiguousRange === SheetCore.NonContiguousRange{OD}
 end

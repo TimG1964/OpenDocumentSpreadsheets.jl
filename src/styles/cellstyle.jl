@@ -5,7 +5,7 @@
 # `style:style` of family `table-cell`. Its three property elements keep their attributes
 # sorted by name, with values as written in the XML (escaped); their child elements, and the
 # style's other children (`style:map`, …), are kept verbatim, so that a style derived from
-# another loses nothing ODSFiles does not model.
+# another loses nothing OpenDocumentSpreadsheets does not model.
 #
 # A `StyleSheet` holds the `CellStyle` of every style id, and is built from the document's
 # XML the first time formatting needs it (stylesheet.jl), so plain reads and writes never
@@ -79,7 +79,7 @@ Base.:(==)(a::CellStyle, b::CellStyle) =
 Base.hash(s::CellStyle, h::UInt) =
     hash(s.extra, hash(s.text, hash(s.para, hash(s.cell, hash(s.attrs, hash(s.datastyle, hash(s.parent, hash(:CellStyle, h))))))))
 
-# Whether a style says nothing but its parent and data style (as ODSFiles's typed styles and
+# Whether a style says nothing but its parent and data style (as OpenDocumentSpreadsheets's typed styles and
 # LibreOffice's data-format-only styles do).
 is_plain(s::CellStyle) = isempty(s.attrs) && isempty(s.cell) && isempty(s.para) && isempty(s.text) && isempty(s.extra)
 

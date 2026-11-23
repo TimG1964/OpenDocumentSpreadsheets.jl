@@ -2,12 +2,12 @@
 # added styles deduplicated and written as automatic styles, and the retype rule (D-037).
 
 using Dates
-using ODSFiles: CellStyle, PropSet, setprops, getprop, parse_cell_style, write_cell_style, stylesheet, cell_style,
+using OpenDocumentSpreadsheets: CellStyle, PropSet, setprops, getprop, parse_cell_style, write_cell_style, stylesheet, cell_style,
     add_cell_style!, add_data_style!, added_styles_xml, typed_styles_xml, with_text, with_datastyle, is_plain,
     style_id, style_name, style_info, encode_value, store_set!, getcell, DataStyleInfo, DK_NUMBER, DK_DATE
 
 stmp(name) = joinpath(mktempdir(), name)
-XML_text(xf, k) = String(ODSFiles.XML.sourcetext(xf[k].entry.node))
+XML_text(xf, k) = String(OpenDocumentSpreadsheets.XML.sourcetext(xf[k].entry.node))
 bold(cs::CellStyle) = with_text(cs, setprops(cs.text, "fo:font-weight" => "bold"))
 isbold(cs::CellStyle) = getprop(cs.text, "fo:font-weight") == "bold"
 
@@ -90,8 +90,8 @@ end
 # A cell of a new or read sheet given a style by id (the setters come in step 4).
 function put!(ws, ref, v, style)
     c = SheetCore.CellRef(ref)
-    store_set!(ODSFiles._cached_store(ws), row_number(c), column_number(c), encode_value(v, Int32(style)))
-    ODSFiles._mark_dirty!(ws, row_number(c), column_number(c))
+    store_set!(OpenDocumentSpreadsheets._cached_store(ws), row_number(c), column_number(c), encode_value(v, Int32(style)))
+    OpenDocumentSpreadsheets._mark_dirty!(ws, row_number(c), column_number(c))
 end
 
 @testset "retyping keeps the formatting (D-037)" begin
@@ -140,20 +140,20 @@ end
 
 @testset "patched saves add styles and change nothing else (D-023)" begin
     src = joinpath(DATA, "lo-scenarios.ods")
-    orig = ODSFiles.read_xml(ODSFiles.open_container(read(src)), :content)
+    orig = OpenDocumentSpreadsheets.read_xml(OpenDocumentSpreadsheets.open_container(read(src)), :content)
     xf = openods(src; mode = "rw")
     st = xf.styles
     ws = xf[1]
     red = add_cell_style!(st, with_text(CellStyle(), setprops(PropSet(), "fo:color" => "#ff0000")))
     put!(ws, "A1", "red", red)
     p = writeods(stmp("patched.ods"), xf)
-    new = ODSFiles.read_xml(ODSFiles.open_container(read(p)), :content)
+    new = OpenDocumentSpreadsheets.read_xml(OpenDocumentSpreadsheets.open_container(read(p)), :content)
     sx = added_styles_xml(st)
     @test occursin(sx, new)
     # outside the sheet and the styles, nothing changed
     i = findfirst("</office:automatic-styles>", orig)[1]
     @test replace(new, sx => ""; count = 1)[1:i-1] == orig[1:i-1]
-    ws1 = ODSFiles.sheetnames(xf)
+    ws1 = OpenDocumentSpreadsheets.sheetnames(xf)
     back = openods(p)
     @test back[1]["A1"] == "red" && getprop(cell_style(back.styles, style_id(back.styles, getcell(back[1], "A1").style)).text, "fo:color") == "#ff0000"
     for k in 2:length(ws1)                          # untouched sheets: byte for byte
@@ -163,7 +163,7 @@ end
 
 @testset "LibreOffice keeps derived styles" begin
     if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the style oracle (set ODSFILES_SOFFICE)"
+        @info "LibreOffice not found; skipping the style oracle (set ODS_SOFFICE)"
         @test_skip false
     else
         dir = mktempdir()

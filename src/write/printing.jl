@@ -250,7 +250,7 @@ function setPageSetup(ws::Worksheet; orientation::Union{Nothing,Symbol} = nothin
     if paperSize !== nothing
         n = paperSize isa Symbol ? (haskey(PAPER_SIZES, paperSize) ? PAPER_SIZES[paperSize] :
              throw(ODSError("Unknown `paperSize` `:$paperSize`. Must be one of $(join(keys(PAPER_SIZES), ", ")), or Excel's number for the size."))) : Int(paperSize)
-        haskey(_EXCEL_PAPER, n) || throw(ODSError("Excel's paper size $n has no size in ODSFiles: give one of $(join(sort!(collect(keys(_EXCEL_PAPER))), ", "))."))
+        haskey(_EXCEL_PAPER, n) || throw(ODSError("Excel's paper size $n has no size in OpenDocumentSpreadsheets: give one of $(join(sort!(collect(keys(_EXCEL_PAPER))), ", "))."))
         size = _EXCEL_PAPER[n]
     end
     if scale !== nothing
@@ -545,7 +545,7 @@ const _HEADER_FOOTER_MAX = 255
     headerFooterField(field::Symbol) -> String
 
 The code for `field` in a header or footer: `:page` `&P`, `:pages` `&N`, `:date` `&D`, `:time`
-`&T`, `:file` `&F`, `:path` `&Z`, `:sheet` `&A`. ODSFiles writes each as the ODF field
+`&T`, `:file` `&F`, `:path` `&Z`, `:sheet` `&A`. OpenDocumentSpreadsheets writes each as the ODF field
 LibreOffice's import makes of it.
 """
 function headerFooterField(field::Symbol)
@@ -558,8 +558,8 @@ end
     headerFooterFont(; name, bold, italic, under, strike, size, color, vertAlign) -> String
 
 The codes that change the font of the text that follows them in a header or footer, as XLSX.jl
-writes them (`&"Arial,Bold"&14`). ODSFiles writes the text after them in a text style with that
-font. `color` takes ODSFiles' colour forms (not theme colours).
+writes them (`&"Arial,Bold"&14`). OpenDocumentSpreadsheets writes the text after them in a text style with that
+font. `color` takes OpenDocumentSpreadsheets' colour forms (not theme colours).
 """
 function headerFooterFont(; name::Union{Nothing,AbstractString} = nothing, bold::Bool = false, italic::Bool = false,
                           under::Union{Nothing,AbstractString} = nothing, strike::Bool = false,
@@ -751,7 +751,7 @@ function _section_xml(xf::ODSFile, text::AbstractString)
         elseif d == 'I'
             pushtext(); font.italic = !font.italic
         else
-            print(buf, c, d)                                  # a code ODSFiles doesn't know: kept as text
+            print(buf, c, d)                                  # a code OpenDocumentSpreadsheets doesn't know: kept as text
         end
         i = k
     end

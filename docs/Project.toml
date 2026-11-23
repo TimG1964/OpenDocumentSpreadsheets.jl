@@ -1,9 +1,9 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
-ODSFiles = "00d59aff-60ae-4cba-9323-edb4df2b7f0d"
+OpenDocumentSpreadsheets = "00d59aff-60ae-4cba-9323-edb4df2b7f0d"
 
 [sources]
-ODSFiles = {path = ".."}
+OpenDocumentSpreadsheets = {path = ".."}
 
 [compat]
 Documenter = "1"

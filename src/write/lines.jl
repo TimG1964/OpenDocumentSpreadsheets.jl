@@ -373,7 +373,7 @@ end
 # operation happened (the end-of-sheet rule of F-043 needs it).
 function _rewrite_model_refs!(xf::ODSFile, op::RefOp)
     for ws in _sheets(xf)
-        # a print area set by ODSFiles (phase 5 step 10): the file's are replayed with the text
+        # a print area set by OpenDocumentSpreadsheets (phase 5 step 10): the file's are replayed with the text
         pa = ws.print
         if pa !== nothing && pa.area_changed && pa.area !== nothing
             pa.area = rewrite_rangelist(pa.area, op, RefContext(ws.name))

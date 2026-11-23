@@ -1,4 +1,4 @@
-# ODSFiles uses only the public API of Julia and of its dependencies (the user's rule,
+# OpenDocumentSpreadsheets uses only the public API of Julia and of its dependencies (the user's rule,
 # 2026-11-18), and its imports are explicit and current: ExplicitImports.jl checks the names,
 # and a scan below checks field access on library types, which ExplicitImports does not.
 import ExplicitImports as EI
@@ -12,21 +12,21 @@ const DOCUMENTED_NOT_MARKED = (
     :columnaccess, :columntable, :Columns, :CopiedColumns, :AbstractColumns,
     # Parsers.jl 2 (allowed by compat; CI has a job for it) documents `Parsers.tryparse` in
     # its README but marks nothing `public`; Parsers.jl 3 marks it public:
-    (pkgversion(ODSFiles.Parsers) < v"3" ? (:tryparse,) : ())...,
+    (pkgversion(OpenDocumentSpreadsheets.Parsers) < v"3" ? (:tryparse,) : ())...,
 )
-# Imported only to be re-exported (declared `public` in ODSFiles on Julia 1.11+; on 1.10
+# Imported only to be re-exported (declared `public` in OpenDocumentSpreadsheets on Julia 1.11+; on 1.10
 # nothing marks them as used):
 const REEXPORTED = (:DataTable, :TableRow, :TableRowIterator)
 
 @testset "explicit imports" begin
-    @test EI.check_no_implicit_imports(ODSFiles) === nothing
-    @test EI.check_no_stale_explicit_imports(ODSFiles; ignore = REEXPORTED) === nothing
-    @test EI.check_all_explicit_imports_via_owners(ODSFiles) === nothing
-    @test EI.check_all_qualified_accesses_via_owners(ODSFiles) === nothing
-    @test EI.check_no_self_qualified_accesses(ODSFiles) === nothing
+    @test EI.check_no_implicit_imports(OpenDocumentSpreadsheets) === nothing
+    @test EI.check_no_stale_explicit_imports(OpenDocumentSpreadsheets; ignore = REEXPORTED) === nothing
+    @test EI.check_all_explicit_imports_via_owners(OpenDocumentSpreadsheets) === nothing
+    @test EI.check_all_qualified_accesses_via_owners(OpenDocumentSpreadsheets) === nothing
+    @test EI.check_no_self_qualified_accesses(OpenDocumentSpreadsheets) === nothing
     if VERSION >= v"1.11"
-        @test EI.check_all_explicit_imports_are_public(ODSFiles) === nothing
-        @test EI.check_all_qualified_accesses_are_public(ODSFiles; ignore = DOCUMENTED_NOT_MARKED) === nothing
+        @test EI.check_all_explicit_imports_are_public(OpenDocumentSpreadsheets) === nothing
+        @test EI.check_all_qualified_accesses_are_public(OpenDocumentSpreadsheets; ignore = DOCUMENTED_NOT_MARKED) === nothing
     end
 end
 

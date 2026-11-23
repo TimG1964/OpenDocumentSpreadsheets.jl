@@ -1,5 +1,5 @@
 ```@meta
-CurrentModule = ODSFiles
+CurrentModule = OpenDocumentSpreadsheets
 ```
 
 # Getting started
@@ -10,7 +10,7 @@ CurrentModule = ODSFiles
 time it is used.
 
 ```julia
-using ODSFiles
+using OpenDocumentSpreadsheets
 
 xf = readods("data.ods")
 sheetnames(xf)            # the sheets, in order
@@ -114,7 +114,7 @@ openods("budget.ods"; mode = "rw") do xf
 end
 ```
 
-Everything ODSFiles does not change — styles, column widths, comments, images, charts,
+Everything OpenDocumentSpreadsheets does not change — styles, column widths, comments, images, charts,
 settings — is kept exactly as it was ([Saving and writing](@ref)).
 
 ## Changing sheets

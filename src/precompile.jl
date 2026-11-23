@@ -48,7 +48,7 @@ PCT.@setup_workload begin
                 setColumnWidth(sh, 1; width = 12)
                 mergeCells(sh, "J6:K7")
                 addCellStyle!(xf, "Total"; font = (bold = true,), fill = (pattern = "solid", fgColor = "yellow"))
-                setCellStyle(sh, "A4", "Total")       # ODSFiles only: named styles (D-045)
+                setCellStyle(sh, "A4", "Total")       # OpenDocumentSpreadsheets only: named styles (D-045)
                 setCellStyle(sh, "B4", "Heading 1")
                 saveods(xf)
                 writeods(io, xf)

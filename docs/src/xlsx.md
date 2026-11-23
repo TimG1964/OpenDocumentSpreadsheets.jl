@@ -1,12 +1,12 @@
 ```@meta
-CurrentModule = ODSFiles
+CurrentModule = OpenDocumentSpreadsheets
 ```
 
 # Coming from XLSX.jl
 
-ODSFiles follows XLSX.jl's interface, so most code needs only its file names changed:
+OpenDocumentSpreadsheets follows XLSX.jl's interface, so most code needs only its file names changed:
 
-| XLSX.jl | ODSFiles |
+| XLSX.jl | OpenDocumentSpreadsheets |
 |---|---|
 | `XLSX.readxlsx`, `XLSX.openxlsx` | [`readods`](@ref), [`openods`](@ref) |
 | `XLSX.newxlsx`, `XLSX.writexlsx`, `XLSX.savexlsx` | [`newods`](@ref), [`writeods`](@ref), [`saveods`](@ref) |
@@ -43,7 +43,7 @@ The formatting functions work as in XLSX.jl too, with the differences listed in
   [Saving and writing](@ref).
 - **Formatting** works on ODF's styles: setters return a style name, getters work on
   read-only files, and empty cells and whole columns are formatted as LibreOffice formats
-  them. ODSFiles also has named cell styles ([`setCellStyle`](@ref), [`addCellStyle!`](@ref)),
+  them. OpenDocumentSpreadsheets also has named cell styles ([`setCellStyle`](@ref), [`addCellStyle!`](@ref)),
   which XLSX.jl lacks. See [Formatting](guide/formatting.md).
 - **Inserting and deleting rows and columns** ([`insertRows`](@ref), [`insertColumns`](@ref),
   [`deleteRows`](@ref), [`deleteColumns`](@ref)) take XLSX.jl's arguments and behave as
@@ -63,7 +63,7 @@ The formatting functions work as in XLSX.jl too, with the differences listed in
 - **Hiding** ([`setRowHidden`](@ref), [`setColumnHidden`](@ref), [`setSheetVisibility`](@ref)) and
   **tab colours** ([`setTabColor`](@ref)) take XLSX.jl's arguments. ODF has no very hidden sheets:
   `:veryHidden` hides a sheet as `:hidden` does, as LibreOffice imports Excel's. Theme colours are
-  not accepted, as elsewhere in ODSFiles.
+  not accepted, as elsewhere in OpenDocumentSpreadsheets.
 - **Grouping** ([`groupRows`](@ref), [`groupColumns`](@ref), [`ungroupRows`](@ref),
   [`ungroupColumns`](@ref)) takes XLSX.jl's arguments, but follows LibreOffice, whose groups are
   nested containers rather than Excel's levels per line: groups next to each other stay separate,

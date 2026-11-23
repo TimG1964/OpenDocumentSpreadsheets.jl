@@ -1,6 +1,6 @@
 # Formatting
 
-ODSFiles formats cells with XLSX.jl's functions: [`setFont`](@ref), [`setFill`](@ref),
+OpenDocumentSpreadsheets formats cells with XLSX.jl's functions: [`setFont`](@ref), [`setFill`](@ref),
 [`setBorder`](@ref), [`setAlignment`](@ref) and [`setFormat`](@ref), with their getters and
 uniform variants. They take XLSX.jl's address forms: a cell (`"B2"`), a range (`"B2:D4"`),
 whole columns (`"A:C"`) or rows (`"3:5"`), a list of ranges (`"A1:B2,D4"`), a defined name,
@@ -8,7 +8,7 @@ a sheet-qualified reference on the file (`xf["Sheet1.A1"]` style: `setFont(xf, "
 or rows and columns as integers, ranges, vectors or `:`.
 
 ```julia
-using ODSFiles
+using OpenDocumentSpreadsheets
 
 xf = newods()
 s = xf[1]
@@ -21,7 +21,7 @@ setBorder(s, "A1:B1"; outside = ["style" => "medium"])
 setAlignment(s, "B1"; horizontal = "right")
 setFormat(s, "B1"; format = "#,##0.00")
 
-ODSFiles.getText(s, "B1")      # "1,234.50"
+OpenDocumentSpreadsheets.getText(s, "B1")      # "1,234.50"
 writeods("report.ods", xf)
 ```
 
@@ -43,7 +43,7 @@ keep their formatting. An explicit range may reach past the used area.
 ```julia
 setColumnWidth(s, "A:B"; width = 20)           # in characters, as in XLSX.jl
 setColumnWidth(s, "C"; width = 3, unit = :cm)  # or :mm, :in, :pt
-ODSFiles.getColumnWidth(s, "A1")               # 20.7109375, as XLSX.jl reports it
+OpenDocumentSpreadsheets.getColumnWidth(s, "A1")               # 20.7109375, as XLSX.jl reports it
 setRowHeight(s, 1; height = 30)                # in points
 autofitColumns(s)                              # LibreOffice's optimal width for every column
 
@@ -61,7 +61,7 @@ ODF documents have named cell styles, the ones LibreOffice shows in its Styles d
 "Heading 1", "Good", and styles of your own. XLSX.jl has nothing like them.
 - [`setCellStyle`](@ref) applies a style.
 - [`addCellStyle!`](@ref) defines one, from the same keywords the setters take.
-- [`getCellStyle`](@ref ODSFiles.getCellStyle) gives a cell's style.
+- [`getCellStyle`](@ref OpenDocumentSpreadsheets.getCellStyle) gives a cell's style.
 
 ```julia
 addCellStyle!(xf, "Total"; parent = "Default",
@@ -69,7 +69,7 @@ addCellStyle!(xf, "Total"; parent = "Default",
               border = (top = ["style" => "double"],), format = "#,##0.00")
 setCellStyle(s, "A10:B10", "Total")
 setCellStyle(s, "A1", "Heading 1")      # one of LibreOffice's built-in styles
-ODSFiles.getCellStyle(s, "A1")         # "Heading 1"
+OpenDocumentSpreadsheets.getCellStyle(s, "A1")         # "Heading 1"
 ```
 
 - **Direct formatting stays on top**, as in LibreOffice. Applying a style removes the cell's
@@ -86,13 +86,13 @@ ODSFiles.getCellStyle(s, "A1")         # "Heading 1"
 - **Empty cells are formatted**, as in LibreOffice. Whole columns and rows are formatted to
   the end of the sheet, not only up to the used area.
 - **Styles, not tables.** ODF has no font, fill or border tables: a cell has a style, which
-  ODSFiles derives from the cell's current one (named styles stay its parent). Setters return
+  OpenDocumentSpreadsheets derives from the cell's current one (named styles stay its parent). Setters return
   the new style's name for a single cell, and getters report the properties the cell's style
   resolves to, also on files opened read-only.
 - **What ODF can't hold:** superscript and subscript (`vertAlign`) are refused; pattern fills
   are blended into one colour, as LibreOffice does when it opens an xlsx file.
 - **Number formats** are stored as ODF data styles, in the form LibreOffice writes for the
-  same code. [`getText`](@ref ODSFiles.getText) shows a value as LibreOffice shows it, which differs from Excel
+  same code. [`getText`](@ref OpenDocumentSpreadsheets.getText) shows a value as LibreOffice shows it, which differs from Excel
   in places (General shows up to 15 significant digits, for example).
 - **Merged cells** are an anchor cell and covered cells, as LibreOffice writes them.
 

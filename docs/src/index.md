@@ -1,33 +1,33 @@
 ```@meta
-CurrentModule = ODSFiles
+CurrentModule = OpenDocumentSpreadsheets
 ```
 
-# ODSFiles.jl
+# OpenDocumentSpreadsheets.jl
 
 Read and write OpenDocument spreadsheets (`.ods`, `.fods`, `.ots`) in pure Julia.
 
 OpenDocument (ISO/IEC 26300) is the spreadsheet format of LibreOffice and of the public
-bodies that standardise on open formats. ODSFiles reads and writes it directly: no Python, no
+bodies that standardise on open formats. OpenDocumentSpreadsheets reads and writes it directly: no Python, no
 LibreOffice and no other program is needed.
 
 Its interface follows [XLSX.jl](https://github.com/JuliaData/XLSX.jl), so code written for
 Excel files carries over with few changes (see [Coming from XLSX.jl](@ref)). Where LibreOffice
-works differently, ODSFiles follows LibreOffice: references print as `Sheet1.A1`, formulas
+works differently, OpenDocumentSpreadsheets follows LibreOffice: references print as `Sheet1.A1`, formulas
 read and write in LibreOffice's notation, and sheets are as LibreOffice saves them.
 
 ## Installation
 
 ```julia
 using Pkg
-Pkg.add(url = "https://github.com/TimG1964/ODSFiles.jl")
+Pkg.add(url = "https://github.com/TimG1964/OpenDocumentSpreadsheets.jl")
 ```
 
-ODSFiles supports Julia 1.10 and later.
+OpenDocumentSpreadsheets supports Julia 1.10 and later.
 
 ## A first look
 
 ```julia
-using ODSFiles
+using OpenDocumentSpreadsheets
 
 xf = readods("budget.ods")        # open a file
 sheetnames(xf)                    # ["Income", "Costs"]
@@ -47,7 +47,7 @@ writetable("out.ods", dt; sheetname = "Costs")   # write it back
   whole file, one sheet, or rows as they stream.
 - **Tables:** `readtable`, `gettable`, `eachtablerow` and the Tables.jl interface.
 - **Writing:** new files, editing an existing file, tables, and streaming large files row by
-  row. An edited file keeps everything ODSFiles does not change exactly as it was.
+  row. An edited file keeps everything OpenDocumentSpreadsheets does not change exactly as it was.
 - **Formats:** `.ods`, flat `.fods` and `.ots` templates; ODF 1.4 (as LibreOffice writes)
   or 1.3.
 - **Formatting:** fonts, fills, borders, alignment, number formats (shown as LibreOffice

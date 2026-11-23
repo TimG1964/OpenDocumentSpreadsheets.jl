@@ -3,14 +3,14 @@
 # test/data/printing/), in saved files and through LibreOffice. XLSX.jl's printing cases are ported
 # where they apply.
 
-using ODSFiles: getPageSetup, getPageMargins, getPrintOptions, getPrintArea, getPrintTitles, getHeaderFooter,
+using OpenDocumentSpreadsheets: getPageSetup, getPageMargins, getPrintOptions, getPrintArea, getPrintTitles, getHeaderFooter,
     ODSError, insertRows, renamesheet!, copysheet!, groupRows, getRowOutlineLevel
-using ODSFiles.SheetCore: CellRange, CellRef
+using OpenDocumentSpreadsheets.SheetCore: CellRange, CellRef
 
 const PRINTDIR = joinpath(DATA, "printing")
 const LOPRINT = joinpath(PRINTDIR, "lo-print-xlsx-import.fods")
 
-# A sheet's page-layout properties in a saved flat file, read without ODSFiles.
+# A sheet's page-layout properties in a saved flat file, read without OpenDocumentSpreadsheets.
 function layout_props(path, sheet)
     f = read(path, String)
     attrs(t) = Dict(m.captures[1] => m.captures[2] for m in eachmatch(r"([\w:-]+)=\"([^\"]*)\"", t))
@@ -41,7 +41,7 @@ end
     @test getPrintOptions(xf["Centered"]) == (gridLines = false, headings = false, horizontalCentered = true, verticalCentered = true)
     @test getPrintOptions(xf["CenterH"]).horizontalCentered && !getPrintOptions(xf["CenterH"]).verticalCentered && getPrintOptions(xf["CenterV"]).verticalCentered
     @test getPrintArea(xf["Area"]) == CellRange("B2:D8") && getPrintArea(xf["Plain"]) === nothing
-    @test getPrintArea(xf["Areas"]) == ODSFiles.NonContiguousRange("Areas", Union{CellRef,CellRange}[CellRange("A1:B4"), CellRange("D6:E9")])
+    @test getPrintArea(xf["Areas"]) == OpenDocumentSpreadsheets.NonContiguousRange("Areas", Union{CellRef,CellRange}[CellRange("A1:B4"), CellRange("D6:E9")])
     @test getPrintTitles(xf["TitleRows"]) == (rows = 1:2, cols = nothing) && getPrintTitles(xf["TitleCols"]) == (rows = nothing, cols = 1:2)
     @test getPrintTitles(xf["TitleBoth"]) == (rows = 2:2, cols = 1:1) && getPrintTitles(xf["Plain"]) === nothing
     hf(n) = getHeaderFooter(xf[n])
@@ -78,7 +78,7 @@ end
         f(xf[n])
     end
     p = writeods(joinpath(mktempdir(), "w.fods"), xf)
-    cm(v) = (x = ODSFiles._length_cm(v); x === nothing ? v : round(x; digits = 2))
+    cm(v) = (x = OpenDocumentSpreadsheets._length_cm(v); x === nothing ? v : round(x; digits = 2))
     for (n, _) in calls
         got = layout_props(p, n); want = layout_props(LOPRINT, n)
         for k in keys_
@@ -119,7 +119,7 @@ end
     setPrintArea(s, "A1:F40")
     @test getPrintArea(s) == CellRange("A1:F40")
     setPrintArea(s, "A1:B4,D6:E9")
-    @test getPrintArea(s) isa ODSFiles.NonContiguousRange
+    @test getPrintArea(s) isa OpenDocumentSpreadsheets.NonContiguousRange
     addDefinedName(s, "pa", "A2:C3")
     setPrintArea(s, "pa")
     @test getPrintArea(s) == CellRange("A2:C3")
@@ -209,7 +209,7 @@ end
 
 @testset "LibreOffice reads the printing settings" begin
     if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the printing oracle (set ODSFILES_SOFFICE)"
+        @info "LibreOffice not found; skipping the printing oracle (set ODS_SOFFICE)"
         @test_skip false
     else
         dir = mktempdir()

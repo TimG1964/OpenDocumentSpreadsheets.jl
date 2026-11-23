@@ -6,7 +6,7 @@
 # replaced by a new sheet with the same values; the getters work on read-only files; a
 # range past the used area can be merged (D-033, D-041).
 
-using ODSFiles: ODSError, CellRange, getFont, getFill, getMergedCells, isMergedCell, getMergedBaseCell, mergeCells, removeMergedCells
+using OpenDocumentSpreadsheets: ODSError, CellRange, getFont, getFill, getMergedCells, isMergedCell, getMergedBaseCell, mergeCells, removeMergedCells
 
 mtmp(name) = joinpath(mktempdir(), name)
 
@@ -88,7 +88,7 @@ end
     @test getMergedCells(s) === nothing && s["A1"] == 1
     p = writeods(mtmp("unmerged.ods"), f)
     @test getMergedCells(openods(p)[1]) === nothing
-    c = ODSFiles.read_xml(ODSFiles.open_container(read(p)), :content)
+    c = OpenDocumentSpreadsheets.read_xml(OpenDocumentSpreadsheets.open_container(read(p)), :content)
     @test !occursin("covered-table-cell", c) && !occursin("spanned", c)
 end
 
@@ -103,7 +103,7 @@ end
     back = openods(p)
     for k in 1:sheetcount(back)
         sheetnames(back)[k] == "S05-styled-empty" && continue
-        @test String(ODSFiles.XML.sourcetext(back[k].entry.node)) == String(ODSFiles.XML.sourcetext(openods(src)[k].entry.node))
+        @test String(OpenDocumentSpreadsheets.XML.sourcetext(back[k].entry.node)) == String(OpenDocumentSpreadsheets.XML.sourcetext(openods(src)[k].entry.node))
     end
     b = back["S05-styled-empty"]
     @test getMergedCells(b) == [CellRange("A2:C3")] && haskey(getFont(b, "B3").font, "b") && b["A1"] === Int64(1)
@@ -114,9 +114,9 @@ end
     @test getMergedCells(back["S09-merge"]) === nothing && back["S09-merge"]["A1"] === Int64(9)
 end
 
-@testset "LibreOffice keeps ODSFiles's merges" begin
+@testset "LibreOffice keeps OpenDocumentSpreadsheets's merges" begin
     if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the merge oracle (set ODSFILES_SOFFICE)"
+        @info "LibreOffice not found; skipping the merge oracle (set ODS_SOFFICE)"
         @test_skip false
     else
         dir = mktempdir()

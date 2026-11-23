@@ -3,7 +3,7 @@
 # LibreOffice. Part B of the experiment showed LibreOffice reading every property of a patched and a
 # new file (lo-props.tsv's `odsf` rows). XLSX.jl's docprops cases are ported where they apply.
 
-using ODSFiles: getDocumentProperties, getCustomProperty, getCustomProperties, ODSError
+using OpenDocumentSpreadsheets: getDocumentProperties, getCustomProperty, getCustomProperties, ODSError
 
 const DOCP = joinpath(DATA, "docprops")
 const DOCP_IMPORT = joinpath(DOCP, "lo-import.fods")
@@ -57,9 +57,9 @@ end
     nf = _all_props!(newods())
     for ext in (".ods", ".fods")
         f = writeods(joinpath(mktempdir(), "n" * ext), nf)
-        s = ext == ".fods" ? read(f, String) : String(ODSFiles.read_xml(openods(f).container, :meta))
+        s = ext == ".fods" ? read(f, String) : String(OpenDocumentSpreadsheets.read_xml(openods(f).container, :meta))
         @test _no_lo_only(_meta_kids(s)) == lo
-        @test occursin("<meta:generator>ODSFiles.jl/", s)
+        @test occursin("<meta:generator>OpenDocumentSpreadsheets.jl/", s)
         r = readods(f)
         @test getDocumentProperties(r) == DOCP_EXPECTED && getCustomProperties(r) == DOCP_CUSTOM
     end
@@ -87,7 +87,7 @@ end
     setDocumentProperties(xf; keywords = "")
     @test getDocumentProperties(xf).keywords === nothing
     setDocumentProperties(xf; keywords = "a,b")                       # back where LibreOffice keeps them
-    kids = first.(ODSFiles._meta(xf).children)
+    kids = first.(OpenDocumentSpreadsheets._meta(xf).children)
     @test findfirst(==("meta:keyword"), kids) == findfirst(==("meta:initial-creator"), kids) + 1
     setDocumentProperties(xf; company = "", manager = "M2")
     @test getDocumentProperties(xf).company === nothing && getDocumentProperties(xf).manager == "M2"
@@ -110,10 +110,10 @@ end
     # set and read back on a file without properties, zipped and flat; others' items kept
     for f in (joinpath(DATA, "lo-values.ods"), joinpath(DATA, "lo-values.fods"))
         yf = openods(f; mode = "rw")
-        before = _meta_kids(String(ODSFiles.read_xml(yf.container, :meta)))
+        before = _meta_kids(String(OpenDocumentSpreadsheets.read_xml(yf.container, :meta)))
         setDocumentProperties(yf; title = "T", company = "C")
         r = openods(writeods(joinpath(mktempdir(), "t" * splitext(f)[2]), yf))
-        after = _meta_kids(String(ODSFiles.read_xml(r.container, :meta)))
+        after = _meta_kids(String(OpenDocumentSpreadsheets.read_xml(r.container, :meta)))
         @test getDocumentProperties(r).title == "T" && getDocumentProperties(r).company == "C"
         @test filter(x -> !occursin(r"dc:title|\"Company\"", x), after) == before
         @test after[1] == "<dc:title>T</dc:title>"
@@ -122,11 +122,11 @@ end
     zf = openods(joinpath(DATA, "lo-values.ods"); mode = "rw")
     getDocumentProperties(zf); getCustomProperties(zf); deleteCustomProperty(zf, "none"); setDocumentProperties(zf; title = "", keywords = "")
     f = writeods(joinpath(mktempdir(), "u.ods"), zf)
-    @test ODSFiles.read_bytes(openods(f).container, "meta.xml") == ODSFiles.read_bytes(openods(joinpath(DATA, "lo-values.ods")).container, "meta.xml")
+    @test OpenDocumentSpreadsheets.read_bytes(openods(f).container, "meta.xml") == OpenDocumentSpreadsheets.read_bytes(openods(joinpath(DATA, "lo-values.ods")).container, "meta.xml")
 end
 
 @testset "dates" begin
-    pd = ODSFiles._parse_meta_datetime
+    pd = OpenDocumentSpreadsheets._parse_meta_datetime
     @test pd("2024-01-02T03:04:05Z") == DateTime(2024, 1, 2, 3, 4, 5)
     @test pd("2024-01-02T03:04:05.25Z") == DateTime(2024, 1, 2, 3, 4, 5, 250)
     @test pd("2026-11-21T00:19:18.576367300") == DateTime(2026, 11, 21, 0, 19, 18, 576)     # LibreOffice's
@@ -134,13 +134,13 @@ end
     @test pd("2024-01-02T03:04-02:00") == DateTime(2024, 1, 2, 5, 4)
     @test pd("2024-01-02") == DateTime(2024, 1, 2)
     @test pd("2024-13-02") === nothing && pd("yesterday") === nothing
-    @test ODSFiles._odf_datetime(DateTime(2024, 1, 2, 3, 4, 5, 999)) == "2024-01-02T03:04:05"
+    @test OpenDocumentSpreadsheets._odf_datetime(DateTime(2024, 1, 2, 3, 4, 5, 999)) == "2024-01-02T03:04:05"
     xf = newods()
     setDocumentProperties(xf; created = Date(2024, 5, 6))
     @test getDocumentProperties(xf).created == DateTime(2024, 5, 6)
-    ODSFiles._meta_set!(ODSFiles._meta(xf), "meta:creation-date", "<meta:creation-date>not a date</meta:creation-date>")
+    OpenDocumentSpreadsheets._meta_set!(OpenDocumentSpreadsheets._meta(xf), "meta:creation-date", "<meta:creation-date>not a date</meta:creation-date>")
     @test getDocumentProperties(xf).created == "not a date"            # kept as written
-    # a new file's creation date is set when it is made; the generator is ODSFiles'
+    # a new file's creation date is set when it is made; the generator is OpenDocumentSpreadsheets'
     nf = newods()
     @test getDocumentProperties(nf).created isa DateTime && getDocumentProperties(nf).title === nothing
 end
@@ -167,7 +167,7 @@ end
 
 @testset "LibreOffice reads the properties" begin
     if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the document properties oracle (set ODSFILES_SOFFICE)"
+        @info "LibreOffice not found; skipping the document properties oracle (set ODS_SOFFICE)"
         @test_skip false
     else
         dir = mktempdir()

@@ -1,10 +1,10 @@
 ```@meta
-CurrentModule = ODSFiles
+CurrentModule = OpenDocumentSpreadsheets
 ```
 
 # Cell values and types
 
-An OpenDocument cell stores its value with a type. ODSFiles reads it as follows:
+An OpenDocument cell stores its value with a type. OpenDocumentSpreadsheets reads it as follows:
 
 | Cell | Julia value |
 |---|---|
@@ -49,5 +49,5 @@ Writing takes numbers, strings, `Bool`, `Date`, `DateTime`, `Time`, periods (dur
 `7.0` as `7.0`), and floats are written exactly.
 
 Dates, times and booleans need a number format, or LibreOffice treats them as plain numbers
-the next time it saves. ODSFiles gives them ISO formats (`2026-11-18`, `2026-11-18 13:45:00`,
+the next time it saves. OpenDocumentSpreadsheets gives them ISO formats (`2026-11-18`, `2026-11-18 13:45:00`,
 `[HH]:MM:SS`, `TRUE`). A cell whose existing format fits the new value keeps it.

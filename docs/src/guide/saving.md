@@ -1,5 +1,5 @@
 ```@meta
-CurrentModule = ODSFiles
+CurrentModule = OpenDocumentSpreadsheets
 ```
 
 # Saving and writing
@@ -17,12 +17,12 @@ block ends (not if it throws).
 
 ## Editing keeps the rest of the file
 
-ODSFiles does not rebuild a file it edits. It copies the original and rewrites only the rows
+OpenDocumentSpreadsheets does not rebuild a file it edits. It copies the original and rewrites only the rows
 that hold edited or formatted cells, and the columns whose formats changed:
 
 - untouched sheets, settings, images, charts and the other parts stay byte for byte
 - styles are only added: new automatic styles go into content.xml, and named styles into
-  styles.xml ([Formatting](formatting.md)). Styles ODSFiles made that no cell uses any more are
+  styles.xml ([Formatting](formatting.md)). Styles OpenDocumentSpreadsheets made that no cell uses any more are
   not written.
 - in an edited row, the cells you did not change keep their formatting, comments and links
 
@@ -36,7 +36,7 @@ writes, or in ODF 1.3 with `version="1.3"`. An edited file keeps its version.
 
 ## Smaller files: `display_text=false`
 
-Like LibreOffice, ODSFiles writes each number, date, time and boolean cell twice: as its value
+Like LibreOffice, OpenDocumentSpreadsheets writes each number, date, time and boolean cell twice: as its value
 and as the text shown in the cell. Spreadsheet programs recompute the shown text from the
 value, so it can be left out:
 

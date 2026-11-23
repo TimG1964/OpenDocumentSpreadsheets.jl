@@ -1,10 +1,10 @@
 # Protection (phase 5 step 9; D-062, F-054): sheets, the file's structure and cells, against
 # LibreOffice's own files (experiment 025, test/data/protection/), in saved files and through
-# LibreOffice. Part B of the experiment showed LibreOffice accepting ODSFiles' keys (lo-prot.tsv's
+# LibreOffice. Part B of the experiment showed LibreOffice accepting OpenDocumentSpreadsheets' keys (lo-prot.tsv's
 # `odsf` rows): unprotecting needs a view's API, not a conversion. XLSX.jl's protection cases are
 # ported where they apply.
 
-using ODSFiles: isSheetProtected, getSheetProtection, getCellProtection, isWorkbookProtected,
+using OpenDocumentSpreadsheets: isSheetProtected, getSheetProtection, getCellProtection, isWorkbookProtected,
     getWorkbookProtection, ODSError, renamesheet!, copysheet!
 
 const PROT = joinpath(DATA, "protection")
@@ -39,9 +39,9 @@ end
 @testset "keys and forms are LibreOffice's (experiment 025)" begin
     own = read(joinpath(PROT, "lo-prot-own.fods"), String)
     key(sheet) = match(Regex("<table:table table:name=\"" * sheet * "\"[^>]*table:protection-key=\"([^\"]*)\""), own).captures[1]
-    @test ODSFiles._protection_key("secret") == key("Secret")
-    @test ODSFiles._protection_key("pässwörd€") == key("Unicode")
-    @test ODSFiles._protection_key("book") == match(r"<office:spreadsheet [^>]*table:protection-key=\"([^\"]*)\"", own).captures[1]
+    @test OpenDocumentSpreadsheets._protection_key("secret") == key("Secret")
+    @test OpenDocumentSpreadsheets._protection_key("pässwörd€") == key("Unicode")
+    @test OpenDocumentSpreadsheets._protection_key("book") == match(r"<office:spreadsheet [^>]*table:protection-key=\"([^\"]*)\"", own).captures[1]
     # a new file's tables, as LibreOffice wrote its own
     xf = newods("Secret")
     addsheet!(xf, "NoPassword"); addsheet!(xf, "Open")
@@ -69,7 +69,7 @@ end
     for n in ("insertColumns", "insertRows", "deleteColumns", "deleteRows", "autoFilter", "pivotTables", "Nothing")
         @test opts(t, n) == opts(im, n)
     end
-    # LibreOffice accepted ODSFiles' keys (part B): a wrong password refused, the right one taken
+    # LibreOffice accepted OpenDocumentSpreadsheets' keys (part B): a wrong password refused, the right one taken
     rows = [split(l, '\t') for l in eachline(joinpath(PROT, "lo-prot.tsv")) if startswith(l, "odsf\t")]
     @test any(r -> r[2] == "Unicode right" && startswith(r[3], "ok isProtected=False"), rows)
     @test all(r -> !endswith(r[2], " wrong") || startswith(r[3], "refused"), rows) && count(r -> endswith(r[2], " right"), rows) == 6
@@ -140,7 +140,7 @@ end
     xf = openods(src; mode = "rw")
     protectSheet(xf["Open"]; password = "secret")
     out = read(writeods(joinpath(dir, "b.fods"), xf), String)
-    k = ODSFiles._protection_key("secret")
+    k = OpenDocumentSpreadsheets._protection_key("secret")
     @test out == replace(orig, starttag(orig, "Open") =>
         "<table:table table:name=\"Open\" table:style-name=\"ta1\" table:protected=\"true\" table:protection-key=\"$k\" " *
         "table:protection-key-digest-algorithm=\"http://www.w3.org/2000/09/xmldsig#sha1\">" *
@@ -156,7 +156,7 @@ end
     protectSheet(xf["Secret"]; password = "other", insertRows = true)
     r = readods(writeods(joinpath(dir, "d.fods"), xf))
     @test getSheetProtection(r["Secret"]).insertRows && r["Secret"]["E5"] == "new"
-    @test occursin(ODSFiles._protection_key("other"), read(joinpath(dir, "d.fods"), String))
+    @test occursin(OpenDocumentSpreadsheets._protection_key("other"), read(joinpath(dir, "d.fods"), String))
     # cell protection on a file read
     xf = openods(src; mode = "rw")
     setCellProtection(xf["Cells"], "B2"; locked = true)
@@ -167,7 +167,7 @@ end
 
 @testset "LibreOffice reads the protection" begin
     if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the protection oracle (set ODSFILES_SOFFICE)"
+        @info "LibreOffice not found; skipping the protection oracle (set ODS_SOFFICE)"
         @test_skip false
     else
         dir = mktempdir()
@@ -190,7 +190,7 @@ end
         @test getCellProtection(lo["A"], "B2") == (locked = false, hidden = false) && getCellProtection(lo["A"], "C3") == (locked = true, hidden = true)
         @test getWorkbookProtection(lo) == (password = true, structure = true, windows = false)
         t = read(joinpath(dir, "lo", "new.fods"), String)
-        @test occursin(ODSFiles._protection_key("secret"), t) && occursin(ODSFiles._protection_key("book"), t)
+        @test occursin(OpenDocumentSpreadsheets._protection_key("secret"), t) && occursin(OpenDocumentSpreadsheets._protection_key("book"), t)
         lp = readods(joinpath(dir, "lo", "patched.fods"))
         @test !isSheetProtected(lp["Secret"]) && getSheetProtection(lp["Open"]).deleteRows && !isWorkbookProtected(lp)
         @test getCellProtection(lp["Open"], "A1") == (locked = true, hidden = true)

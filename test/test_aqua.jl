@@ -2,4 +2,4 @@
 # exports, project compat entries, stale dependencies, type piracy and persistent tasks.
 import Aqua
 
-Aqua.test_all(ODSFiles)
+Aqua.test_all(OpenDocumentSpreadsheets)

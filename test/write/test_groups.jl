@@ -3,15 +3,15 @@
 # LibreOffice. XLSX.jl's hide-group.jl grouping cases are ported where they apply. Uses SHIFT from
 # formula/test_refs.jl.
 
-using ODSFiles: getRowOutlineLevel, getColumnOutlineLevel, isRowHidden, isColumnHidden, ODSError,
+using OpenDocumentSpreadsheets: getRowOutlineLevel, getColumnOutlineLevel, isRowHidden, isColumnHidden, ODSError,
     insertRows, deleteRows, insertColumns, sheet_formats
 
-# The groups and hidden lines of a sheet in a saved file, read from its XML without ODSFiles (as
+# The groups and hidden lines of a sheet in a saved file, read from its XML without OpenDocumentSpreadsheets (as
 # experiments/023-lo-visibility/extract_b.jl prints them): "rows 3:5 depth 1 <attributes>", …
 function group_structure(path, sheet)
     f = read(path, String)
     if !endswith(path, ".fods")
-        f = String(ODSFiles.read_xml(ODSFiles.open_container(path), :content))
+        f = String(OpenDocumentSpreadsheets.read_xml(OpenDocumentSpreadsheets.open_container(path), :content))
     end
     t = match(Regex("<table:table table:name=\"" * sheet * "\".*?</table:table>", "s"), f).match
     lines = String[]
@@ -69,7 +69,7 @@ model_structure(ws) = (f = sheet_formats(ws); sortgroups(
      ["cols $(g.first):$(g.last) depth $(g.depth)" * (g.display ? "" : " table:display=\"false\"") for g in f.colgroups]]))
 
 # Experiment 023 part B's calls on sheets G, H and I, through the API. LibreOffice's refusals (a
-# group crossing another, an eighth level) are errors in ODSFiles (D-060).
+# group crossing another, an eighth level) are errors in OpenDocumentSpreadsheets (D-060).
 function apply_lo_groups!(xf, sheet)
     s = xf[sheet]
     if sheet == "G"
@@ -219,7 +219,7 @@ end
 
 @testset "LibreOffice reads the groups" begin
     if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the groups oracle (set ODSFILES_SOFFICE)"
+        @info "LibreOffice not found; skipping the groups oracle (set ODS_SOFFICE)"
         @test_skip false
     else
         dir = mktempdir()

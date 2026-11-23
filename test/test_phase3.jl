@@ -3,7 +3,7 @@
 
 using Dates
 import Tables
-using ODSFiles: _parse_float, content_through_sheet, open_container, read_xml
+using OpenDocumentSpreadsheets: _parse_float, content_through_sheet, open_container, read_xml
 
 @testset "lazy sheet index" begin
     xf = readods(joinpath(DATA, "lo-tables.ods"))
@@ -71,7 +71,7 @@ end
         p = writetable(joinpath(dir, "t$(streaming).$ext"), data, names; display_text = false, streaming, overwrite = true)
         r = readtable(p, 1)
         @test isequal(r.data, readtable(writetable(joinpath(dir, "k.$ext"), data, names; overwrite = true), 1).data)
-        xml = ext == "ods" ? String(ODSFiles.read_bytes(open_container(read(p)), "content.xml")) : read(p, String)
+        xml = ext == "ods" ? String(OpenDocumentSpreadsheets.read_bytes(open_container(read(p)), "content.xml")) : read(p, String)
         @test !occursin("<text:p>0.5</text:p>", xml) && occursin("<text:p>a</text:p>", xml)   # text cells keep theirs
     end
     # writeods, and a patched file

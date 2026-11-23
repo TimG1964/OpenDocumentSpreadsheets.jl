@@ -4,7 +4,7 @@
 # The API follows XLSX.jl 0.13.4 (src/cellformats/font.jl, fill.jl, border.jl,
 # alignment.jl, uniformstyle.jl; the keyword specs in src/types.jl; validation lists in
 # src/cellformat-helpers.jl), MIT License, Copyright (c) 2018-2026 Felipe Noronha Tavares
-# and other contributors. The implementation is ODSFiles's own: each setter is a transform
+# and other contributors. The implementation is OpenDocumentSpreadsheets's own: each setter is a transform
 # of a cell style (`CellStyle` → `CellStyle`), applied once per distinct style in the target
 # (`apply_format!`); ODF's form of each keyword is LibreOffice's (F-032, D-036). Getters
 # return XLSX.jl's shapes (D-032), from the properties the cell's style resolves to.

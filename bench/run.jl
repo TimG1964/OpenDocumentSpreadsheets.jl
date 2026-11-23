@@ -1,6 +1,6 @@
-# ODSFiles against XLSX.jl 0.13.4, on XLSX.jl's own benchmark fixtures and cases
+# OpenDocumentSpreadsheets against XLSX.jl 0.13.4, on XLSX.jl's own benchmark fixtures and cases
 # (XLSX.jl bench/bench_worker.jl), the .xlsx read by XLSX.jl and LibreOffice's .ods
-# conversion read by ODSFiles (make_fixtures.sh).
+# conversion read by OpenDocumentSpreadsheets (make_fixtures.sh).
 #
 #   julia --project=bench bench/run.jl [results.tsv]
 #
@@ -9,9 +9,9 @@
 # timing is excluded here too (a warm cache for `eachrow`/`single_cell`, the table read for
 # `writetable_only`). Optional filters: BENCH_FIXTURES, BENCH_CASES (comma-separated),
 # BENCH_SECONDS (budget per case and package, default 10).
-using XLSX, ODSFiles, Printf
-import ODSFiles: getdata
-const ODS = ODSFiles
+using XLSX, OpenDocumentSpreadsheets, Printf
+import OpenDocumentSpreadsheets: getdata
+const ODS = OpenDocumentSpreadsheets
 
 _list(k) = (v = get(ENV, k, ""); isempty(v) ? nothing : Set(split(v, ',')))
 const ONLY_FIXTURES = _list("BENCH_FIXTURES")
@@ -101,7 +101,7 @@ function cases(fixture, px, po)
 end
 
 mkpath(dirname(OUT))
-println("ODSFiles ", pkgversion(ODSFiles), " | XLSX.jl ", pkgversion(XLSX), " | Julia ", VERSION, " | ", Sys.CPU_NAME,
+println("OpenDocumentSpreadsheets ", pkgversion(OpenDocumentSpreadsheets), " | XLSX.jl ", pkgversion(XLSX), " | Julia ", VERSION, " | ", Sys.CPU_NAME,
         " | threads ", Threads.nthreads(), " | budget ", SECONDS, " s")
 open(OUT, "w") do io
     println(io, "fixture\tcase\txlsx_ms\tods_ms\tratio\txlsx_mib\tods_mib")

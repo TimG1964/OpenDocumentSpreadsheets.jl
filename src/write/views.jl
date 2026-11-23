@@ -11,7 +11,7 @@
 # LibreOffice's view settings (F-053): `ooo:view-settings` → `Views` → the first view's entry →
 # `Tables`, one entry per sheet (by name) with its panes, cursor, scroll position, zoom and gridlines;
 # the view's own items (`ShowZeroValues`, `HasColumnRowHeaders`, `ShowPageBreakPreview`, …) follow
-# `Tables` in the view's entry. ODSFiles keeps the items it sets (`xf.views`) and writes them over the
+# `Tables` in the view's entry. OpenDocumentSpreadsheets keeps the items it sets (`xf.views`) and writes them over the
 # file's at save, leaving every other item as it was. LibreOffice reads none of it unless the root
 # element declares the `ooo` namespace.
 
@@ -99,7 +99,7 @@ function _file_view_items(xf::ODSFile, name::AbstractString)
     return sheet, view
 end
 
-# The items now: the file's with ODSFiles' edits over them.
+# The items now: the file's with OpenDocumentSpreadsheets' edits over them.
 function _view_items_now(ws::Worksheet)
     xf = get_odsfile(ws)
     sheet, view = _file_view_items(xf, ws.name)
@@ -226,7 +226,7 @@ splitFreeze(ws::Worksheet, anchor::AbstractString) = freezePanes(ws, anchor)
     splitPanes(sheet, anchor_cell)
 
 Split the view into panes that scroll on their own, after `nrows` rows and `ncols` columns (or
-above and to the left of `anchor_cell`). LibreOffice stores a split in pixels: ODSFiles places it
+above and to the left of `anchor_cell`). LibreOffice stores a split in pixels: OpenDocumentSpreadsheets places it
 at the edge of those rows and columns, from their heights and widths, at 100% zoom.
 """
 splitPanes(ws::Worksheet; nrows::Integer = 1, ncols::Integer = 0) = _apply_panes!(ws, 1, Int(nrows), Int(ncols))
@@ -429,7 +429,7 @@ const _EMPTY_VIEW_SETTINGS = "<config:config-item-set config:name=\"ooo:view-set
 """
     _settings_views(xf, s) -> String
 
-The settings `s` (an `office:settings` element, or a whole settings.xml) with ODSFiles' view
+The settings `s` (an `office:settings` element, or a whole settings.xml) with OpenDocumentSpreadsheets' view
 items written over the file's: in the first view's entry for each sheet, and in the view's own
 items. Missing sets, maps and entries are made.
 """

@@ -143,7 +143,7 @@ end
 _sheet_text(e::RefEnd, name::AbstractString) = (e.sheet_abs ? "\$" : "") * SheetCore.quoteit(name)
 _with_sheet(e::RefEnd, name::AbstractString) = _with(e; sheet = String(name), sheet_text = _sheet_text(e, name))
 
-# Sheet names match without regard to case, as LibreOffice's (and ODSFiles') sheet names do.
+# Sheet names match without regard to case, as LibreOffice's (and OpenDocumentSpreadsheets') sheet names do.
 _same_sheet(a::AbstractString, b::AbstractString) = a == b || lowercase(a) == lowercase(b)
 _same_sheet(::Nothing, ::AbstractString) = false
 _sheet_index(order::Vector{String}, name::AbstractString) = findfirst(s -> _same_sheet(s, name), order)

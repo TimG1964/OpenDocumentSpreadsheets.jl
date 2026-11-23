@@ -3,13 +3,13 @@
 
 using Dates
 import Tables
-using ODSFiles: getcell
+using OpenDocumentSpreadsheets: getcell
 
 @testset "gettable (cache=$cache)" for cache in (true, false)
     xf = openods(joinpath(DATA, "lo-tables.ods"); enable_cache = cache)
     ws = xf["Table"]
     dt = gettable(ws)
-    @test dt isa ODSFiles.DataTable
+    @test dt isa OpenDocumentSpreadsheets.DataTable
     @test Tables.columnnames(dt) == [:id, :name, :value, :day, :flag]
     @test Tables.getcolumn(dt, :id) == [1, 2, 3, 4]                 # stops at the empty row 7
     @test Tables.getcolumn(dt, :id) isa Vector{Int64}
@@ -61,7 +61,7 @@ end
     rows = collect(eachtablerow(ws))
     @test length(rows) == 4
     r = rows[1]
-    @test r isa ODSFiles.TableRow && row_number(r) == 1
+    @test r isa OpenDocumentSpreadsheets.TableRow && row_number(r) == 1
     @test r[1] == 1 && r[:name] == "a" && r[:day] == Date(2024, 1, 1)
     @test isequal(collect(r), Any[1, "a", 1.5, Date(2024, 1, 1), true])
     @test length(r) == 5

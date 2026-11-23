@@ -10,7 +10,7 @@
 # `style:cell-protect`); keys are LibreOffice's (SHA-1 of the UTF-16LE password, in Base64), not
 # Excel's legacy hash; permissions LibreOffice has no counterpart for can't be granted.
 #
-# Protection applies in LibreOffice only: ODSFiles reads and edits a protected sheet as any other.
+# Protection applies in LibreOffice only: OpenDocumentSpreadsheets reads and edits a protected sheet as any other.
 
 const _SHA1_URI = "http://www.w3.org/2000/09/xmldsig#sha1"
 
@@ -98,7 +98,7 @@ counterpart for `formatCells`, `formatColumns`, `formatRows`, `insertHyperlinks`
 `objects` and `scenarios`: they can only be `false` (an error otherwise; LibreOffice's xlsx import
 drops them).
 
-Protecting a protected sheet replaces its settings. ODSFiles reads and edits protected sheets as
+Protecting a protected sheet replaces its settings. OpenDocumentSpreadsheets reads and edits protected sheets as
 any other.
 
 See also [`unprotectSheet`](@ref), [`isSheetProtected`](@ref), [`getSheetProtection`](@ref).

@@ -1,11 +1,11 @@
 ```@meta
-CurrentModule = ODSFiles
+CurrentModule = OpenDocumentSpreadsheets
 ```
 
 # Sheets, names and settings
 
 These functions are XLSX.jl's, with its names and arguments. What they store is what
-LibreOffice stores: where Excel and LibreOffice differ, ODSFiles does what LibreOffice does
+LibreOffice stores: where Excel and LibreOffice differ, OpenDocumentSpreadsheets does what LibreOffice does
 ([Coming from XLSX.jl](../xlsx.md) lists the differences). A file must be open for writing
 (`mode="rw"`, or made by [`newods`](@ref)); the getters also work on files opened for reading.
 
@@ -53,7 +53,7 @@ addDefinedName(xf, "vat", 0.2)                       # a named expression
 addDefinedName(xf["Data"], "first", "A1"; absolute = false)  # local to the sheet, relative
 setFormula(s, "C1"; val = "=SUM(rates)")
 xf["rates"]                                          # the range's values
-ODSFiles.getDefinedNames(xf)                         # [DefinedName(...), ...]
+OpenDocumentSpreadsheets.getDefinedNames(xf)                         # [DefinedName(...), ...]
 deleteDefinedName(xf, "vat")
 ```
 
@@ -65,7 +65,7 @@ Names follow LibreOffice's rules: letters, digits, `_` and `?`; not a cell refer
 ```julia
 setRowHidden(s, 3:4)                     # hidden = true by default
 setColumnHidden(s, "D"; hidden = false)
-ODSFiles.isRowHidden(s, 3)               # true
+OpenDocumentSpreadsheets.isRowHidden(s, 3)               # true
 
 setSheetVisibility(xf["Notes"], :hidden)   # :veryHidden hides it too: ODF has no very hidden sheets
 setTabColor(s, "FF8000")                   # or a colour name: "orange"
@@ -80,7 +80,7 @@ The last visible sheet can't be hidden.
 groupRows(s, 2:10)
 groupRows(s, 4:6; collapsed = true)    # a group inside it, its lines hidden
 groupColumns(s, "B:D")
-ODSFiles.getRowOutlineLevel(s, 5)      # 2
+OpenDocumentSpreadsheets.getRowOutlineLevel(s, 5)      # 2
 ungroupRows(s, 4:6)
 ```
 
@@ -94,7 +94,7 @@ freezePanes(s; nrows = 1, ncols = 1)       # or freezePanes(s, "B2")
 splitPanes(s; nrows = 10)                  # a split that doesn't freeze
 removePanes(s)
 setSheetView(s; zoom = 125, showGridLines = false, rightToLeft = false, activeCell = "C3")
-ODSFiles.getSheetView(s)
+OpenDocumentSpreadsheets.getSheetView(s)
 ```
 
 The view is LibreOffice's view settings (settings.xml). In LibreOffice `showRowColHeaders`,
@@ -106,7 +106,7 @@ The view is LibreOffice's view settings (settings.xml). In LibreOffice `showRowC
 protectSheet(s; password = "secret", insertRows = true, deleteRows = true)
 setCellProtection(s, "B2:B10"; locked = false)   # cells left editable
 protectWorkbook(xf; password = "secret")         # the sheets can't be added, moved or renamed
-ODSFiles.getSheetProtection(s)                   # the permissions, and whether there is a password
+OpenDocumentSpreadsheets.getSheetProtection(s)                   # the permissions, and whether there is a password
 unprotectSheet(s)
 ```
 
@@ -137,8 +137,8 @@ lie inside a group or apart from it (ODF keeps them in a container of rows).
 setDocumentProperties(xf; title = "Budget 2027", creator = "Finance", keywords = "budget; plan")
 setCustomProperty(xf, "Approved", true)
 setCustomProperty(xf, "Version", 3)
-ODSFiles.getDocumentProperties(xf).title     # "Budget 2027"
-ODSFiles.getCustomProperties(xf)             # ["Approved" => true, "Version" => 3]
+OpenDocumentSpreadsheets.getDocumentProperties(xf).title     # "Budget 2027"
+OpenDocumentSpreadsheets.getCustomProperties(xf)             # ["Approved" => true, "Version" => 3]
 deleteCustomProperty(xf, "Version")
 ```
 

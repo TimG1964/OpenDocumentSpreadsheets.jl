@@ -4,7 +4,7 @@
 # section becomes a data style in the form LibreOffice writes for the same code (F-031,
 # experiment 012): the last section is the main style, and the others are separate styles
 # it reaches through `style:map` conditions. The reverse turns any data style, LibreOffice's
-# or ODSFiles's, back into a code, for `getFormat` and for the displayed text (`getText`).
+# or OpenDocumentSpreadsheets's, back into a code, for `getFormat` and for the displayed text (`getText`).
 
 const SC = SheetCore
 

@@ -96,12 +96,12 @@ end
 
 @testset "SheetCore is self-contained" begin
     # it must not depend on anything ODS-specific (D-001)
-    src = joinpath(pkgdir(ODSFiles), "src", "core")
+    src = joinpath(pkgdir(OpenDocumentSpreadsheets), "src", "core")
     for f in readdir(src; join = true)
         endswith(f, ".jl") || continue
         txt = read(f, String)
         @test !occursin(r"^\s*(import|using)\s+XML\b"m, txt)                 # no ODF/XML layer
         @test !occursin(r"^\s*(import|using)\s+\.\."m, txt)                   # nothing from the parent module
-        @test !occursin(r"\bODSFiles\.(?!jl\b)\w", txt)                              # no qualified ODSFiles names
+        @test !occursin(r"\bOpenDocumentSpreadsheets\.(?!jl\b)\w", txt)              # no qualified OpenDocumentSpreadsheets names
     end
 end

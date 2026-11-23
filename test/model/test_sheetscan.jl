@@ -3,11 +3,11 @@
 # prefix read's walk to a sheet's end; batched table columns.
 # Needs `fods`/`open_fods` from model/test_values.jl.
 
-using ODSFiles: SheetReader, next_row!, RowData, _SCAN, _SCAN_CELL_FALLBACKS, _SheetFinder, _find_sheet_end!
+using OpenDocumentSpreadsheets: SheetReader, next_row!, RowData, _SCAN, _SCAN_CELL_FALLBACKS, _SheetFinder, _find_sheet_end!
 
 # (rows, cols, merges) of a sheet read with or without the scanner
 function _sheet_read(ws, scan; kw...)
-    r = SheetReader(ws.entry.node, ODSFiles.get_odsfile(ws).styles; scan, kw...)
+    r = SheetReader(ws.entry.node, OpenDocumentSpreadsheets.get_odsfile(ws).styles; scan, kw...)
     rows = RowData[]
     while (rd = next_row!(r)) !== nothing
         push!(rows, rd)
@@ -23,7 +23,7 @@ function _same_read(ws; kw...)
 end
 
 @testset "scanner = cursor on every test file" begin
-    # LibreOffice's own files (zipped and flat) and ODSFiles's; the shapes below cover the rest
+    # LibreOffice's own files (zipped and flat) and OpenDocumentSpreadsheets's; the shapes below cover the rest
     files = [joinpath(DATA, f) for f in readdir(DATA) if endswith(f, ".ods") || endswith(f, ".fods") || endswith(f, ".ots")]
     @test length(files) >= 8
     n = 0
@@ -166,7 +166,7 @@ end
                   "</table:table-row><table:table-row>" * _cell("office:value-type=\"float\" office:value=\"2\"") * "</table:table-row>") *
            "<table:table table:name=\"T2\"><table:table-row>" * _str("<text:p>z</text:p>") * "</table:table-row></table:table>"
     content = replace(fods(body), "<office:document " => "<office:document-content ", "</office:document>" => "</office:document-content>")
-    p = ODSFiles.write_package(joinpath(mktempdir(), "sub.ods"), [ODSFiles.PackagePart("content.xml", content)])
+    p = OpenDocumentSpreadsheets.write_package(joinpath(mktempdir(), "sub.ods"), [OpenDocumentSpreadsheets.PackagePart("content.xml", content)])
     @test isequal(readtable(p, "S").data, gettable(readods(p)["S"]).data)
     @test readtable(p, "S").data == [[1, 2]]
     @test readtable(p, "T2").column_labels == [:z]
@@ -174,7 +174,7 @@ end
 
 @testset "gettable in batches = row by row" begin
     # more rows than a batch, columns that widen mid-batch and across batches
-    n = 3 * ODSFiles.SheetCore._TABLE_BATCH + 17
+    n = 3 * OpenDocumentSpreadsheets.SheetCore._TABLE_BATCH + 17
     a = Any[i == 300 ? "s" : i for i in 1:n]
     b = Any[i % 2 == 0 ? 1.5 : (i == 600 ? missing : i) for i in 1:n]
     c = Any[i > 700 ? true : missing for i in 1:n]

@@ -3,7 +3,7 @@
 # lo-verdict.tsv is what LibreOffice made of each: the same sheets and values as the
 # original, or not a spreadsheet at all.
 
-using ODSFiles: _ns_usual, _ns_canonical, _ns_rewrite, open_container, read_xml, read_part_text,
+using OpenDocumentSpreadsheets: _ns_usual, _ns_canonical, _ns_rewrite, open_container, read_xml, read_part_text,
     getFormula, getAllDefinedNames, getSheetVisibility, get_dimension, ODSError,
     getDocumentProperties, setDocumentProperties, setPageMargins, freezePanes
 import ZipArchives
@@ -50,11 +50,11 @@ ns_snapshot(path::AbstractString) = ns_snapshot(readods(path))
     # steps over near misses (`xml`, `xmln`)
     for len in (5, 63, 64, 65, 130, 200), at in 1:len-4
         s = fill(UInt8('a'), len); s[at:at+4] .= codeunits("xmlns")
-        @test ODSFiles._next_xmlns(s, 1) == at
-        @test ODSFiles._next_xmlns(s, at + 1) === nothing
+        @test OpenDocumentSpreadsheets._next_xmlns(s, 1) == at
+        @test OpenDocumentSpreadsheets._next_xmlns(s, at + 1) === nothing
     end
     near = Vector{UInt8}(repeat("a", 60) * "xml xmln " * repeat("b", 70) * "xmlns")
-    @test ODSFiles._next_xmlns(near, 1) == length(near) - 4
+    @test OpenDocumentSpreadsheets._next_xmlns(near, 1) == length(near) - 4
     # every fixture of the corpus is read as it is
     for f in readdir(DATA; join = true)
         endswith(f, ".fods") && @test _ns_usual(read(f, String))
@@ -106,7 +106,7 @@ end
         @test got.formulas == base.formulas
         @test got.visibility == base.visibility
         @test got.defined == base.defined
-        # the parts ODSFiles reads have the usual prefixes
+        # the parts OpenDocumentSpreadsheets reads have the usual prefixes
         c = open_container(path)
         @test _ns_usual(read_xml(c, :content))
         @test _ns_usual(something(read_xml(c, :styles), ""))
@@ -141,7 +141,7 @@ end
             # every part written again has the usual prefixes; LibreOffice's are untouched elsewhere
             c = open_container(out)
             for p in (:content, :styles, :settings, :meta)
-                t = c.zip === nothing ? c.flat : ODSFiles.readentry_string(c.zip, string(p) * ".xml")
+                t = c.zip === nothing ? c.flat : OpenDocumentSpreadsheets.readentry_string(c.zip, string(p) * ".xml")
                 @test _ns_usual(t)
             end
         end
@@ -157,9 +157,9 @@ end
     end
 end
 
-@testset "LibreOffice reads what ODSFiles saves from them" begin
+@testset "LibreOffice reads what OpenDocumentSpreadsheets saves from them" begin
     if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping (set ODSFILES_SOFFICE)"
+        @info "LibreOffice not found; skipping (set ODS_SOFFICE)"
         @test_skip false
     else
         mktempdir() do dir

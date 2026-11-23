@@ -8,7 +8,7 @@
 # replaced by new sheets; autofit is LibreOffice's model (F-034).
 
 using Dates
-using ODSFiles: ODSError, getColumnWidth, getRowHeight, autofitColumns, setColumnWidth, setRowHeight, getText,
+using OpenDocumentSpreadsheets: ODSError, getColumnWidth, getRowHeight, autofitColumns, setColumnWidth, setRowHeight, getText,
     EXCEL_COLUMN_WIDTH_PADDING, line_props, getprop
 
 ltmp(name) = joinpath(mktempdir(), name)
@@ -84,7 +84,7 @@ end
     back = openods(p)
     for k in 1:sheetcount(back)
         sheetnames(back)[k] == "S01-gaps" && continue
-        @test String(ODSFiles.XML.sourcetext(back[k].entry.node)) == String(ODSFiles.XML.sourcetext(openods(src)[k].entry.node))
+        @test String(OpenDocumentSpreadsheets.XML.sourcetext(back[k].entry.node)) == String(OpenDocumentSpreadsheets.XML.sourcetext(openods(src)[k].entry.node))
     end
     b = back["S01-gaps"]
     @test getColumnWidth(b, "B1") ≈ 15.7109375 && getColumnWidth(b, "A1"; unit = :cm) ≈ getColumnWidth(ws, "A1"; unit = :cm)
@@ -137,7 +137,7 @@ end
     f = newods(); s = f[1]
     s["A1"] = "Hello, world"                                          # Liberation Sans 10, as Arial
     w = autofitColumns(s)[1]
-    pt = ODSFiles.SheetCore.text_width_points("Hello, world", "Arial", 10.0) + 7.9
+    pt = OpenDocumentSpreadsheets.SheetCore.text_width_points("Hello, world", "Arial", 10.0) + 7.9
     @test getColumnWidth(s, "A1"; unit = :pt) ≈ pt atol = 0.05
     @test w ≈ round(pt * 2.54 / 72 / 0.2152 - EXCEL_COLUMN_WIDTH_PADDING; digits = 2)
 end
@@ -185,7 +185,7 @@ end
 
 @testset "LibreOffice keeps widths and heights" begin
     if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the layout oracle (set ODSFILES_SOFFICE)"
+        @info "LibreOffice not found; skipping the layout oracle (set ODS_SOFFICE)"
         @test_skip false
     else
         dir = mktempdir()

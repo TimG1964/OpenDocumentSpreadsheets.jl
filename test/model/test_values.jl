@@ -2,7 +2,7 @@
 # text content, and the LibreOffice-written lo-values fixture (experiment 007's cases).
 
 using Dates
-using ODSFiles: parse_odf_date, parse_odf_duration, duration_value, _is_intlike, getcell, Cell, EmptyCell, getFormula
+using OpenDocumentSpreadsheets: parse_odf_date, parse_odf_duration, duration_value, _is_intlike, getcell, Cell, EmptyCell, getFormula
 
 @testset "parse_odf_date" begin
     @test parse_odf_date("2024-03-05") === Date(2024, 3, 5)
@@ -141,7 +141,7 @@ const LO_FORMULAS = Dict("formula num" => "=1+1", "formula str" => "=\"abc\"", "
     for cache in (true, false)
         xf = openods(joinpath(DATA, "lo-values.$ext"); enable_cache = cache)
         ws = xf["V"]
-        @test ODSFiles.get_dimension(ws) == SheetCore.CellRange("A1:B78")
+        @test OpenDocumentSpreadsheets.get_dimension(ws) == SheetCore.CellRange("A1:B78")
         labels = ws["A1:A78"]
         values = ws["B1:B78"]
         for (label, (v, dt)) in LO_VALUES

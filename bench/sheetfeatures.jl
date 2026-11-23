@@ -1,16 +1,16 @@
-# Sheet features (phase 5): inserting and deleting rows and columns, then saving, in ODSFiles and
+# Sheet features (phase 5): inserting and deleting rows and columns, then saving, in OpenDocumentSpreadsheets and
 # XLSX.jl, on XLSX.jl's benchmark fixtures (bench/fixtures: run make_fixtures.sh first).
 #
-#   julia --project=<env with XLSX and ODSFiles> bench/sheetfeatures.jl [results.tsv]
+#   julia --project=<env with XLSX and OpenDocumentSpreadsheets> bench/sheetfeatures.jl [results.tsv]
 #
 # Cases: 10 rows inserted at row 2, rows 2–11 deleted, a column inserted and deleted at B, and
 # the sheet renamed (phase 5 step 4).
 #
 # Each case times opening the fixture with mode "rw", the operation, and a save to an IOBuffer (as
 # run.jl's edit_one_cell does). The median of 3 runs (after a warm-up) is kept, with its allocation. Ratio =
-# ODSFiles / XLSX.jl time. BENCH_FIXTURES (comma-separated) chooses the fixtures.
-using XLSX, ODSFiles, Printf
-const ODS = ODSFiles
+# OpenDocumentSpreadsheets / XLSX.jl time. BENCH_FIXTURES (comma-separated) chooses the fixtures.
+using XLSX, OpenDocumentSpreadsheets, Printf
+const ODS = OpenDocumentSpreadsheets
 const FIXTURES = joinpath(@__DIR__, "fixtures")
 const OUT = isempty(ARGS) ? joinpath(@__DIR__, "results", "sheetfeatures-latest.tsv") : ARGS[1]
 const ONLY = haskey(ENV, "BENCH_FIXTURES") ? split(ENV["BENCH_FIXTURES"], ',') : nothing

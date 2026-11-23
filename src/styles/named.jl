@@ -151,7 +151,7 @@ end
 """
     named_styles_xml(st) -> String
 
-The named styles ODSFiles added (parents first), after the added data styles they use, for
+The named styles OpenDocumentSpreadsheets added (parents first), after the added data styles they use, for
 `office:styles`.
 """
 function named_styles_xml(st::StyleIndex)

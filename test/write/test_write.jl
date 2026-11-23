@@ -3,7 +3,7 @@
 
 using Dates
 import Tables
-using ODSFiles: getcell, getFormula, Cell, EmptyCell, ODSError, store_set!, SheetStore, CellData,
+using OpenDocumentSpreadsheets: getcell, getFormula, Cell, EmptyCell, ODSError, store_set!, SheetStore, CellData,
     encode_value, cell_data, ui_to_openformula, render_ui_formula, _strip_formula_prefix, isvisible,
     defined_names, get_dimension, SheetStore, CK_FLOAT, CK_STRING, F_INTLIKE
 
@@ -14,9 +14,9 @@ tmp(name) = joinpath(mktempdir(), name)
     s = SheetStore()
     store_set!(s, 5, 3, d(1))
     @test cell_data(s, 5, 3) !== nothing && get_dimension isa Function
-    @test ODSFiles.store_dimension(s) == SheetCore.CellRange("C5:C5")
+    @test OpenDocumentSpreadsheets.store_dimension(s) == SheetCore.CellRange("C5:C5")
     # a repeated row and a repeated cell, split around an edit
-    s = SheetStore([ODSFiles.RowData(1, 10, [ODSFiles.CellRun(1, 4, d(7))])], ODSFiles.ColRun[], SheetCore.CellRange[],
+    s = SheetStore([OpenDocumentSpreadsheets.RowData(1, 10, [OpenDocumentSpreadsheets.CellRun(1, 4, d(7))])], OpenDocumentSpreadsheets.ColRun[], SheetCore.CellRange[],
                    SheetCore.CellRange("A1:D10"))
     store_set!(s, 5, 2, d("x"))
     @test [(r.row, r.count) for r in s.rows] == [(1, 4), (5, 1), (6, 5)]
@@ -25,7 +25,7 @@ tmp(name) = joinpath(mktempdir(), name)
     store_set!(s, 5, 2, nothing)
     @test cell_data(s, 5, 2) === nothing && cell_data(s, 5, 3) !== nothing
     store_set!(s, 1, 1, nothing); store_set!(s, 1, 2, nothing); store_set!(s, 1, 3, nothing); store_set!(s, 1, 4, nothing)
-    @test ODSFiles.store_dimension(s) == SheetCore.CellRange("A2:D10")
+    @test OpenDocumentSpreadsheets.store_dimension(s) == SheetCore.CellRange("A2:D10")
     # the shared runs of a split row are not changed by an edit to one part
     @test cell_data(s, 6, 2).kind === CK_FLOAT
 end
@@ -52,8 +52,8 @@ const VALUES = Any[42, -7, 0, 123456789012, 7.0, 0.30000000000000004, 1.0e-20, -
                    Dates.Hour(36), Dates.Minute(-90), Dates.canonicalize(Day(2) + Hour(3) + Second(1)), missing]
 # what each value reads back as (D-016, D-017, D-026)
 readback(v) = ismissing(v) ? missing : v isa Bool ? v : v isa Integer ? Int64(v) : v isa Rational ? Float64(v) : v isa AbstractFloat ? Float64(v) :
-              v == "" ? missing : v isa Dates.Period ? ODSFiles.duration_value(ODSFiles._duration_ns(v)) :
-              v isa Dates.CompoundPeriod ? ODSFiles.duration_value(ODSFiles._duration_ns(v)) : v
+              v == "" ? missing : v isa Dates.Period ? OpenDocumentSpreadsheets.duration_value(OpenDocumentSpreadsheets._duration_ns(v)) :
+              v isa Dates.CompoundPeriod ? OpenDocumentSpreadsheets.duration_value(OpenDocumentSpreadsheets._duration_ns(v)) : v
 
 @testset "values round trip ($ext)" for ext in ("ods", "fods", "ots")
     xf = newods()
@@ -68,7 +68,7 @@ readback(v) = ismissing(v) ? missing : v isa Bool ? v : v isa Integer ? Int64(v)
     for (i, v) in enumerate(VALUES)
         @test isequal(got[i, 1], readback(v)) && typeof(got[i, 1]) == typeof(readback(v))
     end
-    # types survive on the cells, with ODSFiles's ISO styles (D-024)
+    # types survive on the cells, with OpenDocumentSpreadsheets's ISO styles (D-024)
     @test getcell(r[1], 21, 1).style == "odsf-date" && getcell(r[1], 24, 1).style == "odsf-datetime"
     @test getcell(r[1], 27, 1).style == "odsf-time" && getcell(r[1], 12, 1).style == "odsf-boolean"
     @test getcell(r[1], 1, 1).style == "Default"
@@ -182,7 +182,7 @@ end
 end
 
 # the text of one part of a zipped file
-part(path, name) = String(ODSFiles.read_bytes(ODSFiles.open_container(path), name))
+part(path, name) = String(OpenDocumentSpreadsheets.read_bytes(OpenDocumentSpreadsheets.open_container(path), name))
 
 @testset "saving a read file patches it (D-023)" begin
     src = joinpath(DATA, "lo-tables.ods")
@@ -194,7 +194,7 @@ part(path, name) = String(ODSFiles.read_bytes(ODSFiles.open_container(path), nam
     for name in ("content.xml", "styles.xml", "settings.xml", "meta.xml")
         @test part(p, name) == part(src, name)
     end
-    @test sort(ODSFiles.partnames(ODSFiles.open_container(p))) == sort(ODSFiles.partnames(ODSFiles.open_container(src)))
+    @test sort(OpenDocumentSpreadsheets.partnames(OpenDocumentSpreadsheets.open_container(p))) == sort(OpenDocumentSpreadsheets.partnames(OpenDocumentSpreadsheets.open_container(src)))
     # edits
     p = tmp("edit.ods")
     cp(src, p)
@@ -389,7 +389,7 @@ end
 end
 
 @testset "content.xml written into the zip as it is made (D-048)" begin
-    C = ODSFiles._ChunkedIO
+    C = OpenDocumentSpreadsheets._ChunkedIO
     # the chunked writer: small writes gathered, large ones straight through, all in order
     dest = IOBuffer()
     c = C(dest; limit = 16)
@@ -397,19 +397,19 @@ end
     @test position(dest) == 0                                   # still gathered
     write(c, "0123456789abcdef")                                # a chunk or more: through
     write(c, SubString("xyz-tail", 1, 3)); write(c, view(Vector{UInt8}("0123456789"), 1:10))
-    ODSFiles._flush!(c)
+    OpenDocumentSpreadsheets._flush!(c)
     @test String(take!(dest)) == "abcé!420123456789abcdefxyz0123456789"
-    @test ODSFiles._flush!(c) === nothing                       # nothing left: nothing written
+    @test OpenDocumentSpreadsheets._flush!(c) === nothing                       # nothing left: nothing written
     # a content.xml of several chunks: the same bytes, and the same zip, as from a String
     n = 30_000
     xf = newods()
     writetable!(xf[1], Any[collect(1:n), [i / 3 for i in 1:n], ["t&<$i>" for i in 1:n], [Date(2024, 1, 1) + Day(i % 400) for i in 1:n]],
                 ["a", "b", "c", "d"])
-    io = IOBuffer(); ODSFiles._write_chunked(x -> ODSFiles.write_new_content(x, xf, "1.4"), io)
+    io = IOBuffer(); OpenDocumentSpreadsheets._write_chunked(x -> OpenDocumentSpreadsheets.write_new_content(x, xf, "1.4"), io)
     s = String(take!(io))
     @test ncodeunits(s) > 3 * 2^20
-    @test ODSFiles.package_bytes([ODSFiles.PackagePart("content.xml", s)]) ==
-          ODSFiles.package_bytes([ODSFiles.PackagePart("content.xml", x -> ODSFiles.write_new_content(x, xf, "1.4"))])
+    @test OpenDocumentSpreadsheets.package_bytes([OpenDocumentSpreadsheets.PackagePart("content.xml", s)]) ==
+          OpenDocumentSpreadsheets.package_bytes([OpenDocumentSpreadsheets.PackagePart("content.xml", x -> OpenDocumentSpreadsheets.write_new_content(x, xf, "1.4"))])
     p = writeods(tmp("big.ods"), xf)
     @test readtable(p, 1).data[3][n] == "t&<$n>"
     # a patched save of it: the edit and the untouched rows around it
@@ -426,7 +426,7 @@ end
     # document, not the writer's per-row and long-float costs.
     wide = newods()
     writetable!(wide[1], Any[collect(j:j+9_999) for j in 1:20], ["c$j" for j in 1:20])
-    io = IOBuffer(); ODSFiles._write_chunked(x -> ODSFiles.write_new_content(x, wide, "1.4"), io)
+    io = IOBuffer(); OpenDocumentSpreadsheets._write_chunked(x -> OpenDocumentSpreadsheets.write_new_content(x, wide, "1.4"), io)
     size = position(io)
     writeods(tmp("warm.ods"), wide)
     @test (@allocated writeods(tmp("big3.ods"), wide)) < size ÷ 4
@@ -434,7 +434,7 @@ end
 
 @testset "LibreOffice opens what we write" begin
     if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the write oracle (set ODSFILES_SOFFICE)"
+        @info "LibreOffice not found; skipping the write oracle (set ODS_SOFFICE)"
         @test_skip false
     else
         dir = mktempdir()

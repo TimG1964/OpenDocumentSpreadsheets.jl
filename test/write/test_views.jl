@@ -1,17 +1,17 @@
 # Panes and the sheet view (phase 5 step 8; D-061, F-053), against LibreOffice's own settings
-# (experiment 024, test/data/views/): what ODSFiles reads of them, what it writes (the items
+# (experiment 024, test/data/views/): what OpenDocumentSpreadsheets reads of them, what it writes (the items
 # LibreOffice's xlsx import writes for the same XLSX.jl calls), and patched saves. That LibreOffice
-# honours what ODSFiles writes needs a view, which a conversion has not: experiment 024 part D checks
+# honours what OpenDocumentSpreadsheets writes needs a view, which a conversion has not: experiment 024 part D checks
 # it (`run_verify.sh`, out/verify.tsv, copied as lo-views-verify.tsv). XLSX.jl's panes.jl and
 # sheet-view.jl cases are ported where they apply.
 
-using ODSFiles: getSheetView, ODSError, renamesheet!, copysheet!, deletesheet!, insertRows, CellRef
+using OpenDocumentSpreadsheets: getSheetView, ODSError, renamesheet!, copysheet!, deletesheet!, insertRows, CellRef
 
 const VIEWS = joinpath(DATA, "views")
 
-# A sheet's items in a saved file's first view (as `name => value`), read without ODSFiles.
+# A sheet's items in a saved file's first view (as `name => value`), read without OpenDocumentSpreadsheets.
 function view_items(path, sheet)
-    s = endswith(path, ".fods") ? read(path, String) : String(ODSFiles.read_xml(ODSFiles.open_container(path), :settings))
+    s = endswith(path, ".fods") ? read(path, String) : String(OpenDocumentSpreadsheets.read_xml(OpenDocumentSpreadsheets.open_container(path), :settings))
     m = match(Regex("<config:config-item-map-entry config:name=\"" * sheet * "\">(.*?)</config:config-item-map-entry>", "s"), s)
     m === nothing && return Dict{String,String}()
     return Dict(String(x.captures[1]) => String(x.captures[2])
@@ -60,10 +60,10 @@ end
             @test all(k -> get(got, k, "(none)") == want[k], keys) || (@info "items" s got want; false)
         end
         # in LibreOffice's order: it reads them in turn (F-053)
-        t = endswith(p, ".fods") ? read(p, String) : String(ODSFiles.read_xml(ODSFiles.open_container(p), :settings))
+        t = endswith(p, ".fods") ? read(p, String) : String(OpenDocumentSpreadsheets.read_xml(OpenDocumentSpreadsheets.open_container(p), :settings))
         e = match(r"<config:config-item-map-entry config:name=\"Freeze\">(.*?)</config:config-item-map-entry>"s, t).captures[1]
         names = [m.captures[1] for m in eachmatch(r"config:name=\"([^\"]*)\"", e)]
-        @test issorted(names; by = ODSFiles._item_rank)
+        @test issorted(names; by = OpenDocumentSpreadsheets._item_rank)
         # the namespaces LibreOffice needs to read them (F-053)
         root = match(r"<office:document(-settings)?\s[^>]*>", t).match
         @test occursin("xmlns:ooo=\"http://openoffice.org/2004/office\"", root) && occursin("xmlns:config=", root)
@@ -92,9 +92,9 @@ end
     setSheetView(s; topLeftCell = "D10")
     @test getSheetView(s).topLeftCell == CellRef("D10")
     splitFreeze(s; nrows = 1, ncols = 1)                     # LibreOffice has no frozen split: frozen
-    @test ODSFiles._view_items_now(s)[1]["HorizontalSplitMode"] == ("short", "2")
+    @test OpenDocumentSpreadsheets._view_items_now(s)[1]["HorizontalSplitMode"] == ("short", "2")
     removePanes(s)
-    items = ODSFiles._view_items_now(s)[1]
+    items = OpenDocumentSpreadsheets._view_items_now(s)[1]
     @test !haskey(items, "HorizontalSplitMode") && getSheetView(s).topLeftCell == CellRef("A1")
     setSheetView(s; zoom = 80, showGridLines = false, rightToLeft = true)
     v = getSheetView(s)
@@ -165,11 +165,11 @@ end
     # a zipped file without settings.xml gets one, listed in the manifest
     nf = newods("A"); nf["A"]["A1"] = 1
     xf = openods(writeods(joinpath(dir, "n.ods"), nf); mode = "rw")
-    @test !ODSFiles.haspart(xf.container, "settings.xml")
+    @test !OpenDocumentSpreadsheets.haspart(xf.container, "settings.xml")
     freezePanes(xf["A"])
     p = writeods(joinpath(dir, "n2.ods"), xf)
-    c = ODSFiles.open_container(p)
-    @test ODSFiles.haspart(c, "settings.xml") && any(e -> e.path == "settings.xml", c.manifest)
+    c = OpenDocumentSpreadsheets.open_container(p)
+    @test OpenDocumentSpreadsheets.haspart(c, "settings.xml") && any(e -> e.path == "settings.xml", c.manifest)
     @test getSheetView(readods(p)["A"]).topLeftCell == CellRef("A2")
     # with sheet operations: an entry follows a rename, a copy gets the source's, inserts move nothing
     xf = openods(src; mode = "rw")

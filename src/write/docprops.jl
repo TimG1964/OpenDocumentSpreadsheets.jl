@@ -9,7 +9,7 @@
 # properties take ODF's value types.
 #
 # The file's office:meta children are kept as they are (tag => XML, in order); a change replaces,
-# removes or adds children, and the element is written again. ODSFiles never updates the modification
+# removes or adds children, and the element is written again. OpenDocumentSpreadsheets never updates the modification
 # date or the generator of a file it saves (D-023, as XLSX.jl).
 
 # LibreOffice's order (experiment 027's import); the generator, statistics and others come after these,
@@ -124,7 +124,7 @@ XLSX.jl's (F-056):
   LibreOffice's import makes of them (`OOXMLCorePropertyCategory`, `OOXMLCorePropertyContentStatus`,
   `Company`, `Manager`)
 
-ODSFiles never changes `modified` or `lastModifiedBy` when it saves a file (LibreOffice does).
+OpenDocumentSpreadsheets never changes `modified` or `lastModifiedBy` when it saves a file (LibreOffice does).
 """
 function setDocumentProperties(xf::ODSFile; kw...)
     _require_writable(xf, "set document properties")

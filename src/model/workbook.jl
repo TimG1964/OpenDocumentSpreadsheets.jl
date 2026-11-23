@@ -12,7 +12,7 @@
 A named range (`table:named-range`) or named expression (`table:named-expression`), as stored.
 `scope` is the sheet a local name belongs to, or `nothing` for a workbook name.
 `range` is the `table:cell-range-address`, `expression` the `table:expression`.
-`span`: where its element is in the text it was read from (empty for a name ODSFiles added),
+`span`: where its element is in the text it was read from (empty for a name OpenDocumentSpreadsheets added),
 so that a save deletes it there and keeps every other name as it is (phase 5).
 The public view of a name is [`DefinedName`](@ref).
 """
@@ -35,7 +35,7 @@ end
 NameEdits() = NameEdits(UnitRange{Int}[], 0:-1)
 
 # A sheet's visibility and tab colour (its table style's), read on first use (phase 5 step 6).
-# `base`: the table style its text names; `style`: the one it has now (`base`, or one ODSFiles derived).
+# `base`: the table style its text names; `style`: the one it has now (`base`, or one OpenDocumentSpreadsheets derived).
 mutable struct SheetProps
     display::Bool
     tabcolor::Union{Nothing,String}   # "#rrggbb"
@@ -45,7 +45,7 @@ mutable struct SheetProps
     style::Union{Nothing,String}
 end
 
-# The table styles ODSFiles derived (name => XML), and whether a sheet's visibility changed (the
+# The table styles OpenDocumentSpreadsheets derived (name => XML), and whether a sheet's visibility changed (the
 # active sheet may then have to move, as in LibreOffice).
 mutable struct TableStyleEdits
     added::Vector{Pair{String,String}}
@@ -88,7 +88,7 @@ mutable struct PrintState
     area_changed::Bool
 end
 
-# The page styles ODSFiles derived (master page name => (master page XML, page layout XML)) and the
+# The page styles OpenDocumentSpreadsheets derived (master page name => (master page XML, page layout XML)) and the
 # text styles of the headers and footers it wrote (name => XML) (phase 5 step 10).
 mutable struct PageEdits
     pages::Dict{String,Tuple{String,String}}
@@ -97,7 +97,7 @@ end
 PageEdits() = PageEdits(Dict{String,Tuple{String,String}}(), Pair{String,String}[])
 
 # The file's office:meta (phase 5 step 11): its children (tag => XML) in order, read on first use,
-# and whether ODSFiles changed them.
+# and whether OpenDocumentSpreadsheets changed them.
 mutable struct MetaEdits
     children::Vector{Pair{String,String}}
     changed::Bool
@@ -122,7 +122,7 @@ mutable struct Worksheet
     package::Any                      # the ODSFile (typed in accessors; circular)
     name::String
     index::Int
-    entry::Union{Nothing,SheetEntry{String}}   # nothing: a sheet made by ODSFiles
+    entry::Union{Nothing,SheetEntry{String}}   # nothing: a sheet made by OpenDocumentSpreadsheets
     visible::Bool
     store::Union{Nothing,SheetStore}
     localnames::Union{Nothing,Vector{NameDef}}
@@ -143,7 +143,7 @@ Worksheet(xf, name, index, entry, visible, store, localnames, lock) =
     Worksheet(xf, name, index, entry, visible, store, localnames, lock, Dict{Int,Vector{Int}}(), nothing, nothing, nothing, 0, false,
               NameEdits(), nothing, nothing, nothing)
 
-# Whether the sheet was made by ODSFiles (so it is written whole), not read from the file.
+# Whether the sheet was made by OpenDocumentSpreadsheets (so it is written whole), not read from the file.
 isnewsheet(ws::Worksheet) = ws.entry === nothing
 
 """
@@ -172,7 +172,7 @@ mutable struct ODSFile
     extras::Vector{Any}               # database ranges added by sheet copies: (XML, operations already applied)
     objcopies::Vector{Pair{String,String}}   # embedded objects duplicated by sheet copies ("Object 1" => "Object 3")
     nameedits::NameEdits              # workbook names deleted, and where they are (phase 5)
-    tstyles::TableStyleEdits          # table styles ODSFiles derived (phase 5)
+    tstyles::TableStyleEdits          # table styles OpenDocumentSpreadsheets derived (phase 5)
     views::ViewEdits                  # view settings set (phase 5)
     wbprotection::Union{Nothing,WorkbookProtection}   # the structure's protection, once read (phase 5 step 9)
     pageedits::PageEdits              # page styles derived (phase 5 step 10)
@@ -255,7 +255,7 @@ returns.
 Modes, as in XLSX.jl:
 - `"r"`: read only.
 - `"rw"`: read and edit; save with [`saveods`](@ref) or [`writeods`](@ref). Saving patches the
-  original file: everything ODSFiles does not edit is kept as it was (D-023).
+  original file: everything OpenDocumentSpreadsheets does not edit is kept as it was (D-023).
 - `"w"`: start a new, empty spreadsheet (with one sheet, `Sheet1`) that will be written to
   `source`; an existing file there is not read.
 
@@ -558,7 +558,7 @@ references joined by `~`, `;` or spaces (F-026, F-050).
 function get_defined_name_value(dn::NameDef)
     v, _, isformula = _name_value(dn)      # src/write/names.jl
     isformula && throw(ODSError("The defined name `$(dn.name)` is the expression `$(something(dn.expression, dn.range))`, " *
-                                "which ODSFiles cannot evaluate."))
+                                "which OpenDocumentSpreadsheets cannot evaluate."))
     return v
 end
 get_defined_name_value(xf::ODSFile, name::AbstractString) = get_defined_name_value(_find_name(_wb_names(xf), name))
@@ -606,9 +606,9 @@ function Base.show(io::IO, ws::Worksheet)
     rg = _known_dimension(ws)
     if rg !== nothing
         nrow, ncol = size(rg)
-        print(io, nrow, "×", ncol, " ODSFiles.Worksheet: [\"", ws.name, "\"](", rg, ")", hidden)
+        print(io, nrow, "×", ncol, " OpenDocumentSpreadsheets.Worksheet: [\"", ws.name, "\"](", rg, ")", hidden)
     else
-        print(io, "ODSFiles.Worksheet: [\"", ws.name, "\"]", hidden)
+        print(io, "OpenDocumentSpreadsheets.Worksheet: [\"", ws.name, "\"]", hidden)
     end
 end
 

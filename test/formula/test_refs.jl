@@ -4,7 +4,7 @@
 # reference LibreOffice stored before an operation is rewritten here and compared with what it
 # stored after.
 
-using ODSFiles: parse_ref, parse_ref_end, render_ref, rewrite_formula, rewrite_rangelist, rewrite_address,
+using OpenDocumentSpreadsheets: parse_ref, parse_ref_end, render_ref, rewrite_formula, rewrite_rangelist, rewrite_address,
     rebase_condition, LineShift, SheetRename, SheetDelete, SheetCopy, RefContext, tokenize_formula, FT_REF
 
 const SHIFT = joinpath(DATA, "shift")
@@ -39,7 +39,7 @@ basesheet(addr) = something(parse_ref(addr)[1].sheet, "")
 # A conditional format's references as seen from its target's top-left cell: what it means.
 function cf_meaning(cond, base, target)
     b = parse_ref(base)[1]
-    tl = parse_ref(SubString(target, ODSFiles._areas(String(target))[1]...))[1]
+    tl = parse_ref(SubString(target, OpenDocumentSpreadsheets._areas(String(target))[1]...))[1]
     out = String[]
     for t in tokenize_formula(cond)
         t.kind === FT_REF || continue
@@ -150,7 +150,7 @@ end
 end
 
 # The values of `vals` that an operation leaves, as LibreOffice stored them in `after`, compared with
-# ODSFiles' rewrite. `rw(key, attr, value)` returns ODSFiles' value, or `missing` to skip.
+# OpenDocumentSpreadsheets' rewrite. `rw(key, attr, value)` returns OpenDocumentSpreadsheets' value, or `missing` to skip.
 function compare!(fails, label, before, after, rw; afterkey = identity)
     n = 0
     for ((k, a), v) in before

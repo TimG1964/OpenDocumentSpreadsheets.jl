@@ -4,12 +4,12 @@
 # XLSX.jl's sheets/defined-names.jl cases are ported where ODF has them. Uses SHIFT from
 # formula/test_refs.jl.
 
-using ODSFiles: getDefinedNames, getAllDefinedNames, DefinedName, NameDef, ODSError, getFormula,
+using OpenDocumentSpreadsheets: getDefinedNames, getAllDefinedNames, DefinedName, NameDef, ODSError, getFormula,
     insertRows, renamesheet!, copysheet!, deletesheet!
-using ODSFiles.SheetCore: CellRange, CellRef
+using OpenDocumentSpreadsheets.SheetCore: CellRange, CellRef
 
-ref(s) = ODSFiles.parse_sheet_ref(s)
-nc(sheet, areas...) = ODSFiles.NonContiguousRange(sheet, Union{CellRef,CellRange}[areas...])
+ref(s) = OpenDocumentSpreadsheets.parse_sheet_ref(s)
+nc(sheet, areas...) = OpenDocumentSpreadsheets.NonContiguousRange(sheet, Union{CellRef,CellRange}[areas...])
 
 const NAMES = joinpath(DATA, "names")
 
@@ -47,11 +47,11 @@ end
     addDefinedName(xf, "frm", "=SUM(\$S.\$A\$1:\$A\$3)*2")
     addDefinedName(xf, "fx_a", "=SUM(S.A2:A4)*2")
     form(dn) = [dn.range === nothing ? "named-expression" : "named-range", dn.base, something(dn.range, dn.expression)]
-    for dn in ODSFiles._wb_names(xf)
+    for dn in OpenDocumentSpreadsheets._wb_names(xf)
         @test form(dn) == lo["|" * dn.name]
     end
-    @test form(only(ODSFiles._local_names(xf["S"]))) == lo["S|Abc"]
-    # what ODSFiles reads LibreOffice's forms as
+    @test form(only(OpenDocumentSpreadsheets._local_names(xf["S"]))) == lo["S|Abc"]
+    # what OpenDocumentSpreadsheets reads LibreOffice's forms as
     v(dn) = DefinedName(NameDef(dn, nothing, nothing, lo["|" * dn][3], "\$S.\$A\$1"))
     @test v("multi").value == nc("S", CellRange("A1:A2"), CellRef("C1"))   # `;` between the areas
     @test v("multi2").value == v("multi").value && v("multi2").absolute == [true, true]
@@ -212,7 +212,7 @@ end
     addDefinedName(xf, "V_one", 5)
     out = read(writeods(joinpath(dir, "v.fods"), xf), String)
     vo = read(joinpath(DATA, "lo-values.fods"), String)
-    base = "\$" * ODSFiles.SheetCore.quoteit(ODSFiles.sheetnames(xf)[1]) * ".\$A\$1"
+    base = "\$" * OpenDocumentSpreadsheets.SheetCore.quoteit(OpenDocumentSpreadsheets.sheetnames(xf)[1]) * ".\$A\$1"
     @test out == replace(vo, "<table:named-expressions/>" => "<table:named-expressions><table:named-expression table:name=\"V_one\" " *
                          "table:base-cell-address=\"$base\" table:expression=\"5\"/></table:named-expressions>")
     # a file without the element gets one after its tables; a sheet, at its end
@@ -224,7 +224,7 @@ end
     p = writeods(joinpath(dir, "e.ods"), xf)
     r = readods(p)
     @test [dn.name for dn in getAllDefinedNames(r)] == ["T_one", "T_two"] && r["T_one"] == 3 && r[1]["T_two"] == 5
-    c = String(ODSFiles.read_xml(ODSFiles.open_container(p), :content))
+    c = String(OpenDocumentSpreadsheets.read_xml(OpenDocumentSpreadsheets.open_container(p), :content))
     @test occursin(r"</table:table><table:named-expressions><table:named-range table:name=\"T_one\""s, c)
     @test occursin(r"<table:named-expressions><table:named-expression table:name=\"T_two\"[^>]*/></table:named-expressions></table:table>"s, c)
 end
@@ -268,7 +268,7 @@ end
 
 @testset "LibreOffice evaluates the names" begin
     if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the names oracle (set ODSFILES_SOFFICE)"
+        @info "LibreOffice not found; skipping the names oracle (set ODS_SOFFICE)"
         @test_skip false
     else
         dir = mktempdir()

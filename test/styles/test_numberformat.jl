@@ -9,7 +9,7 @@
 # cell is General, not `nothing`.
 
 using Dates
-using ODSFiles: ODSError, getFont, getFormat, getText, numfmt_to_odf, add_number_format!, data_style_code, stylesheet, CellFormat
+using OpenDocumentSpreadsheets: ODSError, getFont, getFormat, getText, numfmt_to_odf, add_number_format!, data_style_code, stylesheet, CellFormat
 
 nftmp(name) = joinpath(mktempdir(), name)
 const LO_CASES = [split(l, '\t') for l in eachline(joinpath(DATA, "core", "number_formats_libreoffice.tsv")) if !startswith(l, '#')]
@@ -27,7 +27,7 @@ fmtid(c::CellFormat) = c.numFmtId
         ds = add_number_format!(st, fmt)
         back = data_style_code(stylesheet(st), ds)
         code = get(LOSSY, fmt, fmt)
-        t(c) = ODSFiles.SheetCore._display_text(x, c; epoch = ODSFiles.SheetCore.DEFAULT_NULL_DATE, libreoffice = true)
+        t(c) = OpenDocumentSpreadsheets.SheetCore._display_text(x, c; epoch = OpenDocumentSpreadsheets.SheetCore.DEFAULT_NULL_DATE, libreoffice = true)
         @test t(back) == t(code)
         n += 1
     end
@@ -52,45 +52,45 @@ end
 # The display text LibreOffice stored in each typed cell (`text:p`) of a sheet: (row, col) => text.
 function stored_texts(ws)
     out = Dict{Tuple{Int,Int},String}()
-    c = ODSFiles.XML.Cursor(ws.entry.node)
-    ODSFiles.XML.next!(c)
+    c = OpenDocumentSpreadsheets.XML.Cursor(ws.entry.node)
+    OpenDocumentSpreadsheets.XML.next!(c)
     row = 0
-    while ODSFiles.XML.next!(c) !== nothing && ODSFiles.XML.depth(c) > 1
-        ODSFiles.XML.nodetype(c) === ODSFiles.XML.Element || continue
-        t = ODSFiles.XML.tag(c)
+    while OpenDocumentSpreadsheets.XML.next!(c) !== nothing && OpenDocumentSpreadsheets.XML.depth(c) > 1
+        OpenDocumentSpreadsheets.XML.nodetype(c) === OpenDocumentSpreadsheets.XML.Element || continue
+        t = OpenDocumentSpreadsheets.XML.tag(c)
         if t == "table:table-row"
             rep = 1
-            for (k, v) in ODSFiles.XML.eachattribute!(c)
+            for (k, v) in OpenDocumentSpreadsheets.XML.eachattribute!(c)
                 k == "table:number-rows-repeated" && (rep = parse(Int, v))
             end
             row += 1
             col = 0
-            ODSFiles.XML.for_each_child!(c) do ch
-                ODSFiles.XML.nodetype(ch) === ODSFiles.XML.Element || return
+            OpenDocumentSpreadsheets.XML.for_each_child!(c) do ch
+                OpenDocumentSpreadsheets.XML.nodetype(ch) === OpenDocumentSpreadsheets.XML.Element || return
                 n = 1; typed = false
-                for (k, v) in ODSFiles.XML.eachattribute!(ch)
+                for (k, v) in OpenDocumentSpreadsheets.XML.eachattribute!(ch)
                     k == "table:number-columns-repeated" && (n = parse(Int, v))
                     k == "office:value-type" && v != "string" && (typed = true)
                     k == "table:formula" && (typed = false)
                 end
                 text = IOBuffer(); np = 0
-                ODSFiles.XML.for_each_child!(ch) do p
-                    if ODSFiles.XML.nodetype(p) === ODSFiles.XML.Element && ODSFiles.XML.tag(p) == "text:p"
+                OpenDocumentSpreadsheets.XML.for_each_child!(ch) do p
+                    if OpenDocumentSpreadsheets.XML.nodetype(p) === OpenDocumentSpreadsheets.XML.Element && OpenDocumentSpreadsheets.XML.tag(p) == "text:p"
                         np += 1
-                        ODSFiles.XML.for_each_child!(p) do x
-                            ODSFiles.XML.nodetype(x) === ODSFiles.XML.Text && print(text, ODSFiles.XML.value(x))
-                            ODSFiles.XML.nodetype(x) === ODSFiles.XML.Element && ODSFiles.XML.skip_element!(x)
+                        OpenDocumentSpreadsheets.XML.for_each_child!(p) do x
+                            OpenDocumentSpreadsheets.XML.nodetype(x) === OpenDocumentSpreadsheets.XML.Text && print(text, OpenDocumentSpreadsheets.XML.value(x))
+                            OpenDocumentSpreadsheets.XML.nodetype(x) === OpenDocumentSpreadsheets.XML.Element && OpenDocumentSpreadsheets.XML.skip_element!(x)
                         end
-                    elseif ODSFiles.XML.nodetype(p) === ODSFiles.XML.Element
-                        ODSFiles.XML.skip_element!(p)
+                    elseif OpenDocumentSpreadsheets.XML.nodetype(p) === OpenDocumentSpreadsheets.XML.Element
+                        OpenDocumentSpreadsheets.XML.skip_element!(p)
                     end
                 end
                 typed && np == 1 && n == 1 && rep == 1 && (out[(row, col + 1)] = String(take!(text)))
                 col += n
             end
             row += rep - 1
-        elseif !(t in ODSFiles._ROW_CONTAINERS) && !(t in ODSFiles._COL_CONTAINERS)
-            ODSFiles.XML.skip_element!(c)
+        elseif !(t in OpenDocumentSpreadsheets._ROW_CONTAINERS) && !(t in OpenDocumentSpreadsheets._COL_CONTAINERS)
+            OpenDocumentSpreadsheets.XML.skip_element!(c)
         end
     end
     return out
@@ -99,7 +99,7 @@ end
 @testset "getText matches the text LibreOffice stored: $f" for f in ("lo-values.ods", "lo-scenarios.ods", "lo-tables.ods")
     xf = openods(joinpath(DATA, f))
     n = 0
-    for ws in ODSFiles._sheets(xf)
+    for ws in OpenDocumentSpreadsheets._sheets(xf)
         for ((r, c), text) in stored_texts(ws)
             @test getText(ws, r, c) == text
             n += 1
@@ -199,9 +199,9 @@ end
     setFormula(s, "A8"; val = "=1+1"); @test getText(s, "A8") == ""          # no value until LibreOffice computes it
 end
 
-@testset "LibreOffice shows ODSFiles's formats as it shows the codes" begin
+@testset "LibreOffice shows OpenDocumentSpreadsheets's formats as it shows the codes" begin
     if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the number format oracle (set ODSFILES_SOFFICE)"
+        @info "LibreOffice not found; skipping the number format oracle (set ODS_SOFFICE)"
         @test_skip false
     else
         dir = mktempdir()

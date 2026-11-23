@@ -1,4 +1,4 @@
-# Namespace prefixes (D-067). ODSFiles matches elements and attributes by their written names
+# Namespace prefixes (D-067). OpenDocumentSpreadsheets matches elements and attributes by their written names
 # (`table:table-cell`), in XML.jl, which doesn't resolve prefixes (F-042), and in its byte
 # scanners. LibreOffice resolves names by URI (experiment 029, F-057): a file may bind
 # ODF's namespaces to other prefixes, declare them on inner elements, or use a default

@@ -5,7 +5,7 @@
 # sheets/defined-names.jl), rewritten for ODS fixtures.
 
 using Dates
-using ODSFiles: getcell, getcellrange, getsheet, get_dimension, Cell, EmptyCell, ODSError,
+using OpenDocumentSpreadsheets: getcell, getcellrange, getsheet, get_dimension, Cell, EmptyCell, ODSError,
     SheetRow, isvisible, defined_names, getFormula
 
 const TABLES = joinpath(DATA, "lo-tables.ods")
@@ -49,11 +49,11 @@ end
     @test occursin("ODSFile(\"", s) && occursin("containing 6 Worksheets", s) && occursin("size unknown", s)
     @test occursin("(hidden)", s)
     ws = xf["Table"]
-    @test sprint(show, ws) == "ODSFiles.Worksheet: [\"Table\"]"
+    @test sprint(show, ws) == "OpenDocumentSpreadsheets.Worksheet: [\"Table\"]"
     @test size(ws) == (8, 7)
-    @test sprint(show, ws) == "8×7 ODSFiles.Worksheet: [\"Table\"](B2:H9)"
+    @test sprint(show, ws) == "8×7 OpenDocumentSpreadsheets.Worksheet: [\"Table\"](B2:H9)"
     @test occursin("8x7", sprint(show, xf)) && occursin("B2:H9", sprint(show, xf))
-    @test sprint(show, xf["Hidden"]) == "ODSFiles.Worksheet: [\"Hidden\"] (hidden)"
+    @test sprint(show, xf["Hidden"]) == "OpenDocumentSpreadsheets.Worksheet: [\"Hidden\"] (hidden)"
     @test startswith(sprint(show, readods(IOBuffer(read(TABLES)))), "ODSFile(IOBuffer)")
     @test get_dimension(readods(TABLES)["Names"]; allow_load = false) == SheetCore.CellRange("A1:A1")
     @test get_dimension(xf["Names"]) == SheetCore.CellRange("A1:C2")
@@ -111,7 +111,7 @@ end
     @test sprint(show, e) == "EmptyCell(A1)"
     @test sprint(show, c) == "Cell(B3, :float, 1)"
     m = getcell(ws, "B2:C3")
-    @test m isa Matrix{ODSFiles.AbstractCell} && size(m) == (2, 2) && m[2, 1] == c
+    @test m isa Matrix{OpenDocumentSpreadsheets.AbstractCell} && size(m) == (2, 2) && m[2, 1] == c
     @test getcellrange(ws, "B2:C3") == m && getcellrange(ws, 2:3, 2:3) == m
     @test size(getcell(ws, :)) == (8, 7) && size(getcellrange(ws, "B:C")) == (8, 2) && size(getcellrange(ws, "3:4")) == (2, 7)
     @test getcell(ws, [3, 4], [2]) == reshape([c, getcell(ws, "B4")], 2, 1)
@@ -157,10 +157,10 @@ end
     @test sort([n.name for n in names]) == ["answer", "greeting", "listnm", "myrange", "onecell"]
     @test [n.name for n in defined_names(xf["Names"])] == ["localr"]
     @test defined_names(xf["Names"])[1].scope == "Names"
-    @test_throws ODSError ODSFiles.get_defined_name_value(ODSFiles.NameDef("e", nothing, nothing, "of:=1+[.A1]", nothing))
-    @test ODSFiles.get_defined_name_value(ODSFiles.NameDef("e", nothing, nothing, "of:=TRUE()", nothing)) === true
-    @test ODSFiles.get_defined_name_value(ODSFiles.NameDef("e", nothing, nothing, "2.5", nothing)) === 2.5
-    @test ODSFiles.get_defined_name_value(ODSFiles.NameDef("e", nothing, nothing, "of:=[\$S.\$A\$1]~[\$S.\$B\$2]", nothing)) isa ODSFiles.NonContiguousRange
+    @test_throws ODSError OpenDocumentSpreadsheets.get_defined_name_value(OpenDocumentSpreadsheets.NameDef("e", nothing, nothing, "of:=1+[.A1]", nothing))
+    @test OpenDocumentSpreadsheets.get_defined_name_value(OpenDocumentSpreadsheets.NameDef("e", nothing, nothing, "of:=TRUE()", nothing)) === true
+    @test OpenDocumentSpreadsheets.get_defined_name_value(OpenDocumentSpreadsheets.NameDef("e", nothing, nothing, "2.5", nothing)) === 2.5
+    @test OpenDocumentSpreadsheets.get_defined_name_value(OpenDocumentSpreadsheets.NameDef("e", nothing, nothing, "of:=[\$S.\$A\$1]~[\$S.\$B\$2]", nothing)) isa OpenDocumentSpreadsheets.NonContiguousRange
 end
 
 @testset "merged cells" begin
@@ -168,7 +168,7 @@ end
     a1 = getcell(ws, "A1")
     @test a1.value == "m" && a1.colspan == 2 && a1.rowspan == 2 && !a1.covered
     @test getcell(ws, "B1") isa EmptyCell && getcell(ws, "B2") isa EmptyCell
-    @test ODSFiles._cached_store(ws).merges == [SheetCore.CellRange("A1:B2")]
+    @test OpenDocumentSpreadsheets._cached_store(ws).merges == [SheetCore.CellRange("A1:B2")]
 end
 
 @testset "repeats, tails and containers" begin

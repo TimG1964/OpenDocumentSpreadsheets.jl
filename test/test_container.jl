@@ -1,7 +1,7 @@
 # Container layer: zip/flat detection, media types, manifest, part access, the sheet index,
 # and the package writer.
 
-using ODSFiles: open_container, ODFContainer, PackagePart, write_package, package_bytes,
+using OpenDocumentSpreadsheets: open_container, ODFContainer, PackagePart, write_package, package_bytes,
     write_flat, read_xml, read_bytes, partnames, haspart, odf_version, index_sheets,
     parse_manifest, readentry_string, guess_mediatype, MEDIATYPE_ODS, MEDIATYPE_OTS
 import ZipArchives
@@ -153,7 +153,7 @@ end
     ZipArchives.ZipWriter(buf) do w
         ZipArchives.zip_writefile(w, "content.xml", codeunits(xml))
         ZipArchives.zip_writefile(w, "META-INF/manifest.xml", codeunits(
-            ODSFiles.manifest_xml([PackagePart("content.xml", xml)], MEDIATYPE_ODS, "1.4")))
+            OpenDocumentSpreadsheets.manifest_xml([PackagePart("content.xml", xml)], MEDIATYPE_ODS, "1.4")))
     end
     @test open_container(take!(buf)).format === :ods
     # neither mimetype nor manifest
@@ -200,12 +200,12 @@ end
 end
 
 # LibreOffice as the oracle (Q-005). Skipped when it is not installed, as on CI.
-const SOFFICE = get(ENV, "ODSFILES_SOFFICE",
+const SOFFICE = get(ENV, "ODS_SOFFICE",
     Sys.iswindows() ? raw"C:\Program Files\LibreOffice\program\soffice.com" : something(Sys.which("soffice"), ""))
 
 @testset "LibreOffice opens what we write" begin
     if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the oracle round trip (set ODSFILES_SOFFICE)"
+        @info "LibreOffice not found; skipping the oracle round trip (set ODS_SOFFICE)"
         @test_skip false
     else
         mktempdir() do dir

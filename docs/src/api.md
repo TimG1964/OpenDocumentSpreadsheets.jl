@@ -1,11 +1,11 @@
 ```@meta
-CurrentModule = ODSFiles
+CurrentModule = OpenDocumentSpreadsheets
 ```
 
 # API reference
 
 ```@docs
-ODSFiles
+OpenDocumentSpreadsheets
 ```
 
 ## Files and sheets
@@ -277,9 +277,9 @@ getMergedBaseCell
 
 ## The shared core
 
-The format-independent parts of ODSFiles (references, tables, number formats, dates) live in
+The format-independent parts of OpenDocumentSpreadsheets (references, tables, number formats, dates) live in
 a submodule meant to be shared with XLSX.jl in future. It is not part of the public API.
 
 ```@docs
-ODSFiles.SheetCore
+OpenDocumentSpreadsheets.SheetCore
 ```

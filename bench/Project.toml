@@ -1,6 +1,6 @@
 [deps]
-ODSFiles = "00d59aff-60ae-4cba-9323-edb4df2b7f0d"
+OpenDocumentSpreadsheets = "00d59aff-60ae-4cba-9323-edb4df2b7f0d"
 XLSX = "fdbf4ff8-1666-58a4-91e7-1b58723a45e0"
 
 [sources]
-ODSFiles = {path = ".."}
+OpenDocumentSpreadsheets = {path = ".."}

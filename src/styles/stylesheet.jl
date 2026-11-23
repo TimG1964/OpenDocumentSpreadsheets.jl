@@ -195,7 +195,7 @@ const _SVG_NS = "urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0"
 """
     added_faces_xml(styles) -> String
 
-The `style:font-face` declarations ODSFiles added (as LibreOffice writes them: the family in
+The `style:font-face` declarations OpenDocumentSpreadsheets added (as LibreOffice writes them: the family in
 single quotes when it holds a space), for `office:font-face-decls`.
 """
 function added_faces_xml(styles::StyleIndex)
@@ -330,7 +330,7 @@ end
 """
     added_styles_xml(styles::StyleIndex, used=nothing) -> String
 
-The automatic styles ODSFiles added to the document: its typed styles (D-024), then the
+The automatic styles OpenDocumentSpreadsheets added to the document: its typed styles (D-024), then the
 column, row, data and cell styles added by formatting. With `used` (`UsedStyles`), only
 the added cell, column and row styles the sheets refer to are written, with the data
 styles those need (D-046): styles left behind by successive setters are dropped.
@@ -364,7 +364,7 @@ end
 
 The style for a value needing `kind` (`:date`, `:datetime`, `:time`, `:boolean`, or `nothing`
 for numbers and text) written into a cell of style `old`, whose number format doesn't fit it
-(D-037). A style that says nothing but its number format gives way to ODSFiles's typed style
+(D-037). A style that says nothing but its number format gives way to OpenDocumentSpreadsheets's typed style
 (or `Default`), as before (D-027). Any other style is kept, with only its number format
 replaced, so that fonts, fills and the rest stay.
 """

@@ -1,12 +1,12 @@
-using Documenter, ODSFiles
+using Documenter, OpenDocumentSpreadsheets
 
 makedocs(
-    sitename = "ODSFiles.jl",
+    sitename = "OpenDocumentSpreadsheets.jl",
     authors = "Tim Gebbels",
-    modules = [ODSFiles],
+    modules = [OpenDocumentSpreadsheets],
     format = Documenter.HTML(
         prettyurls = get(ENV, "CI", nothing) == "true",
-        canonical = "https://TimG1964.github.io/ODSFiles.jl/stable/",
+        canonical = "https://TimG1964.github.io/OpenDocumentSpreadsheets.jl/stable/",
     ),
     pages = [
         "Home" => "index.md",
@@ -26,11 +26,11 @@ makedocs(
     # External links are checked only when asked, as they depend on other sites being up:
     # the CI job "Documentation links" sets DOCUMENTER_LINKCHECK=true.
     linkcheck = get(ENV, "DOCUMENTER_LINKCHECK", "false") == "true",
-    linkcheck_ignore = [r"^https://github\.com/TimG1964/ODSFiles\.jl/(blob|tree)/"],
+    linkcheck_ignore = [r"^https://github\.com/TimG1964/OpenDocumentSpreadsheets\.jl/(blob|tree)/"],
 )
 
 deploydocs(
-    repo = "github.com/TimG1964/ODSFiles.jl.git",
+    repo = "github.com/TimG1964/OpenDocumentSpreadsheets.jl.git",
     devbranch = "master",
     target = "build",
     versions = [

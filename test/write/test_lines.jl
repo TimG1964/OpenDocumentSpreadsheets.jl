@@ -2,7 +2,7 @@
 # save, and LibreOffice's results (experiment 021, test/data/shift/). Uses `load_oracle`, `cellpos`,
 # `lineop` and `cf_meaning` from formula/test_refs.jl.
 
-using ODSFiles: IndexMap, insert_lines!, delete_lines!, current_line, line_pieces, getFormula, _sheets,
+using OpenDocumentSpreadsheets: IndexMap, insert_lines!, delete_lines!, current_line, line_pieces, getFormula, _sheets,
     _cached_store, sheet_formats, _fmt_at, _fmt_cell, effective_style, style_name, getMergedCells,
     open_container, read_xml, read_bytes, getFont, getColumnWidth, ODSError, sheetcount
 
@@ -36,7 +36,7 @@ end
     @test ws["A3"] === missing && ws["A5"] == 31 && ws["D8"] == 64
     @test getFormula(ws, "F1") == "=SUM(A2:A7)+B5"
     @test getFormula(ws, "F2") == "=SUM(A:A)+SUM(2:2)"
-    @test getMergedCells(ws) == [ODSFiles.CellRange("B7:C8")]
+    @test getMergedCells(ws) == [OpenDocumentSpreadsheets.CellRange("B7:C8")]
     # the new rows take the bold of the row above (row 2 is plain; row 3 the inserted one)
     xf2, ws2 = lines_sheet()
     insertRows(ws2, 4)
@@ -61,7 +61,7 @@ end
     insertRows(xf, "S.1"; count = 3); @test ws["A4"] == 32
     insertColumns(ws, 1; count = 2); @test ws["C4"] == 32
     deleteColumns(ws, [1, 2]); @test ws["A4"] == 32
-    deleteRows(ws, ODSFiles.CellRef("A1")); @test ws["A3"] == 32
+    deleteRows(ws, OpenDocumentSpreadsheets.CellRef("A1")); @test ws["A3"] == 32
     # errors
     @test_throws ODSError insertRows(ws, 0)
     @test_throws ODSError insertRows(ws, 1; count = 0)
@@ -96,7 +96,7 @@ function saved_refs(path; keysheet::Bool = false)
     c = open_container(path)
     xmls = [read_xml(c, :content)]
     if c.zip !== nothing
-        for n in ODSFiles.partnames(c)
+        for n in OpenDocumentSpreadsheets.partnames(c)
             (endswith(n, "/content.xml") && n != "content.xml") && push!(xmls, String(read_bytes(c, n)))
         end
     end
@@ -162,9 +162,9 @@ function apply_op!(xf, name)
     end
 end
 
-# What LibreOffice does that ODSFiles doesn't (yet): it drops validations no cell uses any more
-# (they stay, unused, in ODSFiles' file), and it moves shapes anchored in a deleted cell to the
-# next cell (phase 6: ODSFiles deletes them with their cell).
+# What LibreOffice does that OpenDocumentSpreadsheets doesn't (yet): it drops validations no cell uses any more
+# (they stay, unused, in OpenDocumentSpreadsheets' file), and it moves shapes anchored in a deleted cell to the
+# next cell (phase 6: OpenDocumentSpreadsheets deletes them with their cell).
 _known_gap(k) = startswith(k, "table:content-validation") || startswith(k, "draw:rect")
 
 const SHIFT_OPS = [String(split(l, '\t')[1]) for l in eachline(joinpath(SHIFT, "lo-shift-ops.tsv"))]
@@ -188,10 +188,10 @@ const SHIFT_OPS = [String(split(l, '\t')[1]) for l in eachline(joinpath(SHIFT, "
             (a == "table:formula" && startswith(k, "formula:")) || continue
             n += 1
             g = get(got, k, nothing)
-            g == (v, after[(k, "@cell")]) || push!(fails, "$name $k: ODSFiles $g, LibreOffice ($v, $(after[(k, "@cell")]))")
+            g == (v, after[(k, "@cell")]) || push!(fails, "$name $k: OpenDocumentSpreadsheets $g, LibreOffice ($v, $(after[(k, "@cell")]))")
         end
         for k in keys(got)
-            haskey(after, (k, "table:formula")) || push!(fails, "$name $k: kept by ODSFiles, gone in LibreOffice")
+            haskey(after, (k, "table:formula")) || push!(fails, "$name $k: kept by OpenDocumentSpreadsheets, gone in LibreOffice")
         end
         for dn in xf.names, (a, v) in (("table:cell-range-address", dn.range), ("table:expression", dn.expression),
                                        ("table:base-cell-address", dn.base))
@@ -199,7 +199,7 @@ const SHIFT_OPS = [String(split(l, '\t')[1]) for l in eachline(joinpath(SHIFT, "
             want = get(after, ((dn.range === nothing ? "table:named-expression[" : "table:named-range[") * dn.name * "]", a), nothing)
             want === nothing && continue
             n += 1
-            want == v || push!(fails, "$name name $(dn.name) $a: ODSFiles $v, LibreOffice $want")
+            want == v || push!(fails, "$name name $(dn.name) $a: OpenDocumentSpreadsheets $v, LibreOffice $want")
         end
     end
     isempty(fails) || foreach(println, fails)
@@ -223,11 +223,11 @@ end
              startswith(k, "style:map") || startswith(k, "chart:chart") || startswith(k, "text:a")) && continue
             n += 1
             g = get(got, (k, a), "(none)")
-            g == v || push!(fails, "$name $k $a: ODSFiles `$g`, LibreOffice `$v`")
+            g == v || push!(fails, "$name $k $a: OpenDocumentSpreadsheets `$g`, LibreOffice `$v`")
         end
         for (k, a) in keys(got)
             (_known_gap(k) || startswith(k, "calcext:condition[") || haskey(want, (k, a))) && continue
-            push!(fails, "$name $k $a: only in ODSFiles' file")
+            push!(fails, "$name $k $a: only in OpenDocumentSpreadsheets' file")
         end
         # the conditional format, by meaning (LibreOffice re-bases it on every save, F-044)
         tk = ("calcext:conditional-format[#1]", "calcext:target-range-address")
@@ -236,7 +236,7 @@ end
             n += 1
             cf_meaning(got[(ck, "calcext:value")], got[(ck, "calcext:base-cell-address")], got[tk]) ==
                 cf_meaning(want[(ck, "calcext:value")], want[(ck, "calcext:base-cell-address")], want[tk]) ||
-                push!(fails, "$name conditional format: ODSFiles $(got[(ck, "calcext:value")]) @ $(got[(ck, "calcext:base-cell-address")])")
+                push!(fails, "$name conditional format: OpenDocumentSpreadsheets $(got[(ck, "calcext:value")]) @ $(got[(ck, "calcext:base-cell-address")])")
         end
         # the file reads back with the same values as the model
         back = readods(path)
@@ -292,7 +292,7 @@ end
 
 @testset "LibreOffice reads the shifted references as its own" begin
     if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the shift oracle (set ODSFILES_SOFFICE)"
+        @info "LibreOffice not found; skipping the shift oracle (set ODS_SOFFICE)"
         @test_skip false
     else
         dir = mktempdir()
@@ -346,9 +346,9 @@ end
         end
         @test formulas(back) == formulas(xf)
         ws = xf["Data"]; b = back["Data"]
-        dim = ODSFiles.get_dimension(ws)
+        dim = OpenDocumentSpreadsheets.get_dimension(ws)
         @test all(style_name(back.styles, effective_style(b, r, c)) == style_name(xf.styles, effective_style(ws, r, c))
-                  for r in 1:ODSFiles.row_number(dim.stop) + 2, c in 1:8)
+                  for r in 1:OpenDocumentSpreadsheets.row_number(dim.stop) + 2, c in 1:8)
     end
 end
 

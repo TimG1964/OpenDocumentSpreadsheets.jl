@@ -1,14 +1,14 @@
-using ODSFiles
+using OpenDocumentSpreadsheets
 using Test
 
-const SheetCore = ODSFiles.SheetCore
+const SheetCore = OpenDocumentSpreadsheets.SheetCore
 const DATA = joinpath(@__DIR__, "data")
 
 # A LibreOffice profile folder as the file URL `-env:UserInstallation` takes: file:///C:/… on
 # Windows, file:///tmp/… elsewhere.
 lo_profile_url(path) = "file://" * (startswith(path, "/") ? "" : "/") * replace(path, "\\" => "/")
 
-@testset "ODSFiles" begin
+@testset "OpenDocumentSpreadsheets" begin
     @testset "SheetCore" begin
         @testset "references" begin
             include("core/test_references.jl")

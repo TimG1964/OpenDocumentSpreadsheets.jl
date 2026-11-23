@@ -126,9 +126,9 @@ end
 # that made it, so that each package's users only ever see their own notation, even with
 # both packages loaded in one session:
 #   ExcelStyle: Sheet1!A1, 'My sheet'!A1:B2, lists joined by ","   (XLSX.jl)
-#   ODFStyle:   Sheet1.A1, 'My sheet'.A1:B2, lists joined by "~"   (ODSFiles, as LibreOffice
+#   ODFStyle:   Sheet1.A1, 'My sheet'.A1:B2, lists joined by "~"   (OpenDocumentSpreadsheets, as LibreOffice
 #               shows references: experiment 006, F-017)
-# Each back end binds the names to its own style, e.g. in ODSFiles
+# Each back end binds the names to its own style, e.g. in OpenDocumentSpreadsheets
 #   const SheetCellRef = SheetCore.SheetCellRef{SheetCore.ODFStyle}
 # There are deliberately no style-less constructors: the core always knows which style.
 #

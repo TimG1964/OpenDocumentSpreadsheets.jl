@@ -1,4 +1,4 @@
-# Formatting: ODSFiles against XLSX.jl 0.13.4 (phase 4 step 9).
+# Formatting: OpenDocumentSpreadsheets against XLSX.jl 0.13.4 (phase 4 step 9).
 #
 #   julia --project=bench bench/formatting.jl [results.tsv]
 #
@@ -15,9 +15,9 @@
 #   getFont_10k    `getFont` on 10,000 single cells of the formatted file
 #   autofit_20k    `autofitColumns` on a 20,000 x 8 block
 # Each case runs once to warm up; the median of 3 (1M cases) or 5 timed runs is kept, with
-# its allocation. Ratio = ODSFiles / XLSX.jl time.
-using XLSX, ODSFiles, Printf
-const ODS = ODSFiles
+# its allocation. Ratio = OpenDocumentSpreadsheets / XLSX.jl time.
+using XLSX, OpenDocumentSpreadsheets, Printf
+const ODS = OpenDocumentSpreadsheets
 const NC = 8
 const OUT = isempty(ARGS) ? joinpath(@__DIR__, "results", "formatting-latest.tsv") : ARGS[1]
 

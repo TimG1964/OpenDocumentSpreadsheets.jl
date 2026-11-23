@@ -29,7 +29,7 @@ end
 
 `count` rows from `row` (`table:table-row`): their row style name (`""` for none), default
 cell style id (-1 for none; LibreOffice misreads these and never writes them, F-035, so
-ODSFiles only reads them), `table:visibility`, and the number of columns their cells cover.
+OpenDocumentSpreadsheets only reads them), `table:visibility`, and the number of columns their cells cover.
 A column's default cell style reaches only those columns (F-035).
 """
 struct RowFormat

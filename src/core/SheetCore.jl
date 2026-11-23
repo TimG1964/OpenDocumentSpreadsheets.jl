@@ -5,7 +5,7 @@ The format-independent core shared by the spreadsheet back ends (D-001): cell re
 and ranges, tabular data and Tables.jl input, number formats and displayed text, date
 serial numbers, text widths for autofit, colours, and reading zip parts.
 
-It knows nothing about ODF or OOXML. It is developed inside ODSFiles.jl, and is kept
+It knows nothing about ODF or OOXML. It is developed inside OpenDocumentSpreadsheets.jl, and is kept
 self-contained so that it can later become a package of its own that XLSX.jl can also use
 (see `records/core-migration.md` in the workspace). Most of its code is adapted from
 XLSX.jl 0.13.4 (MIT License, Copyright (c) 2018-2026 Felipe Noronha Tavares and other

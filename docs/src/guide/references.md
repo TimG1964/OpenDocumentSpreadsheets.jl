@@ -1,5 +1,5 @@
 ```@meta
-CurrentModule = ODSFiles
+CurrentModule = OpenDocumentSpreadsheets
 ```
 
 # References and names
@@ -20,7 +20,7 @@ Rows and columns can also be given as numbers, ranges or vectors: `sh[2, 3]`,
 
 ## Naming a sheet
 
-ODSFiles reads and prints sheet-qualified references in LibreOffice's notation, and also
+OpenDocumentSpreadsheets reads and prints sheet-qualified references in LibreOffice's notation, and also
 accepts Excel's:
 
 | LibreOffice | Excel | |
@@ -35,7 +35,7 @@ xf["Sheet1.B2"]            # a value from the file
 xf["'My sheet'!A1:C3"]
 ```
 
-References that ODSFiles returns, such as `SheetCellRef`, print in LibreOffice's notation.
+References that OpenDocumentSpreadsheets returns, such as `SheetCellRef`, print in LibreOffice's notation.
 
 ## Defined names
 
@@ -48,7 +48,7 @@ sh["LocalRange"]          # a name local to the sheet
 ```
 
 A name whose expression is a constant gives that value. A name that is a formula can't be
-read: ODSFiles does not evaluate formulas. A name that refers to cells can be written through
+read: OpenDocumentSpreadsheets does not evaluate formulas. A name that refers to cells can be written through
 (`sh["LocalRange"] = 0`).
 
 Sheet and defined names match without regard to case, as in LibreOffice.
@@ -59,7 +59,7 @@ Names are added, listed and deleted as in XLSX.jl:
 addDefinedName(xf, "Prices", "Data.B2:B20")         # the file's
 addDefinedName(xf["Data"], "Rate", 0.2)             # the sheet's
 addDefinedName(xf, "Total", raw"=SUM($Data.$B$2:$B$20)")
-ODSFiles.getAllDefinedNames(xf)                     # every name, with its scope and value
+OpenDocumentSpreadsheets.getAllDefinedNames(xf)                     # every name, with its scope and value
 deleteDefinedName(xf, "Prices")
 ```
 

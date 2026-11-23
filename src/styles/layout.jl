@@ -181,7 +181,7 @@ const LO_AUTOFIT_PADDING_PT = 7.9
 """
     autofitColumns(sheet, [cols=:]; min_width=0, max_width=255) -> Dict{Int,Float64}
 
-Set the width of columns to fit the text their cells show ([`getText`](@ref ODSFiles.getText)),
+Set the width of columns to fit the text their cells show ([`getText`](@ref OpenDocumentSpreadsheets.getText)),
 as LibreOffice's optimal column width does: the widest text, in each cell's font, size and
 boldness, plus 7.9 pt (F-034). `cols` is `:` (every column with something in it), a column
 number, a range or vector of numbers, or letters such as `"B"`, `"B:D"` or `"A,C:E"`.

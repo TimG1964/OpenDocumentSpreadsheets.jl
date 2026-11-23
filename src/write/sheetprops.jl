@@ -134,7 +134,7 @@ end
 
 const _STYLE_ELEMENT_RX = r"<style:style\b[^>]*?(?:/>|>.*?</style:style>)"s
 
-# The XML of the table style `name`: one ODSFiles derived, or the file's.
+# The XML of the table style `name`: one OpenDocumentSpreadsheets derived, or the file's.
 function _table_style_xml(xf::ODSFile, name::AbstractString)
     for (n, x) in xf.tstyles.added
         n == name && return x
@@ -233,7 +233,7 @@ end
 
 _props_changed(ws::Worksheet) = ws.props !== nothing && ws.props.style != ws.props.base
 
-# The table styles ODSFiles derived that a sheet now names, as XML for the automatic styles.
+# The table styles OpenDocumentSpreadsheets derived that a sheet now names, as XML for the automatic styles.
 function _table_styles_xml(xf::ODSFile)
     isempty(xf.tstyles.added) && return ""
     used = Set{String}()
@@ -285,7 +285,7 @@ getSheetVisibility(ws::Worksheet) = ws.props === nothing ? (ws.visible ? :visibl
 
 Colour a sheet's tab: a hex colour (`"FF0000"`, `"#FF0000"`, `"FFFF0000"`: the alpha is ignored,
 as LibreOffice ignores it), a Colors.jl colour name or a `Colorant`. Theme colours are Excel's,
-and are not accepted, as elsewhere in ODSFiles.
+and are not accepted, as elsewhere in OpenDocumentSpreadsheets.
 
 See also [`getTabColor`](@ref), [`removeTabColor`](@ref).
 """

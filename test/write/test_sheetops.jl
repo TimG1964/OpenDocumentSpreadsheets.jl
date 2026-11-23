@@ -3,7 +3,7 @@
 # model, in saved files, and through LibreOffice. Uses formula/test_refs.jl's `load_oracle`,
 # `cf_meaning` and write/test_lines.jl's `saved_refs`.
 
-using ODSFiles: renamesheet!, deletesheet!, copysheet!, movesheet!, sheetnames, patched_settings
+using OpenDocumentSpreadsheets: renamesheet!, deletesheet!, copysheet!, movesheet!, sheetnames, patched_settings
 
 const SHEETOPS = load_oracle(joinpath(SHIFT, "lo-sheetops-refs.tsv"))
 
@@ -59,7 +59,7 @@ const SHEETOP_ORDERS = Dict(String(split(l, '\t')[1]) => split(split(l, '\t')[3]
             k = ("formula:" * m.captures[1] * "@" * ws.name, "table:formula")
             haskey(want, k) || (push!(fails, "$file model: $(k[1]) not in LibreOffice's"); continue)
             n += 1
-            want[k] == f || push!(fails, "$file model $(k[1]): ODSFiles `$f`, LibreOffice `$(want[k])`")
+            want[k] == f || push!(fails, "$file model $(k[1]): OpenDocumentSpreadsheets `$f`, LibreOffice `$(want[k])`")
         end
         # the saved file
         got = saved_refs(writeods(joinpath(dir, file * ".fods"), xf); keysheet = true)
@@ -71,17 +71,17 @@ const SHEETOP_ORDERS = Dict(String(split(l, '\t')[1]) => split(split(l, '\t')[3]
             skip(k, a) && continue
             n += 1
             g = get(got, (k, a), "(none)")
-            g == v || push!(fails, "$file $k $a: ODSFiles `$g`, LibreOffice `$v`")
+            g == v || push!(fails, "$file $k $a: OpenDocumentSpreadsheets `$g`, LibreOffice `$v`")
         end
         for (k, a) in keys(got)
             (skip(k, a) || haskey(want, (k, a))) && continue
-            push!(fails, "$file $k $a: only in ODSFiles' file (`$(got[(k, a)])`)")
+            push!(fails, "$file $k $a: only in OpenDocumentSpreadsheets' file (`$(got[(k, a)])`)")
         end
         # conditional formats, by meaning
         for (k, a) in keys(want)
             (startswith(k, "calcext:conditional-format[") && a == "calcext:target-range-address") || continue
             ck = replace(k, "calcext:conditional-format" => "calcext:condition")
-            haskey(got, (ck, "calcext:value")) || (push!(fails, "$file $k: no condition in ODSFiles' file"); continue)
+            haskey(got, (ck, "calcext:value")) || (push!(fails, "$file $k: no condition in OpenDocumentSpreadsheets' file"); continue)
             n += 1
             cf_meaning(got[(ck, "calcext:value")], got[(ck, "calcext:base-cell-address")], got[(k, a)]) ==
                 cf_meaning(want[(ck, "calcext:value")], want[(ck, "calcext:base-cell-address")], want[(k, a)]) ||
@@ -106,16 +106,16 @@ end
     @test !occursin("config:name=\"Data\"", s) && !occursin("config:name=\"Z\">", s)
     @test occursin("config:name=\"Other (copy)\"><config:config-item config:name=\"CodeName\" config:type=\"string\">Other (copy)<", s)
     # the copy's own local names: the source's, and the global names its formulas use (F-047)
-    ln = Dict(dn.name => dn for dn in ODSFiles._local_names(copysheet!(xf["D 1"], "D 2")))
+    ln = Dict(dn.name => dn for dn in OpenDocumentSpreadsheets._local_names(copysheet!(xf["D 1"], "D 2")))
     @test ln["LocalN"].range == "\$'D 2'.\$C\$5" && ln["NR"].range == "\$'D 2'.\$A\$5:.\$A\$8" && ln["NRel"].base == "\$'D 2'.\$J\$1"
     @test getFormula(xf["D 2"], "J28") == "='D 2'.A5+N(\"f28\")"      # a relative sheet name: the copy
     @test getFormula(xf["D 2"], "J29") == "=\$'D 1'.\$A\$5+N(\"f29\")"  # an absolute one: kept
     # names follow a rename and a delete
     xf2 = openods(joinpath(SHIFT, "lo-shift-before.fods"); mode = "rw")
     renamesheet!(xf2["Data"], "X")
-    @test ODSFiles._find_name(ODSFiles._wb_names(xf2), "NR").range == "\$X.\$A\$5:.\$A\$8"
+    @test OpenDocumentSpreadsheets._find_name(OpenDocumentSpreadsheets._wb_names(xf2), "NR").range == "\$X.\$A\$5:.\$A\$8"
     deletesheet!(xf2, 1)
-    @test ODSFiles._find_name(ODSFiles._wb_names(xf2), "NR").range == "#REF!"
+    @test OpenDocumentSpreadsheets._find_name(OpenDocumentSpreadsheets._wb_names(xf2), "NR").range == "#REF!"
     @test getFormula(xf2["Other"], "B3") == "=#REF!+N(\"o01\")"
     # errors
     @test_throws ODSError renamesheet!(xf2["Other"], "z")             # another sheet's name, in another case
@@ -156,7 +156,7 @@ end
     copysheet!(xf["Other"])
     p = writeods(joinpath(dir, "copy.ods"), xf)
     c = open_container(p)
-    @test "Object 2/content.xml" in ODSFiles.partnames(c) && "ObjectReplacements/Object 2" in ODSFiles.partnames(c)
+    @test "Object 2/content.xml" in OpenDocumentSpreadsheets.partnames(c) && "ObjectReplacements/Object 2" in OpenDocumentSpreadsheets.partnames(c)
     @test any(e -> e.path == "Object 2/" && e.mediatype == "application/vnd.oasis.opendocument.chart", c.manifest)
     @test any(e -> e.path == "Object 1/" && e.mediatype == "application/vnd.oasis.opendocument.chart", c.manifest)
     @test occursin("./Object 2", read_xml(c, :content))
@@ -180,13 +180,13 @@ end
             @test isequal(getMergedCells(back[ws.name]), getMergedCells(ws))
         end
         @test formulas(back) == formulas(xf)
-        @test Dict(dn.name => dn.range for dn in ODSFiles._wb_names(back)) == Dict(dn.name => dn.range for dn in ODSFiles._wb_names(xf))
+        @test Dict(dn.name => dn.range for dn in OpenDocumentSpreadsheets._wb_names(back)) == Dict(dn.name => dn.range for dn in OpenDocumentSpreadsheets._wb_names(xf))
     end
 end
 
 @testset "LibreOffice reads the sheet operations as its own" begin
     if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the sheet operations oracle (set ODSFILES_SOFFICE)"
+        @info "LibreOffice not found; skipping the sheet operations oracle (set ODS_SOFFICE)"
         @test_skip false
     else
         dir = mktempdir()

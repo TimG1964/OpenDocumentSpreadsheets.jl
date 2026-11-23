@@ -1,7 +1,7 @@
 # OpenFormula: the tokenizer, and the renderer to LibreOffice's UI notation (D-018), checked
 # against LibreOffice's own =FORMULA() output (experiment 008: test/data/formula/*.tsv).
 
-using ODSFiles: tokenize_formula, render_ui_formula, ui_function_name, _strip_formula_prefix,
+using OpenDocumentSpreadsheets: tokenize_formula, render_ui_formula, ui_function_name, _strip_formula_prefix,
     FT_REF, FT_FUNC, FT_NAME, FT_NUMBER, FT_STRING, FT_ERROR, FT_OP, FT_SEP, FT_ROWSEP, FT_SPACE
 
 # rows of a TSV with a header line

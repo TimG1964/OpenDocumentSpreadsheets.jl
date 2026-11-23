@@ -314,7 +314,7 @@ function copysheet!(ws::Worksheet, name::AbstractString = "")
     localize = _names_to_localize(xf, ws)
     n = length(sheets) + 1
     if ws.entry === nothing
-        # a sheet made by ODSFiles: its model is copied
+        # a sheet made by OpenDocumentSpreadsheets: its model is copied
         new = Worksheet(xf, name, n, nothing, ws.visible, deepcopy(_cached_store(ws)), nothing, ReentrantLock())
         new.formats = deepcopy(ws.formats)
         new.props = deepcopy(ws.props)                 # visibility and tab colour (phase 5 step 6)

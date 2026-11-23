@@ -8,7 +8,7 @@
 #     number-columns-repeated split where needed), edited cells are written from the store.
 #     Rows and columns beyond the original ones are added after the last row / column.
 #   - new sheets, added after the last sheet
-#   - ODSFiles's typed and formatting styles, added to office:automatic-styles; named
+#   - OpenDocumentSpreadsheets's typed and formatting styles, added to office:automatic-styles; named
 #     styles (D-045) are added to styles.xml (`patched_styles`), or to a flat file's office:styles
 #   - namespace declarations the new XML needs, added to the root element
 # Original text is reached through XML.jl's `sourcespan` (zero-copy, D-009).
@@ -675,7 +675,7 @@ end
 """
     _write_sheet(out, ws, rw; display)
 
-One sheet's table as it is now: written from the model (a sheet made by ODSFiles), patched (an
+One sheet's table as it is now: written from the model (a sheet made by OpenDocumentSpreadsheets), patched (an
 edited sheet read from the file, or a copy), or copied with its references replayed and its name
 set (phase 5).
 """
@@ -811,7 +811,7 @@ end
 
 Writes the content.xml (or flat document) of a file that was read, with its edits, new
 sheets and new styles (D-023), to `out` as it is made (D-048). A flat document also gets
-the named styles ODSFiles added (D-045). Text that isn't edited is copied from the
+the named styles OpenDocumentSpreadsheets added (D-045). Text that isn't edited is copied from the
 original in pieces as large as the gaps between edits.
 """
 function write_patched_content(out::_ChunkedIO, xf::ODSFile; display::Bool = true)
@@ -935,7 +935,7 @@ end
 """
     patched_styles(xf::ODSFile, xml) -> String
 
-A file's styles.xml (`xml`) with the named styles ODSFiles added, their data styles in
+A file's styles.xml (`xml`) with the named styles OpenDocumentSpreadsheets added, their data styles in
 `office:styles` and the font faces they name in `office:font-face-decls` (D-045, F-040).
 Everything else is kept as it was.
 """

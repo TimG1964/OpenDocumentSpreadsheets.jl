@@ -53,7 +53,7 @@ end
 
 The styles of one family of column or row styles: the properties element of each
 (`style:table-column-properties` / `style:table-row-properties`), by name; the automatic
-ones that say nothing else, by their properties (for deduplication); and the ones ODSFiles
+ones that say nothing else, by their properties (for deduplication); and the ones OpenDocumentSpreadsheets
 added, in order.
 """
 struct LineStyles
@@ -74,16 +74,16 @@ needs them (`stylesheet`, styles/stylesheet.jl):
 - `automatic[id + 1]`: whether it is an automatic style (else a named one, or Default)
 - `datastyles`: the XML of each data style, by name; `datainfo`: what the read path knows of it
 - `dedup`: the automatic styles by their properties, so that equal styles are shared
-- `added` / `added_data`: the cell and data styles ODSFiles added, in order, written to
+- `added` / `added_data`: the cell and data styles OpenDocumentSpreadsheets added, in order, written to
   `office:automatic-styles` on save
 - `retyped`: derived styles already made for a style and a value kind (D-037)
 - `data_dedup`: the added data styles by their XML
 - `lines[1]` / `lines[2]`: the column and row styles (`LineStyles` of the `table-column` and
   `table-row` families)
 - `default_cell`: the document's default cell properties (`style:default-style`)
-- `faces` / `added_faces`: the font faces declared, and those ODSFiles added
+- `faces` / `added_faces`: the font faces declared, and those OpenDocumentSpreadsheets added
 - `display`: the named cell styles, by the name LibreOffice shows; `added_named`: those
-  ODSFiles added (D-045), written to styles.xml
+  OpenDocumentSpreadsheets added (D-045), written to styles.xml
 """
 mutable struct StyleSheet
     cells::Vector{CellStyle}
@@ -98,12 +98,12 @@ mutable struct StyleSheet
     lines::Vector{LineStyles}         # [columns, rows]
     default_cell::CellStyle           # the `style:default-style` of family table-cell (its properties)
     faces::Set{String}                # the declared font faces (`style:font-face`), by name
-    added_faces::Vector{String}       # font faces ODSFiles declared, in order
+    added_faces::Vector{String}       # font faces OpenDocumentSpreadsheets declared, in order
     code_styles::Dict{String,String}  # number format codes → their added data style ("" for General)
     numfmt_ids::Dict{String,Int}      # custom number format codes → their numFmtId (164 on), as getFormat meets them
     needs_loext::Bool                 # added data styles use LibreOffice's `loext:` attributes
     display::Dict{String,String}      # named cell styles: display name (else name) → style name
-    added_named::Vector{Int32}        # named cell styles ODSFiles added, in order (styles.xml's office:styles)
+    added_named::Vector{Int32}        # named cell styles OpenDocumentSpreadsheets added, in order (styles.xml's office:styles)
     resolved::Dict{Tuple{Int32,Bool},NTuple{3,Dict{String,String}}}   # `resolved_props` by (id, defaults); read-only
 end
 
@@ -121,7 +121,7 @@ struct StyleIndex
     names::Vector{String}             # id + 1 → name ("Default" for 0)
     info::Vector{DataStyleInfo}       # id + 1 → data style along the parent chain
     hidden_tables::Set{String}        # table styles with table:display="false"
-    added::Dict{Symbol,Int32}         # ODSFiles's own typed styles (D-024), by kind, once added
+    added::Dict{Symbol,Int32}         # OpenDocumentSpreadsheets's own typed styles (D-024), by kind, once added
     prefixes::Dict{Tuple{Int32,UInt8,Bool},String}   # the writer's cell prefixes (write/xmlout.jl)
     numbuf::Vector{UInt8}             # the writer's digit buffer (a document is written by one task at a time)
     xmls::Vector{String}              # the XML the styles were read from

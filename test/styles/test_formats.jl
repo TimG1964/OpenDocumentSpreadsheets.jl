@@ -1,16 +1,16 @@
 # The formats layer (phase 4, step 3): formatted empty cells, column and row formats, read by
 # a styles-only pass, and saved by patching (D-023) or with new sheets.
 
-using ODSFiles: get_dimension, sheet_formats, effective_style, restyle_cells!, set_column_formats!, set_row_formats!, add_line_style!,
+using OpenDocumentSpreadsheets: get_dimension, sheet_formats, effective_style, restyle_cells!, set_column_formats!, set_row_formats!, add_line_style!,
     line_props, PropSet, setprops, getprop, cell_style, add_cell_style!, with_text, style_id, style_name, getcell,
     _fmt_at, _cached_store, _stop, _lastrow, _lastcol, F_COVERED
 
 ftmp(name) = joinpath(mktempdir(), name)
-sty(ws) = ODSFiles.get_odsfile(ws).styles
+sty(ws) = OpenDocumentSpreadsheets.get_odsfile(ws).styles
 fmt_bold(st) = add_cell_style!(st, with_text(CellStyle(), setprops(PropSet(), "fo:font-weight" => "bold")))
 fmt_isbold(st, id) = getprop(cell_style(st, id).text, "fo:font-weight") == "bold"
-table_xml(xf, k) = String(ODSFiles.XML.sourcetext(xf[k].entry.node))
-using ODSFiles: CellStyle
+table_xml(xf, k) = String(OpenDocumentSpreadsheets.XML.sourcetext(xf[k].entry.node))
+using OpenDocumentSpreadsheets: CellStyle
 
 # A sheet's look over rows 1:nr, columns 1:nc: the style each cell shows, the column and row
 # formats (with names, so that sheets of different files compare), and the formatted empty
@@ -24,7 +24,7 @@ function look(ws, nr, nc)
     cols = [line(_fmt_at(f.cols, c)) for c in 1:nc]
     rows = [line(_fmt_at(f.rows, r)) for r in 1:nr]
     # (an empty cell's explicit Default where nothing else is inherited says nothing: it may go)
-    merged = [(d = ODSFiles._fmt_cell(f, r, c);
+    merged = [(d = OpenDocumentSpreadsheets._fmt_cell(f, r, c);
                d === nothing || (d.flags & F_COVERED == 0 && d.colspan == 1 && d.rowspan == 1) ? nothing :
                (d.flags & F_COVERED, d.colspan, d.rowspan)) for r in 1:nr, c in 1:nc]
     return (; cells, cols, rows, merged)
@@ -42,13 +42,13 @@ values_of(ws, nr, nc) = [ws[r, c] for r in 1:nr, c in 1:nc]
     @test _fmt_at(f.cols, 2).style == "co1" && _fmt_at(f.rows, 5).style == "ro1"
     s4 = xf["S04-row-style"]
     @test effective_style(s4, 3, 9) == style_id(xf.styles, "ce-fill")
-    @test effective_style(s4, 1, 2) == 0 && ODSFiles._fmt_cell(sheet_formats(s4), 1, 2).style == 0   # explicit Default
+    @test effective_style(s4, 1, 2) == 0 && OpenDocumentSpreadsheets._fmt_cell(sheet_formats(s4), 1, 2).style == 0   # explicit Default
     s7 = xf["S07-row-heights"]
     @test [_fmt_at(sheet_formats(s7).rows, r).style for r in 1:4] == ["ro1", "ro2", "ro1", "ro1"]
     @test _fmt_at(sheet_formats(s7).rows, 3).visibility == "collapse"
     s9 = xf["S09-merge"]
-    @test ODSFiles._fmt_cell(sheet_formats(s9), 2, 1).flags & F_COVERED != 0
-    @test ODSFiles._fmt_cell(sheet_formats(s9), 1, 1) === nothing           # the anchor has a value
+    @test OpenDocumentSpreadsheets._fmt_cell(sheet_formats(s9), 2, 1).flags & F_COVERED != 0
+    @test OpenDocumentSpreadsheets._fmt_cell(sheet_formats(s9), 1, 1) === nothing           # the anchor has a value
 end
 
 # Every row, column and cell of the grid marked as edited: the patcher writes them all from
@@ -58,7 +58,7 @@ end
     xf = openods(src; mode = "rw")
     nr, nc = 24, 6
     before = Dict{String,Any}()
-    for ws in ODSFiles._sheets(xf)
+    for ws in OpenDocumentSpreadsheets._sheets(xf)
         fm = sheet_formats(ws)
         before[ws.name] = (look(ws, nr, nc), values_of(ws, nr, nc), sort(string.(_cached_store(ws).merges)))
         fm.cols_touched = true
@@ -67,7 +67,7 @@ end
     end
     p = writeods(ftmp("all" * splitext(f)[2]), xf)
     back = openods(p)
-    for ws in ODSFiles._sheets(back)
+    for ws in OpenDocumentSpreadsheets._sheets(back)
         l, v, m = before[ws.name]
         @test look(ws, nr, nc) == l
         @test isequal(values_of(ws, nr, nc), v)
@@ -151,7 +151,7 @@ end
     @test effective_style(ws, 5, 3) == 0                      # no row writes column C yet (F-035)
     set_row_formats!(ws, 1:9; cover = 3)
     @test effective_style(ws, 5, 3) == X && effective_style(ws, 10, 3) == 0 && effective_style(ws, 5, 1) == 0
-    restyle_cells!(_ -> Y, ws, 4:4, 1:ODSFiles.SheetCore.MAX_COLS)   # a whole row, as LibreOffice formats one
+    restyle_cells!(_ -> Y, ws, 4:4, 1:OpenDocumentSpreadsheets.SheetCore.MAX_COLS)   # a whole row, as LibreOffice formats one
     @test effective_style(ws, 4, 3) == Y && effective_style(ws, 4, 16384) == Y
     seen = Int32[]
     Z = add_cell_style!(st, with_text(CellStyle(), setprops(PropSet(), "fo:font-style" => "italic")))
@@ -162,7 +162,7 @@ end
     @test sort(seen) == sort([0, X, Y])                       # once per style shown
     @test effective_style(ws, 1, 1) == Z && effective_style(ws, 2, 3) == Z && effective_style(ws, 4, 2) == Y
     @test effective_style(ws, 6, 1) == 0 && effective_style(ws, 6, 3) == X
-    @test ws["A1"] === Int64(1) && get_dimension(ws) == ODSFiles.CellRange("A1:C2")   # empty cells are not content
+    @test ws["A1"] === Int64(1) && get_dimension(ws) == OpenDocumentSpreadsheets.CellRange("A1:C2")   # empty cells are not content
     # a value written into a formatted empty cell keeps its style (D-038)
     ws["D5"] = 2
     @test getcell(ws, "D5").style == style_name(st, Z)
@@ -198,12 +198,12 @@ end
         @test _fmt_at(bf.cols, 2).style == "odsf-co1" && _fmt_at(bf.cols, 3).visibility == "collapse"
         @test _fmt_at(bf.rows, 3).style == "odsf-ro1" && _fmt_at(bf.rows, 4) !== nothing
         @test fmt_isbold(back.styles, effective_style(bs, 6, 2)) && effective_style(bs, 6, 3) == 0
-        @test bs["A1"] === Int64(1) && get_dimension(bs) == ODSFiles.CellRange("A1:A1")
+        @test bs["A1"] === Int64(1) && get_dimension(bs) == OpenDocumentSpreadsheets.CellRange("A1:A1")
         @test getprop(line_props(back.styles, 1, "odsf-co1"), "style:column-width") == "4cm"
     end
     # a new sheet without formats is written as before
     xf2 = newods(); xf2[1]["B2"] = 1
-    io = IOBuffer(); ODSFiles.write_table(io, xf2[1])
+    io = IOBuffer(); OpenDocumentSpreadsheets.write_table(io, xf2[1])
     @test String(take!(io)) == """<table:table table:name="Sheet1"><table:table-column table:number-columns-repeated="2"/><table:table-row><table:table-cell/></table:table-row><table:table-row><table:table-cell/><table:table-cell office:value-type="float" office:value="1"><text:p>1</text:p></table:table-cell></table:table-row></table:table>"""
 end
 
@@ -228,7 +228,7 @@ end
     # a styled value removed before the formats are read keeps its style too
     xf = openods(src; mode = "rw")
     s12 = xf["S12-types"]
-    c = first(ODSFiles.CellRef(r, cc) for r in 1:5, cc in 1:5 if !ismissing(s12[r, cc]) && getcell(s12, ODSFiles.CellRef(r, cc)).style != "Default")
+    c = first(OpenDocumentSpreadsheets.CellRef(r, cc) for r in 1:5, cc in 1:5 if !ismissing(s12[r, cc]) && getcell(s12, OpenDocumentSpreadsheets.CellRef(r, cc)).style != "Default")
     style = getcell(s12, c).style
     s12[c] = missing
     @test s12.formats === nothing
@@ -238,7 +238,7 @@ end
 
 @testset "LibreOffice keeps the formats" begin
     if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the formats oracle (set ODSFILES_SOFFICE)"
+        @info "LibreOffice not found; skipping the formats oracle (set ODS_SOFFICE)"
         @test_skip false
     else
         dir = mktempdir()

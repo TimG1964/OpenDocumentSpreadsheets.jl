@@ -1,4 +1,4 @@
-# Writing values into the cell store: ODSFiles's typed styles (D-024), the encoding of Julia
+# Writing values into the cell store: OpenDocumentSpreadsheets's typed styles (D-024), the encoding of Julia
 # values as `CellData` (D-026), which style a written cell keeps (D-027), and `store_set!`,
 # which splits row and cell runs around an edit.
 
@@ -31,7 +31,7 @@ end
 """
     typed_style_id(styles::StyleIndex, kind::Symbol) -> Int32
 
-The id of ODSFiles's cell style for `kind` (`:date`, `:datetime`, `:time`, `:boolean`),
+The id of OpenDocumentSpreadsheets's cell style for `kind` (`:date`, `:datetime`, `:time`, `:boolean`),
 adding it to the index on first use. Its name is `odsf-<kind>`, with a number added if the
 document already uses that name.
 """
@@ -96,7 +96,7 @@ end
 
 The style a cell written with `value` gets (D-027): its current style if that style's data
 format fits the value. Otherwise a style that is only a number format gives way to
-ODSFiles's typed style for dates, times and booleans, or `Default` for numbers and text; any
+OpenDocumentSpreadsheets's typed style for dates, times and booleans, or `Default` for numbers and text; any
 other style is kept with only its number format replaced (D-037, `retyped_style`).
 """
 function choose_style(styles::StyleIndex, old::Integer, value)

@@ -1,11 +1,11 @@
 """
-    ODSFiles
+    OpenDocumentSpreadsheets
 
 Read and write OpenDocument spreadsheets (`.ods`, `.fods`, `.ots`) in pure Julia.
 
 The public API mirrors XLSX.jl wherever that is reasonable (see `records/api-divergence.md` in the workspace).
 """
-module ODSFiles
+module OpenDocumentSpreadsheets
 
 import Dates
 import Parsers
@@ -18,7 +18,7 @@ using Printf: @printf, @sprintf
 using SHA: sha1                       # protection keys (phase 5 step 9)
 using Base64: base64encode
 
-# The format-independent core, shared in future with XLSX.jl (D-001). ODSFiles uses it by
+# The format-independent core, shared in future with XLSX.jl (D-001). OpenDocumentSpreadsheets uses it by
 # qualified name (`SheetCore.CellRef`), or through the names imported below.
 include("core/SheetCore.jl")
 using .SheetCore: SheetCoreError, readentry_string, readentry_prefix, CellRef, CellRange, ColumnRange, RowRange,
@@ -27,7 +27,7 @@ using .SheetCore: SheetCoreError, readentry_string, readentry_prefix, CellRef, C
 # functions the back end adds methods to
 import .SheetCore: getdata, gettable, eachtablerow
 
-# Sheet-qualified references in ODSFiles are always in LibreOffice's notation (D-015):
+# Sheet-qualified references in OpenDocumentSpreadsheets are always in LibreOffice's notation (D-015):
 # they print as `Sheet1.A1`, and parse that form as well as Excel's `Sheet1!A1`.
 const SheetCellRef       = SheetCore.SheetCellRef{SheetCore.ODFStyle}
 const SheetCellRange     = SheetCore.SheetCellRange{SheetCore.ODFStyle}
@@ -39,7 +39,7 @@ parse_sheet_ref(s::AbstractString) = SheetCore.parse_sheet_ref(SheetCore.ODFStyl
 """
     ODSError
 
-The exception ODSFiles throws for its own errors: an invalid reference, a missing sheet, a
+The exception OpenDocumentSpreadsheets throws for its own errors: an invalid reference, a missing sheet, a
 file that is not an ODF spreadsheet, and so on. It is the shared core's `SheetCoreError`
 (D-021), so one type covers errors from both.
 """

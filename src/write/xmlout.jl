@@ -463,7 +463,7 @@ end
 """
     write_table(io, ws)
 
-A sheet made by ODSFiles, written whole: its columns, its rows from the store (with their
+A sheet made by OpenDocumentSpreadsheets, written whole: its columns, its rows from the store (with their
 formats, if any), and one empty cell for an empty sheet (as LibreOffice writes one, F-015).
 """
 function write_table(io::IO, ws::Worksheet; display::Bool = true)

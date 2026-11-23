@@ -2,7 +2,7 @@
 # XLSX.jl has no named styles; the expectations are LibreOffice's (experiment 018, F-039 to
 # F-041).
 
-using ODSFiles: ODSError, getCellStyle, getFont, getFill, getBorder, getAlignment, getFormat, getText, encode_style_name
+using OpenDocumentSpreadsheets: ODSError, getCellStyle, getFont, getFill, getBorder, getAlignment, getFormat, getText, encode_style_name
 using Dates
 import ZipArchives
 
@@ -175,7 +175,7 @@ end
 
 @testset "LibreOffice keeps named styles" begin
     if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the named styles oracle (set ODSFILES_SOFFICE)"
+        @info "LibreOffice not found; skipping the named styles oracle (set ODS_SOFFICE)"
         @test_skip false
     else
         dir = mktempdir()

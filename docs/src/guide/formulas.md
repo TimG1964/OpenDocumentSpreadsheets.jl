@@ -1,10 +1,10 @@
 ```@meta
-CurrentModule = ODSFiles
+CurrentModule = OpenDocumentSpreadsheets
 ```
 
 # Formulas
 
-OpenDocument stores formulas in OpenFormula syntax (`of:=SUM([.A1:.B2];1)`). ODSFiles reads
+OpenDocument stores formulas in OpenFormula syntax (`of:=SUM([.A1:.B2];1)`). OpenDocumentSpreadsheets reads
 and writes them in the notation LibreOffice shows in its formula bar:
 
 ```julia
@@ -20,5 +20,5 @@ arguments, and in inline arrays `,` between columns and `;` between rows (`{1,2;
 Function names are translated with LibreOffice's own table, so `IFS` is stored as
 `COM.MICROSOFT.IFS`, `CEILING.XCL` as `COM.MICROSOFT.CEILING`, and so on.
 
-ODSFiles does not calculate formulas. A formula written by ODSFiles has no result until the
+OpenDocumentSpreadsheets does not calculate formulas. A formula written by OpenDocumentSpreadsheets has no result until the
 file is opened in LibreOffice (or another spreadsheet program), which computes it.

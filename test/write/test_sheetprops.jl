@@ -3,7 +3,7 @@
 # and through LibreOffice. XLSX.jl's hide-group.jl and settings.jl visibility cases are ported where
 # they apply. Uses SHIFT from formula/test_refs.jl.
 
-using ODSFiles: isRowHidden, isColumnHidden, getSheetVisibility, getTabColor, ODSError,
+using OpenDocumentSpreadsheets: isRowHidden, isColumnHidden, getSheetVisibility, getTabColor, ODSError,
     renamesheet!, copysheet!, deletesheet!, insertRows, deleteColumns
 
 const VIS = joinpath(DATA, "visibility")
@@ -65,7 +65,7 @@ end
     xf = newods("A")
     addsheet!(xf, "B"); addsheet!(xf, "C")
     setSheetVisibility(xf["B"], :hidden)
-    @test getSheetVisibility(xf["B"]) === :hidden && !ODSFiles.isvisible(xf["B"])
+    @test getSheetVisibility(xf["B"]) === :hidden && !OpenDocumentSpreadsheets.isvisible(xf["B"])
     setSheetVisibility(xf["C"], :veryHidden)                       # ODF has none: hidden (F-051)
     @test getSheetVisibility(xf["C"]) === :hidden
     @test_throws ODSError setSheetVisibility(xf["A"], :hidden)     # the last visible sheet
@@ -87,7 +87,7 @@ end
     xf = newods("A"); addsheet!(xf, "B"); addsheet!(xf, "C")
     setTabColor(xf["A"], "00FF00"); setTabColor(xf["B"], "00FF00")
     @test xf["A"].props.style == xf["B"].props.style
-    @test length(collect(eachmatch(r"style:family=\"table\"", ODSFiles._table_styles_xml(xf)))) == 1
+    @test length(collect(eachmatch(r"style:family=\"table\"", OpenDocumentSpreadsheets._table_styles_xml(xf)))) == 1
 end
 
 @testset "a patched save changes only the sheet edited (D-023)" begin
@@ -148,18 +148,18 @@ end
     # the active sheet, hidden, moves to the visible sheet before it, else after it (F-051)
     xf = openods(src; mode = "rw")                                # S2, S5 and S6 hidden
     st(a) = "<config:config-item config:name=\"ActiveTable\" config:type=\"string\">$a</config:config-item>"
-    @test !ODSFiles._settings_edited(xf)
+    @test !OpenDocumentSpreadsheets._settings_edited(xf)
     setSheetVisibility(xf["S4"], :hidden)
-    @test ODSFiles.patched_settings(xf, st("S4")) == st("S3")
-    @test ODSFiles.patched_settings(xf, st("S6")) == st("S3")       # S4, S5 hidden too
+    @test OpenDocumentSpreadsheets.patched_settings(xf, st("S4")) == st("S3")
+    @test OpenDocumentSpreadsheets.patched_settings(xf, st("S6")) == st("S3")       # S4, S5 hidden too
     setSheetVisibility(xf["S1"], :hidden)
-    @test ODSFiles.patched_settings(xf, st("S1")) == st("S3")       # none before: the next
-    @test ODSFiles.patched_settings(xf, st("S3")) == st("S3")
+    @test OpenDocumentSpreadsheets.patched_settings(xf, st("S1")) == st("S3")       # none before: the next
+    @test OpenDocumentSpreadsheets.patched_settings(xf, st("S3")) == st("S3")
 end
 
 @testset "LibreOffice reads the hidden lines, sheets and tab colours" begin
     if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the visibility oracle (set ODSFILES_SOFFICE)"
+        @info "LibreOffice not found; skipping the visibility oracle (set ODS_SOFFICE)"
         @test_skip false
     else
         dir = mktempdir()
