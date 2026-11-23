@@ -179,16 +179,30 @@ function _emit_with_children(st, frag::String, ex::_CellExtras, keep::Bool; row:
     return
 end
 
-# The extras of a cell written alone with the note `nd` (D-073): the original's annotation replaced by
-# `nd`'s, or removed (`nd === nothing`); its other extras kept.
-function _with_note(ex::Union{Nothing,_CellExtras}, nd::Union{Nothing,NoteData})
+# The extras of a cell written alone with the edit `e` (D-073, D-074): its note in place of the original's
+# annotation (or that removed), its original pictures less those removed, and its frames moved here or
+# added; the original's other extras kept.
+function _with_edit(ex::Union{Nothing,_CellExtras}, e::CellEdit, ws::Worksheet)
     lead = Union{String,SubString{String}}[]
-    nd === nothing || push!(lead, _note_xml(nd))
-    ex === nothing && return _CellExtras("", lead, Union{String,SubString{String}}[], nothing, nothing, true)
-    for s in ex.lead
-        startswith(s, "<office:annotation") || push!(lead, s)
+    tail = Union{String,SubString{String}}[]
+    e.note isa NoteData && push!(lead, _note_xml(e.note))
+    if ex !== nothing
+        for s in ex.lead
+            e.note !== missing && startswith(s, "<office:annotation") && continue
+            push!(lead, s)
+        end
+        k = 0
+        for s in ex.tail
+            if startswith(s, "<draw:frame") && occursin("<draw:image", s)
+                k += 1
+                e.frames !== nothing && k in e.frames.removed && continue
+            end
+            push!(tail, s)
+        end
     end
-    return _CellExtras(ex.validation, lead, ex.tail, ex.paras, ex.text, true)
+    e.frames === nothing || push!(tail, _frames_xml(ws, e.frames))
+    ex === nothing && return _CellExtras("", lead, tail, nothing, nothing, true)
+    return _CellExtras(ex.validation, lead, tail, ex.paras, ex.text, true)
 end
 
 # Whether a sheet's original table (`src[a:b]`) may hold any cell extras at all: an annotation, a

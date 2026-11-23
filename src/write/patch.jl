@@ -242,7 +242,7 @@ function _write_new_rows!(st::_PatchState, at::Function)
         i = _first_row_index(st.store, st.nextrow)
         write_rows(st.out, @view(st.store.rows[i:end]), st.styles, st.nextrow; st.display)
     else
-        write_model_rows(st.out, st.store, st.fmt, st.styles, st.nextrow; st.display, notes = st.ws.notes)
+        write_model_rows(st.out, st.store, st.fmt, st.styles, st.nextrow; st.display, ws = st.ws)
     end
 end
 
@@ -484,7 +484,7 @@ end
 # Columns x:y of row r from the model; `celltext` is the original cell they replace
 # (`nothing` past the row's cells).
 function _write_model_cols!(st::_PatchState, r::Int, x::Int, y::Int, celltext, rowdefault::Bool)
-    ne = _note_edits_in(st.ws, r, x, y)
+    ne = _cell_edits_in(st.ws, r, x, y)
     isempty(ne) ? _write_model_cells!(st.out, st, r, x, y, celltext, rowdefault) :
                   _write_noted_cols!(st, r, x, y, celltext, rowdefault, nothing, 0, 0, ne)
     return
@@ -495,7 +495,7 @@ end
 # here costs a dynamic call on every cell of a restyled block.
 function _write_model_cols!(st::_PatchState, r::Int, x::Int, y::Int, celltext, rowdefault::Bool,
                             ex::_CellExtras, row::Int, col::Int)
-    ne = _note_edits_in(st.ws, r, x, y)
+    ne = _cell_edits_in(st.ws, r, x, y)
     isempty(ne) || return _write_noted_cols!(st, r, x, y, celltext, rowdefault, ex, row, col, ne)
     _write_with_extras!(st, r, x, y, celltext, rowdefault, ex, row, col)
     return
@@ -791,7 +791,7 @@ function _top_elements(xml::AbstractString)
 end
 
 # The namespace declarations the written XML needs, added to the root's start tag.
-function _ns_splice!(splices, src::AbstractString, rootspan, svg::Bool, loext::Bool; xlink::Bool = false)
+function _ns_splice!(splices, src::AbstractString, rootspan, svg::Bool, loext::Bool; xlink::Bool = false, draw::Bool = false)
     roottext = SubString(src, first(rootspan), last(rootspan))
     tagend = first(rootspan) - 1 + _start_tag_end(roottext)
     tagend_at = src[prevind(src, tagend)] == '/' ? prevind(src, tagend) : tagend
@@ -800,6 +800,7 @@ function _ns_splice!(splices, src::AbstractString, rootspan, svg::Bool, loext::B
     svg && !occursin("xmlns:svg=", starttag) && (ns *= " xmlns:svg=\"$_SVG_NS\"")
     loext && !occursin("xmlns:loext=", starttag) && (ns *= " xmlns:loext=\"$_LOEXT_NS\"")
     xlink && !occursin("xmlns:xlink=", starttag) && (ns *= " xmlns:xlink=\"$_XLINK_NS\"")
+    draw && !occursin("xmlns:draw=", starttag) && (ns *= " xmlns:draw=\"$_DRAW_NS\"")
     isempty(ns) || push!(splices, (tagend_at, tagend_at - 1, ns))
     return
 end
@@ -869,8 +870,8 @@ function write_patched_content(out::_ChunkedIO, xf::ODSFile; display::Bool = tru
     facedecls = get(kids, "office:font-face-decls", nothing)
     splices = _Splice[]
     fx = added_faces_xml(xf.styles)
-    _ns_splice!(splices, src, rootspan, !isempty(fx) || _has_notes(xf), _needs_loext(xf.styles) || _needs_protection_loext(xf) || _has_threads(xf);
-                xlink = _needs_xlink(xf.styles))
+    _ns_splice!(splices, src, rootspan, !isempty(fx) || _has_notes(xf) || _has_frames(xf), _needs_loext(xf.styles) || _needs_protection_loext(xf) || _has_threads(xf);
+                xlink = _needs_xlink(xf.styles) || _has_frames(xf), draw = _has_frames(xf))
     # font faces (phase 4): in office:font-face-decls, which comes before the styles
     stylesnode = get(kids, "office:styles", nothing)
     isempty(fx) || _append_splice!(splices, src, facedecls, "office:font-face-decls", fx,
@@ -1053,16 +1054,16 @@ function _spreadsheet_end(body, src::String)
     return first(sp) - 1 + r[1]
 end
 
-# Columns x:y of row r where some cells' notes were set or removed (D-073, `ne`: column => note or
-# nothing, sorted): each such cell written alone, with its note in place of the original's (`ex`).
+# Columns x:y of row r where some cells' notes or frames changed (D-073, D-074; `ne`: column => edit,
+# sorted): each such cell written alone, its note and frames in place of the original's (`ex`).
 function _write_noted_cols!(st::_PatchState, r::Int, x::Int, y::Int, celltext, rowdefault::Bool,
                             ex::Union{Nothing,_CellExtras}, row::Int, col::Int, ne)
     pos = x
     seg(a, b) = ex === nothing ? _write_model_cells!(st.out, st, r, a, b, celltext, rowdefault) :
                                  _write_with_extras!(st, r, a, b, celltext, rowdefault, ex, row, col + (a - x))
-    for (c, nd) in ne
+    for (c, e) in ne
         c > pos && seg(pos, c - 1)
-        _write_with_extras!(st, r, c, c, celltext, rowdefault, _with_note(ex, nd), row, col + (c - x))
+        _write_with_extras!(st, r, c, c, celltext, rowdefault, _with_edit(ex, e, st.ws), row, col + (c - x))
         pos = c + 1
     end
     pos <= y && seg(pos, y)

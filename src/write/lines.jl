@@ -480,6 +480,8 @@ function shift_lines!(ws::Worksheet, axis::Int, at::Int, n::Int)
             throw(ODSError("Can't insert $n $(word)$(n == 1 ? "" : "s") into `$(ws.name)`: cell $(p) would be pushed off the sheet (LibreOffice refuses this too)."))
     end
     d1 = at; d2 = at - n - 1
+    # shapes in deleted cells that reach beyond them stay, in the cell now at their place (F-060)
+    rescued = n < 0 ? _rescued_frames(ws, axis, d1, d2) : nothing
     # formulas are rewritten where their cells are now: split the runs at the edges first
     if n < 0
         if axis == 1
@@ -542,6 +544,7 @@ function shift_lines!(ws::Worksheet, axis::Int, at::Int, n::Int)
                         (ws.colmap === nothing ? (ws.colmap = IndexMap(maxl)) : ws.colmap)
         n > 0 ? insert_lines!(m, at, n) : delete_lines!(m, d1, d2)
     end
+    _shift_frames!(ws, axis, at, n, rescued)          # pictures (phase 6 step 5): after the edits moved
     isnewfile(xf) || push!(xf.ops, op)
     return ws
 end
@@ -693,8 +696,9 @@ to a deleted cell becomes `#REF!`, and a range that loses some of its rows shrin
 first row is deleted are undone; validations, conditional formats and annotations on deleted cells
 go with them.
 
-Not yet as LibreOffice does it: a shape anchored in a deleted cell is deleted with it (LibreOffice
-moves it to the next cell), and a validation that no cell uses any more stays in the file, unused
+As in LibreOffice, a picture or shape lying wholly in the deleted cells goes with them, and one
+reaching beyond them stays where it is, anchored in the cell now at its place (F-060). Not yet
+as LibreOffice does it: a validation that no cell uses any more stays in the file, unused
 (LibreOffice drops it).
 """
 deleteRows(ws::Worksheet, rows) = _delete_lines!(ws, 1, _lines_of(ws, 1, rows), "rows")

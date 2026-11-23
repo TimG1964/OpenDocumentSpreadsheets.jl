@@ -161,6 +161,46 @@ mutable struct PersonEdits
 end
 PersonEdits() = PersonEdits(nothing, Pair{String,String}[])
 
+# Pictures (phase 6 step 5, D-074). One added: its part in `Pictures/` (or, in a flat file, its bytes
+# in `ODSFile.media`), its media type, its size and anchor cells (it resizes with them, as LibreOffice's
+# import places XLSX.jl's, F-060), in cm and as current cell numbers.
+mutable struct ImageData
+    pic::String                       # "Pictures/…"
+    mime::String
+    torow::Int                        # the last cell it covers (table:end-cell-address)
+    tocol::Int
+    width::Float64                    # cm
+    height::Float64
+    endx::Float64                     # its end within the last cell (table:end-x, -y), cm
+    endy::Float64
+end
+
+# The frames of one cell changed: the original's pictures removed (by their order among its
+# pictures), frames moved here by a delete (their original XML, F-060), pictures added.
+mutable struct FrameEdit
+    removed::Set{Int}
+    moved::Vector{String}
+    added::Vector{ImageData}
+end
+FrameEdit() = FrameEdit(Set{Int}(), String[], ImageData[])
+
+# What a cell's writer adds or changes besides its value: its note (missing: unchanged; nothing:
+# removed), and its frames (D-073, D-074).
+struct CellEdit
+    note::Union{Missing,Nothing,NoteData}
+    frames::Union{Nothing,FrameEdit}
+end
+
+# A shape of a sheet's original cells (or of its `table:shapes`, `page`): where it is, and enough of it
+# for `getImages` and for a delete to move it (F-060).
+struct FileFrame
+    row::Int                          # its anchor cell (original numbers; 0 for the page)
+    col::Int
+    k::Int                            # its order among the cell's pictures (0: not a picture)
+    href::String                      # the picture's `xlink:href` ("" if none)
+    xml::String                       # the element, as written
+end
+
 """
     Worksheet
 
@@ -190,11 +230,13 @@ mutable struct Worksheet
     notes::Union{Nothing,Dict{Tuple{Int,Int},Union{Nothing,NoteData}}}   # notes set (or removed: nothing) since, by cell (phase 6 step 4)
     filenotes::Union{Nothing,Vector{FileNote}}   # the notes its file holds, once read
     mayextras::Union{Nothing,Bool}   # whether its original table may hold cell extras, once known (D-071)
+    frames::Union{Nothing,Dict{Tuple{Int,Int},FrameEdit}}   # pictures added, removed or moved, by cell (phase 6 step 5)
+    fileframes::Union{Nothing,Vector{FileFrame}}   # the shapes its file holds, once read
 end
 
 Worksheet(xf, name, index, entry, visible, store, localnames, lock) =
     Worksheet(xf, name, index, entry, visible, store, localnames, lock, Dict{Int,Vector{Int}}(), nothing, nothing, nothing, 0, false,
-              NameEdits(), nothing, nothing, nothing, nothing, nothing, nothing, nothing)
+              NameEdits(), nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing)
 
 # Whether the sheet was made by OpenDocumentSpreadsheets (so it is written whole), not read from the file.
 isnewsheet(ws::Worksheet) = ws.entry === nothing
@@ -231,14 +273,16 @@ mutable struct ODSFile
     pageedits::PageEdits              # page styles derived (phase 5 step 10)
     meta::Union{Nothing,MetaEdits}    # the document properties, once read (phase 5 step 11)
     persons::PersonEdits              # the threads' people (phase 6 step 4)
+    media::Vector{Tuple{String,String,Vector{UInt8}}}   # pictures added: (Pictures/name, media type, bytes) (phase 6 step 5)
+    hasdraw::Union{Nothing,Bool}      # whether the content holds any `<draw:` element, once known (phase 6 step 5)
 end
 
 ODSFile(source, container, content, version, styles, sheets, names, null_date, use_cache) =
     ODSFile(source, container, content, version, styles, sheets, names, null_date, use_cache, false, nothing,
-            nothing, ReentrantLock(), Any[], Any[], Any[], Pair{String,String}[], NameEdits(), TableStyleEdits(), ViewEdits(), nothing, PageEdits(), nothing, PersonEdits())
+            nothing, ReentrantLock(), Any[], Any[], Any[], Pair{String,String}[], NameEdits(), TableStyleEdits(), ViewEdits(), nothing, PageEdits(), nothing, PersonEdits(), Tuple{String,String,Vector{UInt8}}[], nothing)
 ODSFile(source, container, content, version, styles, sheets, names, null_date, use_cache, writable, source_io) =
     ODSFile(source, container, content, version, styles, sheets, names, null_date, use_cache, writable, source_io,
-            nothing, ReentrantLock(), Any[], Any[], Any[], Pair{String,String}[], NameEdits(), TableStyleEdits(), ViewEdits(), nothing, PageEdits(), nothing, PersonEdits())
+            nothing, ReentrantLock(), Any[], Any[], Any[], Pair{String,String}[], NameEdits(), TableStyleEdits(), ViewEdits(), nothing, PageEdits(), nothing, PersonEdits(), Tuple{String,String,Vector{UInt8}}[], nothing)
 
 #
 # The sheet index is built as far as it is needed: `xf["Sheet1"]` or `xf[1]` finds the first

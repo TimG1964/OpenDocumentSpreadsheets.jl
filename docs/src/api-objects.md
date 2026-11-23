@@ -4,7 +4,7 @@ CurrentModule = OpenDocumentSpreadsheets
 
 # API reference: links, notes and objects
 
-Hyperlinks, notes and threaded comments (phase 6).
+Hyperlinks, notes and threaded comments, and pictures (phase 6).
 
 ## Hyperlinks
 
@@ -34,3 +34,13 @@ getThreadedComment
 getThreadedComments
 ```
 
+
+## Pictures
+
+Pictures anchored in cells, resizing with them, as LibreOffice's import places XLSX.jl's (F-060):
+
+```@docs
+addImage
+getImages
+deleteImage
+```

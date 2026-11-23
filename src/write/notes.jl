@@ -86,59 +86,78 @@ function _note_xml(n::NoteData)
 end
 
 #
-# Note edits, by cell (what the writers need)
+# Cell edits, by cell (what the writers need): a note set or removed (D-073), frames added, removed or
+# moved (D-074)
 #
 
-const _NO_NOTE_EDITS = Pair{Int,Union{Nothing,NoteData}}[]
+const _NO_CELL_EDITS = Pair{Int,CellEdit}[]
 
-# The note edits of row r in columns x:y, sorted by column.
-function _note_edits_in(notes::Union{Nothing,Dict{Tuple{Int,Int},Union{Nothing,NoteData}}}, r::Int, x::Int, y::Int)
-    (notes === nothing || isempty(notes)) && return _NO_NOTE_EDITS
-    out = Pair{Int,Union{Nothing,NoteData}}[]
-    if y - x + 1 <= length(notes)
+# The cell edits of row r in columns x:y, sorted by column.
+function _cell_edits_in(ws::Union{Nothing,Worksheet}, r::Int, x::Int, y::Int)
+    ws === nothing && return _NO_CELL_EDITS
+    notes = ws.notes; frames = ws.frames
+    nn = notes === nothing ? 0 : length(notes)
+    nf = frames === nothing ? 0 : length(frames)
+    nn + nf == 0 && return _NO_CELL_EDITS
+    cols = Int[]
+    if y - x + 1 <= nn + nf
         for c in x:y
-            haskey(notes, (r, c)) && push!(out, c => notes[(r, c)])
+            ((nn > 0 && haskey(notes, (r, c))) || (nf > 0 && haskey(frames, (r, c)))) && push!(cols, c)
         end
     else
-        for ((rr, c), nd) in notes
-            rr == r && x <= c <= y && push!(out, c => nd)
-        end
-        sort!(out; by = first)
+        nn > 0 && for (rr, c) in keys(notes); rr == r && x <= c <= y && push!(cols, c); end
+        nf > 0 && for (rr, c) in keys(frames); rr == r && x <= c <= y && push!(cols, c); end
+        sort!(unique!(cols))
     end
-    return isempty(out) ? _NO_NOTE_EDITS : out
+    isempty(cols) && return _NO_CELL_EDITS
+    return [c => CellEdit(nn > 0 && haskey(notes, (r, c)) ? notes[(r, c)] : missing,
+                          nf > 0 ? get(frames, (r, c), nothing) : nothing) for c in cols]
 end
-_note_edits_in(ws::Worksheet, r::Int, x::Int, y::Int) = _note_edits_in(ws.notes, r, x, y)
 
-# Rows with new notes as their own segments (`write_model_rows`).
-function _note_bounds!(bps::Vector{Int}, notes::Dict{Tuple{Int,Int},Union{Nothing,NoteData}}, a::Int, b::Int)
-    for ((r, _), nd) in notes
-        nd !== nothing && a <= r <= b && push!(bps, r, r + 1)
+# Rows with new notes or frames as their own segments (`write_model_rows`).
+function _edit_bounds!(bps::Vector{Int}, ws::Worksheet, a::Int, b::Int)
+    if ws.notes !== nothing
+        for ((r, _), nd) in ws.notes
+            nd !== nothing && a <= r <= b && push!(bps, r, r + 1)
+        end
+    end
+    if ws.frames !== nothing
+        for (r, _) in keys(ws.frames)
+            a <= r <= b && push!(bps, r, r + 1)
+        end
     end
     return
 end
 
-# A cell written by `write_cell` (`frag`), with `xml` as its first child.
-function _with_annotation(frag::String, xml::String)
+# A cell written by `write_cell` (`frag`), with `lead` as its first children and `tail` as its last.
+function _with_children(frag::String, lead::AbstractString, tail::AbstractString)
     e = _start_tag_end(frag)
+    covered = startswith(frag, "<table:covered-table-cell")
+    endtag = covered ? "</table:covered-table-cell>" : "</table:table-cell>"
     if codeunit(frag, prevind(frag, e)) == UInt8('/')
-        covered = startswith(frag, "<table:covered-table-cell")
-        return string(SubString(frag, 1, prevind(frag, prevind(frag, e))), '>', xml,
-                      covered ? "</table:covered-table-cell>" : "</table:table-cell>")
+        return string(SubString(frag, 1, prevind(frag, prevind(frag, e))), '>', lead, tail, endtag)
     end
-    return string(SubString(frag, 1, e), xml, SubString(frag, nextind(frag, e)))
+    inner = SubString(frag, nextind(frag, e), ncodeunits(frag) - ncodeunits(endtag))
+    return string(SubString(frag, 1, e), lead, inner, tail, endtag)
 end
 
-# `write_merged_cells` for columns x:y, with the cells of `nc` (column => note) written alone, each
-# with its note (a new file's rows; rows added after a file's last).
-function _write_noted_cells(io::IO, styles::StyleIndex, vals, emps, x::Int, y::Int, rowdefault::Bool, coldefault, nc; display::Bool = true)
+# The XML an edit adds to a new cell: its note, and its frames.
+_edit_lead(e::CellEdit) = e.note isa NoteData ? _note_xml(e.note) : ""
+_edit_tail(ws::Worksheet, e::CellEdit) = e.frames === nothing ? "" : _frames_xml(ws, e.frames)
+
+# `write_merged_cells` for columns x:y, with the cells of `nc` (column => edit) written alone, each
+# with its note and frames (a new file's rows; rows added after a file's last).
+function _write_noted_cells(io::IO, styles::StyleIndex, vals, emps, x::Int, y::Int, rowdefault::Bool, coldefault, nc, ws::Worksheet;
+                            display::Bool = true)
     gap(o) = n -> write_cell(o, nothing, styles; repeat = n)
     pos = x
-    for (c, nd) in nc
+    for (c, e) in nc
         c > pos && write_merged_cells(io, styles, vals, emps, pos, c - 1, rowdefault, coldefault, gap(io); display)
         buf = IOBuffer()
         write_merged_cells(buf, styles, vals, emps, c, c, rowdefault, coldefault, gap(buf); display)
         frag = String(take!(buf))
-        print(io, nd === nothing ? frag : _with_annotation(frag, _note_xml(nd)))
+        lead = _edit_lead(e); tail = _edit_tail(ws, e)
+        print(io, isempty(lead) && isempty(tail) ? frag : _with_children(frag, lead, tail))
         pos = c + 1
     end
     pos <= y && write_merged_cells(io, styles, vals, emps, pos, y, rowdefault, coldefault, gap(io); display)

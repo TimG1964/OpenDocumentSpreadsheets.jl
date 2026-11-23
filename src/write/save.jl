@@ -38,8 +38,9 @@ const _XMLDECL = """<?xml version="1.0" encoding="UTF-8"?>\n"""
 function _faces(xf::ODSFile)
     fx = added_faces_xml(xf.styles)
     lx = _needs_loext(xf.styles) || _needs_protection_loext(xf) || _has_threads(xf) ? " xmlns:loext=\"$_LOEXT_NS\"" : ""
-    sx = !isempty(fx) || _has_notes(xf) ? " xmlns:svg=\"$_SVG_NS\"" : ""
-    return (sx * lx, isempty(fx) ? "" : "<office:font-face-decls>$fx</office:font-face-decls>")
+    sx = !isempty(fx) || _has_notes(xf) || _has_frames(xf) ? " xmlns:svg=\"$_SVG_NS\"" : ""
+    dx = _has_frames(xf) ? " xmlns:draw=\"$_DRAW_NS\"" : ""         # pictures (phase 6 step 5)
+    return (sx * lx * dx, isempty(fx) ? "" : "<office:font-face-decls>$fx</office:font-face-decls>")
 end
 
 # A new file's content.xml, written to `io` as it is made (D-048). The styles come first:
@@ -212,6 +213,10 @@ function _patched_parts(xf::ODSFile; display::Bool = true)
         mt = get(mts, old * "/", "")
         isempty(mt) || push!(parts, manifest_entry(new * "/", mt))
     end
+    # pictures added (phase 6 step 5), once each
+    for (name, mt, b) in _used_media(xf)
+        name in names || push!(parts, PackagePart(name, b; mediatype = mt, compress = false))
+    end
     # a package without settings.xml gets one when views were set (phase 5 step 8)
     _views_edited(xf) && !("settings.xml" in partnames(cont)) &&
         push!(parts, PackagePart("settings.xml", _settings_views(xf, _new_settings_xml(xf.version in WRITABLE_ODF_VERSIONS ? xf.version : DEFAULT_ODF_VERSION))))
@@ -258,6 +263,9 @@ function writeods(dest::Union{AbstractString,IO}, xf::ODSFile; overwrite::Bool =
                      PackagePart("styles.xml", _new_styles(xf, version)),
                      PackagePart("meta.xml", new_meta_xml(xf, version))]
             _views_edited(xf) && push!(parts, PackagePart("settings.xml", _settings_views(xf, _new_settings_xml(version))))
+            for (name, mt, b) in _used_media(xf)        # pictures (phase 6 step 5)
+                push!(parts, PackagePart(name, b; mediatype = mt, compress = false))
+            end
             write_package(dest, parts; mediatype = mt, version)
         end
     else
