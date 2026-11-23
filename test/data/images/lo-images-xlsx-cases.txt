@@ -1,0 +1,9 @@
+Img	B2	png_native	image1.png	B2	C3
+Img	F2	png_size	image2.png	F2	H6
+Img	B10:D16	png_range	image3.png	B10	D16
+Img	F10	jpg_native	image1.jpg	F10	I20
+Img	B20	gif	image1.gif	B20	B20
+Img	D20	png_buffer	image4.png	D20	D25
+Img	F20	same_png_again	image5.png	F20	G21
+Img	B30	png_in_cell	image6.png	B30	B30
+Second	C3	png_second_sheet	image7.png	C3	C8

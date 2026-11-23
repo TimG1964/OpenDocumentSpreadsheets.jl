@@ -1,0 +1,12 @@
+F18	v_wild_q
+F19	v_wild_escape
+F14	v_wild_star
+F06	v_date_num
+F17	v_wild_ne
+F03	v_empty_plain
+F02	v_set_blank
+F01	v_upper
+F05	v_bool_num
+F04	v_num_text
+F07	v_not_empty
+F08	v_ne_text

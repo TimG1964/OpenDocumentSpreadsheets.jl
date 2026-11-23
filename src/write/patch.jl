@@ -480,14 +480,37 @@ end
 
 # Columns x:y of row r from the model; `celltext` is the original cell they replace
 # (`nothing` past the row's cells).
-function _write_model_cols!(st::_PatchState, r::Int, x::Int, y::Int, celltext, rowdefault::Bool)
+_write_model_cols!(st::_PatchState, r::Int, x::Int, y::Int, celltext, rowdefault::Bool) =
+    _write_model_cells!(st.out, st, r, x, y, celltext, rowdefault)
+
+# The same, for an original cell that holds more than its value (`ex`, D-071); `row`, `col`: its
+# original position (for `_emit`). Callers test `ex === nothing` themselves: a keyword or a union
+# here costs a dynamic call on every cell of a restyled block.
+function _write_model_cols!(st::_PatchState, r::Int, x::Int, y::Int, celltext, rowdefault::Bool,
+                            ex::_CellExtras, row::Int, col::Int)
+    buf = IOBuffer()
+    _write_model_cells!(buf, st, r, x, y, celltext, rowdefault)
+    frag = String(take!(buf))
+    isempty(ex.validation) || (frag = _with_validation(frag, ex.validation))
+    if ex.single && x == y && _has_children(ex)
+        run = _run_at(_runs_of(st.store.rows, r), x)
+        keep = ex.paras !== nothing && run !== nothing && run.data.kind === CK_STRING &&
+               run.data.formula === nothing && run.data.text == ex.text
+        _emit_with_children(st, frag, ex, keep; row, col)
+    else
+        print(st.out, frag)
+    end
+    return
+end
+
+function _write_model_cells!(io::IO, st::_PatchState, r::Int, x::Int, y::Int, celltext, rowdefault::Bool)
     emps = st.fmt === nothing ? _NO_RUNS : _runs_of(st.fmt.cells, r)
     gap = if st.fmt === nothing && celltext !== nothing
-        n -> _empty_cell_like(st.out, celltext, n)
+        n -> _empty_cell_like(io, celltext, n)
     else
-        n -> write_cell(st.out, nothing, st.styles; repeat = n)
+        n -> write_cell(io, nothing, st.styles; repeat = n)
     end
-    write_merged_cells(st.out, st.styles, _runs_of(st.store.rows, r), emps, x, y, rowdefault,
+    write_merged_cells(io, st.styles, _runs_of(st.store.rows, r), emps, x, y, rowdefault,
                        (a, b) -> _col_default(st, a, b), gap; st.display)
 end
 
@@ -519,10 +542,16 @@ function _write_edited_row!(st::_PatchState, ln::XML.LazyNode, text::SubString{S
                 k = max(1, _attr_int(celltext, "table:number-columns-repeated", 1))
                 lastc = col + k - 1
                 cur = col
+                ex = ci <= length(cols) && first(cols[ci]) <= lastc && _maybe_extras(celltext) ?
+                     _cell_extras(src, XML.LazyNode(ch), celltext) : nothing
                 while ci <= length(cols) && first(cols[ci]) <= lastc
                     x = max(first(cols[ci]), cur); y = min(last(cols[ci]), lastc)
                     x > cur && _emit(st, _retag(celltext, "table:number-columns-repeated", x - cur))
-                    _write_model_cols!(st, a, x, y, celltext, rowdefault)
+                    if ex === nothing
+                        _write_model_cols!(st, a, x, y, celltext, rowdefault)
+                    else
+                        _write_model_cols!(st, a, x, y, celltext, rowdefault, ex, 0, 0)
+                    end
                     cur = y + 1
                     last(cols[ci]) <= lastc ? (ci += 1) : break
                 end

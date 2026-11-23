@@ -1,0 +1,1656 @@
+lo\import.fods	F01	value	2	shown	apple	10
+lo\import.fods	F01	value	3	hidden	Banana	-5
+lo\import.fods	F01	value	4	hidden	cherry	25.5
+lo\import.fods	F01	value	5	hidden	A*star	7
+lo\import.fods	F01	value	6	hidden	date	100
+lo\import.fods	F01	value	7	hidden	Apricot	3
+lo\import.fods	F01	value	8	hidden		42
+lo\import.fods	F01	value	9	hidden	elder	
+lo\import.fods	F01	value	10	hidden	fig	0
+lo\import.fods	F01	value	11	hidden	grape	18
+lo\import.fods	F01	value	12	shown	apple	10
+lo\import.fods	F01	value	13	hidden	ham?	55
+lo\import.fods	F02	values	2	shown	apple	10
+lo\import.fods	F02	values	3	hidden	Banana	-5
+lo\import.fods	F02	values	4	shown	cherry	25.5
+lo\import.fods	F02	values	5	hidden	A*star	7
+lo\import.fods	F02	values	6	hidden	date	100
+lo\import.fods	F02	values	7	hidden	Apricot	3
+lo\import.fods	F02	values	8	hidden		42
+lo\import.fods	F02	values	9	hidden	elder	
+lo\import.fods	F02	values	10	hidden	fig	0
+lo\import.fods	F02	values	11	hidden	grape	18
+lo\import.fods	F02	values	12	shown	apple	10
+lo\import.fods	F02	values	13	hidden	ham?	55
+lo\import.fods	F03	blank	2	hidden	apple	10
+lo\import.fods	F03	blank	3	hidden	Banana	-5
+lo\import.fods	F03	blank	4	hidden	cherry	25.5
+lo\import.fods	F03	blank	5	hidden	A*star	7
+lo\import.fods	F03	blank	6	hidden	date	100
+lo\import.fods	F03	blank	7	hidden	Apricot	3
+lo\import.fods	F03	blank	8	shown		42
+lo\import.fods	F03	blank	9	hidden	elder	
+lo\import.fods	F03	blank	10	hidden	fig	0
+lo\import.fods	F03	blank	11	hidden	grape	18
+lo\import.fods	F03	blank	12	hidden	apple	10
+lo\import.fods	F03	blank	13	hidden	ham?	55
+lo\import.fods	F04	num_value	2	shown	apple	10
+lo\import.fods	F04	num_value	3	hidden	Banana	-5
+lo\import.fods	F04	num_value	4	hidden	cherry	25.5
+lo\import.fods	F04	num_value	5	hidden	A*star	7
+lo\import.fods	F04	num_value	6	hidden	date	100
+lo\import.fods	F04	num_value	7	hidden	Apricot	3
+lo\import.fods	F04	num_value	8	hidden		42
+lo\import.fods	F04	num_value	9	hidden	elder	
+lo\import.fods	F04	num_value	10	hidden	fig	0
+lo\import.fods	F04	num_value	11	hidden	grape	18
+lo\import.fods	F04	num_value	12	shown	apple	10
+lo\import.fods	F04	num_value	13	hidden	ham?	55
+lo\import.fods	F05	bool	2	shown	apple	10
+lo\import.fods	F05	bool	3	hidden	Banana	-5
+lo\import.fods	F05	bool	4	shown	cherry	25.5
+lo\import.fods	F05	bool	5	hidden	A*star	7
+lo\import.fods	F05	bool	6	shown	date	100
+lo\import.fods	F05	bool	7	hidden	Apricot	3
+lo\import.fods	F05	bool	8	hidden		42
+lo\import.fods	F05	bool	9	shown	elder	
+lo\import.fods	F05	bool	10	hidden	fig	0
+lo\import.fods	F05	bool	11	shown	grape	18
+lo\import.fods	F05	bool	12	hidden	apple	10
+lo\import.fods	F05	bool	13	shown	ham?	55
+lo\import.fods	F06	date_value	2	shown	apple	10
+lo\import.fods	F06	date_value	3	hidden	Banana	-5
+lo\import.fods	F06	date_value	4	hidden	cherry	25.5
+lo\import.fods	F06	date_value	5	hidden	A*star	7
+lo\import.fods	F06	date_value	6	hidden	date	100
+lo\import.fods	F06	date_value	7	hidden	Apricot	3
+lo\import.fods	F06	date_value	8	hidden		42
+lo\import.fods	F06	date_value	9	hidden	elder	
+lo\import.fods	F06	date_value	10	hidden	fig	0
+lo\import.fods	F06	date_value	11	hidden	grape	18
+lo\import.fods	F06	date_value	12	hidden	apple	10
+lo\import.fods	F06	date_value	13	hidden	ham?	55
+lo\import.fods	F07	eq	2	shown	apple	10
+lo\import.fods	F07	eq	3	hidden	Banana	-5
+lo\import.fods	F07	eq	4	hidden	cherry	25.5
+lo\import.fods	F07	eq	5	hidden	A*star	7
+lo\import.fods	F07	eq	6	hidden	date	100
+lo\import.fods	F07	eq	7	hidden	Apricot	3
+lo\import.fods	F07	eq	8	hidden		42
+lo\import.fods	F07	eq	9	hidden	elder	
+lo\import.fods	F07	eq	10	hidden	fig	0
+lo\import.fods	F07	eq	11	hidden	grape	18
+lo\import.fods	F07	eq	12	shown	apple	10
+lo\import.fods	F07	eq	13	hidden	ham?	55
+lo\import.fods	F08	ne	2	hidden	apple	10
+lo\import.fods	F08	ne	3	shown	Banana	-5
+lo\import.fods	F08	ne	4	shown	cherry	25.5
+lo\import.fods	F08	ne	5	shown	A*star	7
+lo\import.fods	F08	ne	6	shown	date	100
+lo\import.fods	F08	ne	7	shown	Apricot	3
+lo\import.fods	F08	ne	8	shown		42
+lo\import.fods	F08	ne	9	shown	elder	
+lo\import.fods	F08	ne	10	shown	fig	0
+lo\import.fods	F08	ne	11	shown	grape	18
+lo\import.fods	F08	ne	12	hidden	apple	10
+lo\import.fods	F08	ne	13	shown	ham?	55
+lo\import.fods	F09	gt	2	hidden	apple	10
+lo\import.fods	F09	gt	3	hidden	Banana	-5
+lo\import.fods	F09	gt	4	shown	cherry	25.5
+lo\import.fods	F09	gt	5	hidden	A*star	7
+lo\import.fods	F09	gt	6	shown	date	100
+lo\import.fods	F09	gt	7	hidden	Apricot	3
+lo\import.fods	F09	gt	8	shown		42
+lo\import.fods	F09	gt	9	hidden	elder	
+lo\import.fods	F09	gt	10	hidden	fig	0
+lo\import.fods	F09	gt	11	shown	grape	18
+lo\import.fods	F09	gt	12	hidden	apple	10
+lo\import.fods	F09	gt	13	shown	ham?	55
+lo\import.fods	F10	ge	2	shown	apple	10
+lo\import.fods	F10	ge	3	hidden	Banana	-5
+lo\import.fods	F10	ge	4	shown	cherry	25.5
+lo\import.fods	F10	ge	5	hidden	A*star	7
+lo\import.fods	F10	ge	6	shown	date	100
+lo\import.fods	F10	ge	7	hidden	Apricot	3
+lo\import.fods	F10	ge	8	shown		42
+lo\import.fods	F10	ge	9	hidden	elder	
+lo\import.fods	F10	ge	10	hidden	fig	0
+lo\import.fods	F10	ge	11	shown	grape	18
+lo\import.fods	F10	ge	12	shown	apple	10
+lo\import.fods	F10	ge	13	shown	ham?	55
+lo\import.fods	F11	lt	2	hidden	apple	10
+lo\import.fods	F11	lt	3	shown	Banana	-5
+lo\import.fods	F11	lt	4	hidden	cherry	25.5
+lo\import.fods	F11	lt	5	shown	A*star	7
+lo\import.fods	F11	lt	6	hidden	date	100
+lo\import.fods	F11	lt	7	shown	Apricot	3
+lo\import.fods	F11	lt	8	hidden		42
+lo\import.fods	F11	lt	9	hidden	elder	
+lo\import.fods	F11	lt	10	shown	fig	0
+lo\import.fods	F11	lt	11	hidden	grape	18
+lo\import.fods	F11	lt	12	hidden	apple	10
+lo\import.fods	F11	lt	13	hidden	ham?	55
+lo\import.fods	F12	le	2	shown	apple	10
+lo\import.fods	F12	le	3	shown	Banana	-5
+lo\import.fods	F12	le	4	hidden	cherry	25.5
+lo\import.fods	F12	le	5	shown	A*star	7
+lo\import.fods	F12	le	6	hidden	date	100
+lo\import.fods	F12	le	7	shown	Apricot	3
+lo\import.fods	F12	le	8	hidden		42
+lo\import.fods	F12	le	9	hidden	elder	
+lo\import.fods	F12	le	10	shown	fig	0
+lo\import.fods	F12	le	11	hidden	grape	18
+lo\import.fods	F12	le	12	shown	apple	10
+lo\import.fods	F12	le	13	hidden	ham?	55
+lo\import.fods	F13	text_gt	2	hidden	apple	10
+lo\import.fods	F13	text_gt	3	hidden	Banana	-5
+lo\import.fods	F13	text_gt	4	hidden	cherry	25.5
+lo\import.fods	F13	text_gt	5	hidden	A*star	7
+lo\import.fods	F13	text_gt	6	shown	date	100
+lo\import.fods	F13	text_gt	7	hidden	Apricot	3
+lo\import.fods	F13	text_gt	8	hidden		42
+lo\import.fods	F13	text_gt	9	shown	elder	
+lo\import.fods	F13	text_gt	10	shown	fig	0
+lo\import.fods	F13	text_gt	11	shown	grape	18
+lo\import.fods	F13	text_gt	12	hidden	apple	10
+lo\import.fods	F13	text_gt	13	shown	ham?	55
+lo\import.fods	F14	begins	2	shown	apple	10
+lo\import.fods	F14	begins	3	hidden	Banana	-5
+lo\import.fods	F14	begins	4	hidden	cherry	25.5
+lo\import.fods	F14	begins	5	shown	A*star	7
+lo\import.fods	F14	begins	6	hidden	date	100
+lo\import.fods	F14	begins	7	shown	Apricot	3
+lo\import.fods	F14	begins	8	hidden		42
+lo\import.fods	F14	begins	9	hidden	elder	
+lo\import.fods	F14	begins	10	hidden	fig	0
+lo\import.fods	F14	begins	11	hidden	grape	18
+lo\import.fods	F14	begins	12	shown	apple	10
+lo\import.fods	F14	begins	13	hidden	ham?	55
+lo\import.fods	F15	ends	2	shown	apple	10
+lo\import.fods	F15	ends	3	hidden	Banana	-5
+lo\import.fods	F15	ends	4	hidden	cherry	25.5
+lo\import.fods	F15	ends	5	hidden	A*star	7
+lo\import.fods	F15	ends	6	shown	date	100
+lo\import.fods	F15	ends	7	hidden	Apricot	3
+lo\import.fods	F15	ends	8	hidden		42
+lo\import.fods	F15	ends	9	hidden	elder	
+lo\import.fods	F15	ends	10	hidden	fig	0
+lo\import.fods	F15	ends	11	shown	grape	18
+lo\import.fods	F15	ends	12	shown	apple	10
+lo\import.fods	F15	ends	13	hidden	ham?	55
+lo\import.fods	F16	contains	2	hidden	apple	10
+lo\import.fods	F16	contains	3	shown	Banana	-5
+lo\import.fods	F16	contains	4	hidden	cherry	25.5
+lo\import.fods	F16	contains	5	hidden	A*star	7
+lo\import.fods	F16	contains	6	hidden	date	100
+lo\import.fods	F16	contains	7	hidden	Apricot	3
+lo\import.fods	F16	contains	8	hidden		42
+lo\import.fods	F16	contains	9	hidden	elder	
+lo\import.fods	F16	contains	10	hidden	fig	0
+lo\import.fods	F16	contains	11	hidden	grape	18
+lo\import.fods	F16	contains	12	hidden	apple	10
+lo\import.fods	F16	contains	13	hidden	ham?	55
+lo\import.fods	F17	not_contains	2	shown	apple	10
+lo\import.fods	F17	not_contains	3	hidden	Banana	-5
+lo\import.fods	F17	not_contains	4	shown	cherry	25.5
+lo\import.fods	F17	not_contains	5	shown	A*star	7
+lo\import.fods	F17	not_contains	6	shown	date	100
+lo\import.fods	F17	not_contains	7	shown	Apricot	3
+lo\import.fods	F17	not_contains	8	shown		42
+lo\import.fods	F17	not_contains	9	shown	elder	
+lo\import.fods	F17	not_contains	10	shown	fig	0
+lo\import.fods	F17	not_contains	11	shown	grape	18
+lo\import.fods	F17	not_contains	12	shown	apple	10
+lo\import.fods	F17	not_contains	13	shown	ham?	55
+lo\import.fods	F18	qmark	2	hidden	apple	10
+lo\import.fods	F18	qmark	3	hidden	Banana	-5
+lo\import.fods	F18	qmark	4	hidden	cherry	25.5
+lo\import.fods	F18	qmark	5	hidden	A*star	7
+lo\import.fods	F18	qmark	6	hidden	date	100
+lo\import.fods	F18	qmark	7	hidden	Apricot	3
+lo\import.fods	F18	qmark	8	hidden		42
+lo\import.fods	F18	qmark	9	hidden	elder	
+lo\import.fods	F18	qmark	10	hidden	fig	0
+lo\import.fods	F18	qmark	11	hidden	grape	18
+lo\import.fods	F18	qmark	12	hidden	apple	10
+lo\import.fods	F18	qmark	13	hidden	ham?	55
+lo\import.fods	F19	escaped	2	hidden	apple	10
+lo\import.fods	F19	escaped	3	hidden	Banana	-5
+lo\import.fods	F19	escaped	4	hidden	cherry	25.5
+lo\import.fods	F19	escaped	5	hidden	A*star	7
+lo\import.fods	F19	escaped	6	hidden	date	100
+lo\import.fods	F19	escaped	7	hidden	Apricot	3
+lo\import.fods	F19	escaped	8	hidden		42
+lo\import.fods	F19	escaped	9	hidden	elder	
+lo\import.fods	F19	escaped	10	hidden	fig	0
+lo\import.fods	F19	escaped	11	hidden	grape	18
+lo\import.fods	F19	escaped	12	hidden	apple	10
+lo\import.fods	F19	escaped	13	hidden	ham?	55
+lo\import.fods	F20	and	2	shown	apple	10
+lo\import.fods	F20	and	3	hidden	Banana	-5
+lo\import.fods	F20	and	4	shown	cherry	25.5
+lo\import.fods	F20	and	5	shown	A*star	7
+lo\import.fods	F20	and	6	hidden	date	100
+lo\import.fods	F20	and	7	hidden	Apricot	3
+lo\import.fods	F20	and	8	hidden		42
+lo\import.fods	F20	and	9	hidden	elder	
+lo\import.fods	F20	and	10	hidden	fig	0
+lo\import.fods	F20	and	11	shown	grape	18
+lo\import.fods	F20	and	12	shown	apple	10
+lo\import.fods	F20	and	13	hidden	ham?	55
+lo\import.fods	F21	or	2	hidden	apple	10
+lo\import.fods	F21	or	3	shown	Banana	-5
+lo\import.fods	F21	or	4	hidden	cherry	25.5
+lo\import.fods	F21	or	5	hidden	A*star	7
+lo\import.fods	F21	or	6	shown	date	100
+lo\import.fods	F21	or	7	hidden	Apricot	3
+lo\import.fods	F21	or	8	hidden		42
+lo\import.fods	F21	or	9	hidden	elder	
+lo\import.fods	F21	or	10	hidden	fig	0
+lo\import.fods	F21	or	11	hidden	grape	18
+lo\import.fods	F21	or	12	hidden	apple	10
+lo\import.fods	F21	or	13	shown	ham?	55
+lo\import.fods	F22	top3	2	hidden	apple	10
+lo\import.fods	F22	top3	3	hidden	Banana	-5
+lo\import.fods	F22	top3	4	hidden	cherry	25.5
+lo\import.fods	F22	top3	5	hidden	A*star	7
+lo\import.fods	F22	top3	6	shown	date	100
+lo\import.fods	F22	top3	7	hidden	Apricot	3
+lo\import.fods	F22	top3	8	shown		42
+lo\import.fods	F22	top3	9	hidden	elder	
+lo\import.fods	F22	top3	10	hidden	fig	0
+lo\import.fods	F22	top3	11	hidden	grape	18
+lo\import.fods	F22	top3	12	hidden	apple	10
+lo\import.fods	F22	top3	13	shown	ham?	55
+lo\import.fods	F23	bottom2	2	hidden	apple	10
+lo\import.fods	F23	bottom2	3	shown	Banana	-5
+lo\import.fods	F23	bottom2	4	hidden	cherry	25.5
+lo\import.fods	F23	bottom2	5	hidden	A*star	7
+lo\import.fods	F23	bottom2	6	hidden	date	100
+lo\import.fods	F23	bottom2	7	hidden	Apricot	3
+lo\import.fods	F23	bottom2	8	hidden		42
+lo\import.fods	F23	bottom2	9	hidden	elder	
+lo\import.fods	F23	bottom2	10	shown	fig	0
+lo\import.fods	F23	bottom2	11	hidden	grape	18
+lo\import.fods	F23	bottom2	12	hidden	apple	10
+lo\import.fods	F23	bottom2	13	hidden	ham?	55
+lo\import.fods	F24	top25pct	2	hidden	apple	10
+lo\import.fods	F24	top25pct	3	hidden	Banana	-5
+lo\import.fods	F24	top25pct	4	hidden	cherry	25.5
+lo\import.fods	F24	top25pct	5	hidden	A*star	7
+lo\import.fods	F24	top25pct	6	shown	date	100
+lo\import.fods	F24	top25pct	7	hidden	Apricot	3
+lo\import.fods	F24	top25pct	8	hidden		42
+lo\import.fods	F24	top25pct	9	hidden	elder	
+lo\import.fods	F24	top25pct	10	hidden	fig	0
+lo\import.fods	F24	top25pct	11	hidden	grape	18
+lo\import.fods	F24	top25pct	12	hidden	apple	10
+lo\import.fods	F24	top25pct	13	shown	ham?	55
+lo\import.fods	F25	above_avg	2	shown	apple	10
+lo\import.fods	F25	above_avg	3	shown	Banana	-5
+lo\import.fods	F25	above_avg	4	shown	cherry	25.5
+lo\import.fods	F25	above_avg	5	shown	A*star	7
+lo\import.fods	F25	above_avg	6	shown	date	100
+lo\import.fods	F25	above_avg	7	shown	Apricot	3
+lo\import.fods	F25	above_avg	8	shown		42
+lo\import.fods	F25	above_avg	9	shown	elder	
+lo\import.fods	F25	above_avg	10	shown	fig	0
+lo\import.fods	F25	above_avg	11	shown	grape	18
+lo\import.fods	F25	above_avg	12	shown	apple	10
+lo\import.fods	F25	above_avg	13	shown	ham?	55
+lo\import.fods	F26	below_avg	2	shown	apple	10
+lo\import.fods	F26	below_avg	3	shown	Banana	-5
+lo\import.fods	F26	below_avg	4	shown	cherry	25.5
+lo\import.fods	F26	below_avg	5	shown	A*star	7
+lo\import.fods	F26	below_avg	6	shown	date	100
+lo\import.fods	F26	below_avg	7	shown	Apricot	3
+lo\import.fods	F26	below_avg	8	shown		42
+lo\import.fods	F26	below_avg	9	shown	elder	
+lo\import.fods	F26	below_avg	10	shown	fig	0
+lo\import.fods	F26	below_avg	11	shown	grape	18
+lo\import.fods	F26	below_avg	12	shown	apple	10
+lo\import.fods	F26	below_avg	13	shown	ham?	55
+lo\import.fods	F27	date_gt	2	hidden	apple	10
+lo\import.fods	F27	date_gt	3	hidden	Banana	-5
+lo\import.fods	F27	date_gt	4	shown	cherry	25.5
+lo\import.fods	F27	date_gt	5	hidden	A*star	7
+lo\import.fods	F27	date_gt	6	hidden	date	100
+lo\import.fods	F27	date_gt	7	shown	Apricot	3
+lo\import.fods	F27	date_gt	8	hidden		42
+lo\import.fods	F27	date_gt	9	hidden	elder	
+lo\import.fods	F27	date_gt	10	hidden	fig	0
+lo\import.fods	F27	date_gt	11	hidden	grape	18
+lo\import.fods	F27	date_gt	12	hidden	apple	10
+lo\import.fods	F27	date_gt	13	shown	ham?	55
+lo\import.fods	F28	today	2	shown	apple	10
+lo\import.fods	F28	today	3	shown	Banana	-5
+lo\import.fods	F28	today	4	shown	cherry	25.5
+lo\import.fods	F28	today	5	shown	A*star	7
+lo\import.fods	F28	today	6	shown	date	100
+lo\import.fods	F28	today	7	shown	Apricot	3
+lo\import.fods	F28	today	8	shown		42
+lo\import.fods	F28	today	9	shown	elder	
+lo\import.fods	F28	today	10	shown	fig	0
+lo\import.fods	F28	today	11	shown	grape	18
+lo\import.fods	F28	today	12	shown	apple	10
+lo\import.fods	F28	today	13	shown	ham?	55
+lo\import.fods	F29	yesterday	2	shown	apple	10
+lo\import.fods	F29	yesterday	3	shown	Banana	-5
+lo\import.fods	F29	yesterday	4	shown	cherry	25.5
+lo\import.fods	F29	yesterday	5	shown	A*star	7
+lo\import.fods	F29	yesterday	6	shown	date	100
+lo\import.fods	F29	yesterday	7	shown	Apricot	3
+lo\import.fods	F29	yesterday	8	shown		42
+lo\import.fods	F29	yesterday	9	shown	elder	
+lo\import.fods	F29	yesterday	10	shown	fig	0
+lo\import.fods	F29	yesterday	11	shown	grape	18
+lo\import.fods	F29	yesterday	12	shown	apple	10
+lo\import.fods	F29	yesterday	13	shown	ham?	55
+lo\import.fods	F30	thisMonth	2	shown	apple	10
+lo\import.fods	F30	thisMonth	3	shown	Banana	-5
+lo\import.fods	F30	thisMonth	4	shown	cherry	25.5
+lo\import.fods	F30	thisMonth	5	shown	A*star	7
+lo\import.fods	F30	thisMonth	6	shown	date	100
+lo\import.fods	F30	thisMonth	7	shown	Apricot	3
+lo\import.fods	F30	thisMonth	8	shown		42
+lo\import.fods	F30	thisMonth	9	shown	elder	
+lo\import.fods	F30	thisMonth	10	shown	fig	0
+lo\import.fods	F30	thisMonth	11	shown	grape	18
+lo\import.fods	F30	thisMonth	12	shown	apple	10
+lo\import.fods	F30	thisMonth	13	shown	ham?	55
+lo\import.fods	F31	lastMonth	2	shown	apple	10
+lo\import.fods	F31	lastMonth	3	shown	Banana	-5
+lo\import.fods	F31	lastMonth	4	shown	cherry	25.5
+lo\import.fods	F31	lastMonth	5	shown	A*star	7
+lo\import.fods	F31	lastMonth	6	shown	date	100
+lo\import.fods	F31	lastMonth	7	shown	Apricot	3
+lo\import.fods	F31	lastMonth	8	shown		42
+lo\import.fods	F31	lastMonth	9	shown	elder	
+lo\import.fods	F31	lastMonth	10	shown	fig	0
+lo\import.fods	F31	lastMonth	11	shown	grape	18
+lo\import.fods	F31	lastMonth	12	shown	apple	10
+lo\import.fods	F31	lastMonth	13	shown	ham?	55
+lo\import.fods	F32	thisYear	2	shown	apple	10
+lo\import.fods	F32	thisYear	3	shown	Banana	-5
+lo\import.fods	F32	thisYear	4	shown	cherry	25.5
+lo\import.fods	F32	thisYear	5	shown	A*star	7
+lo\import.fods	F32	thisYear	6	shown	date	100
+lo\import.fods	F32	thisYear	7	shown	Apricot	3
+lo\import.fods	F32	thisYear	8	shown		42
+lo\import.fods	F32	thisYear	9	shown	elder	
+lo\import.fods	F32	thisYear	10	shown	fig	0
+lo\import.fods	F32	thisYear	11	shown	grape	18
+lo\import.fods	F32	thisYear	12	shown	apple	10
+lo\import.fods	F32	thisYear	13	shown	ham?	55
+lo\import.fods	F33	yearToDate	2	shown	apple	10
+lo\import.fods	F33	yearToDate	3	shown	Banana	-5
+lo\import.fods	F33	yearToDate	4	shown	cherry	25.5
+lo\import.fods	F33	yearToDate	5	shown	A*star	7
+lo\import.fods	F33	yearToDate	6	shown	date	100
+lo\import.fods	F33	yearToDate	7	shown	Apricot	3
+lo\import.fods	F33	yearToDate	8	shown		42
+lo\import.fods	F33	yearToDate	9	shown	elder	
+lo\import.fods	F33	yearToDate	10	shown	fig	0
+lo\import.fods	F33	yearToDate	11	shown	grape	18
+lo\import.fods	F33	yearToDate	12	shown	apple	10
+lo\import.fods	F33	yearToDate	13	shown	ham?	55
+lo\import.fods	F34	thisWeek	2	shown	apple	10
+lo\import.fods	F34	thisWeek	3	shown	Banana	-5
+lo\import.fods	F34	thisWeek	4	shown	cherry	25.5
+lo\import.fods	F34	thisWeek	5	shown	A*star	7
+lo\import.fods	F34	thisWeek	6	shown	date	100
+lo\import.fods	F34	thisWeek	7	shown	Apricot	3
+lo\import.fods	F34	thisWeek	8	shown		42
+lo\import.fods	F34	thisWeek	9	shown	elder	
+lo\import.fods	F34	thisWeek	10	shown	fig	0
+lo\import.fods	F34	thisWeek	11	shown	grape	18
+lo\import.fods	F34	thisWeek	12	shown	apple	10
+lo\import.fods	F34	thisWeek	13	shown	ham?	55
+lo\import.fods	F35	Q2	2	shown	apple	10
+lo\import.fods	F35	Q2	3	shown	Banana	-5
+lo\import.fods	F35	Q2	4	shown	cherry	25.5
+lo\import.fods	F35	Q2	5	shown	A*star	7
+lo\import.fods	F35	Q2	6	shown	date	100
+lo\import.fods	F35	Q2	7	shown	Apricot	3
+lo\import.fods	F35	Q2	8	shown		42
+lo\import.fods	F35	Q2	9	shown	elder	
+lo\import.fods	F35	Q2	10	shown	fig	0
+lo\import.fods	F35	Q2	11	shown	grape	18
+lo\import.fods	F35	Q2	12	shown	apple	10
+lo\import.fods	F35	Q2	13	shown	ham?	55
+lo\import.fods	F36	M8	2	shown	apple	10
+lo\import.fods	F36	M8	3	shown	Banana	-5
+lo\import.fods	F36	M8	4	shown	cherry	25.5
+lo\import.fods	F36	M8	5	shown	A*star	7
+lo\import.fods	F36	M8	6	shown	date	100
+lo\import.fods	F36	M8	7	shown	Apricot	3
+lo\import.fods	F36	M8	8	shown		42
+lo\import.fods	F36	M8	9	shown	elder	
+lo\import.fods	F36	M8	10	shown	fig	0
+lo\import.fods	F36	M8	11	shown	grape	18
+lo\import.fods	F36	M8	12	shown	apple	10
+lo\import.fods	F36	M8	13	shown	ham?	55
+lo\import.fods	F37	two_columns	2	shown	apple	10
+lo\import.fods	F37	two_columns	3	hidden	Banana	-5
+lo\import.fods	F37	two_columns	4	shown	cherry	25.5
+lo\import.fods	F37	two_columns	5	hidden	A*star	7
+lo\import.fods	F37	two_columns	6	shown	date	100
+lo\import.fods	F37	two_columns	7	hidden	Apricot	3
+lo\import.fods	F37	two_columns	8	hidden		42
+lo\import.fods	F37	two_columns	9	hidden	elder	
+lo\import.fods	F37	two_columns	10	hidden	fig	0
+lo\import.fods	F37	two_columns	11	shown	grape	18
+lo\import.fods	F37	two_columns	12	hidden	apple	10
+lo\import.fods	F37	two_columns	13	shown	ham?	55
+lo\import.fods	F38	by_letter	2	hidden	apple	10
+lo\import.fods	F38	by_letter	3	hidden	Banana	-5
+lo\import.fods	F38	by_letter	4	shown	cherry	25.5
+lo\import.fods	F38	by_letter	5	hidden	A*star	7
+lo\import.fods	F38	by_letter	6	shown	date	100
+lo\import.fods	F38	by_letter	7	hidden	Apricot	3
+lo\import.fods	F38	by_letter	8	shown		42
+lo\import.fods	F38	by_letter	9	hidden	elder	
+lo\import.fods	F38	by_letter	10	hidden	fig	0
+lo\import.fods	F38	by_letter	11	hidden	grape	18
+lo\import.fods	F38	by_letter	12	hidden	apple	10
+lo\import.fods	F38	by_letter	13	shown	ham?	55
+lo\import.fods	F39	by_position	2	hidden	apple	10
+lo\import.fods	F39	by_position	3	hidden	Banana	-5
+lo\import.fods	F39	by_position	4	shown	cherry	25.5
+lo\import.fods	F39	by_position	5	hidden	A*star	7
+lo\import.fods	F39	by_position	6	shown	date	100
+lo\import.fods	F39	by_position	7	hidden	Apricot	3
+lo\import.fods	F39	by_position	8	shown		42
+lo\import.fods	F39	by_position	9	hidden	elder	
+lo\import.fods	F39	by_position	10	hidden	fig	0
+lo\import.fods	F39	by_position	11	hidden	grape	18
+lo\import.fods	F39	by_position	12	hidden	apple	10
+lo\import.fods	F39	by_position	13	shown	ham?	55
+lo\import.fods	S01	sort_asc	2	shown	Banana	-5
+lo\import.fods	S01	sort_asc	3	shown	fig	0
+lo\import.fods	S01	sort_asc	4	shown	Apricot	3
+lo\import.fods	S01	sort_asc	5	shown	A*star	7
+lo\import.fods	S01	sort_asc	6	shown	apple	10
+lo\import.fods	S01	sort_asc	7	shown	apple	10
+lo\import.fods	S01	sort_asc	8	shown	grape	18
+lo\import.fods	S01	sort_asc	9	shown	cherry	25.5
+lo\import.fods	S01	sort_asc	10	shown		42
+lo\import.fods	S01	sort_asc	11	shown	ham?	55
+lo\import.fods	S01	sort_asc	12	shown	date	100
+lo\import.fods	S01	sort_asc	13	shown	elder	
+lo\import.fods	S02	sort_desc	2	shown	date	100
+lo\import.fods	S02	sort_desc	3	shown	ham?	55
+lo\import.fods	S02	sort_desc	4	shown		42
+lo\import.fods	S02	sort_desc	5	shown	cherry	25.5
+lo\import.fods	S02	sort_desc	6	shown	grape	18
+lo\import.fods	S02	sort_desc	7	shown	apple	10
+lo\import.fods	S02	sort_desc	8	shown	apple	10
+lo\import.fods	S02	sort_desc	9	shown	A*star	7
+lo\import.fods	S02	sort_desc	10	shown	Apricot	3
+lo\import.fods	S02	sort_desc	11	shown	fig	0
+lo\import.fods	S02	sort_desc	12	shown	Banana	-5
+lo\import.fods	S02	sort_desc	13	shown	elder	
+lo\import.fods	S03	sort_text	2	shown	A*star	7
+lo\import.fods	S03	sort_text	3	shown	apple	10
+lo\import.fods	S03	sort_text	4	shown	apple	10
+lo\import.fods	S03	sort_text	5	shown	Apricot	3
+lo\import.fods	S03	sort_text	6	shown	Banana	-5
+lo\import.fods	S03	sort_text	7	shown	cherry	25.5
+lo\import.fods	S03	sort_text	8	shown	date	100
+lo\import.fods	S03	sort_text	9	shown	elder	
+lo\import.fods	S03	sort_text	10	shown	fig	0
+lo\import.fods	S03	sort_text	11	shown	grape	18
+lo\import.fods	S03	sort_text	12	shown	ham?	55
+lo\import.fods	S03	sort_text	13	shown		42
+lo\import.fods	S04	sort_two	2	shown	apple	10
+lo\import.fods	S04	sort_two	3	shown	grape	18
+lo\import.fods	S04	sort_two	4	shown	cherry	25.5
+lo\import.fods	S04	sort_two	5	shown	ham?	55
+lo\import.fods	S04	sort_two	6	shown	date	100
+lo\import.fods	S04	sort_two	7	shown	elder	
+lo\import.fods	S04	sort_two	8	shown	Banana	-5
+lo\import.fods	S04	sort_two	9	shown	fig	0
+lo\import.fods	S04	sort_two	10	shown	A*star	7
+lo\import.fods	S04	sort_two	11	shown	apple	10
+lo\import.fods	S04	sort_two	12	shown		42
+lo\import.fods	S04	sort_two	13	shown	Apricot	3
+lo\import.fods	S05	sort_date	2	shown	ham?	55
+lo\import.fods	S05	sort_date	3	shown	Apricot	3
+lo\import.fods	S05	sort_date	4	shown	cherry	25.5
+lo\import.fods	S05	sort_date	5	shown	apple	10
+lo\import.fods	S05	sort_date	6	shown	Banana	-5
+lo\import.fods	S05	sort_date	7	shown	A*star	7
+lo\import.fods	S05	sort_date	8	shown	apple	10
+lo\import.fods	S05	sort_date	9	shown	date	100
+lo\import.fods	S05	sort_date	10	shown	grape	18
+lo\import.fods	S05	sort_date	11	shown	fig	0
+lo\import.fods	S05	sort_date	12	shown	elder	
+lo\import.fods	S05	sort_date	13	shown		42
+lo\import.fods	Plain		2	shown	apple	10
+lo\import.fods	Plain		3	shown	Banana	-5
+lo\import.fods	Plain		4	shown	cherry	25.5
+lo\import.fods	Plain		5	shown	A*star	7
+lo\import.fods	Plain		6	shown	date	100
+lo\import.fods	Plain		7	shown	Apricot	3
+lo\import.fods	Plain		8	shown		42
+lo\import.fods	Plain		9	shown	elder	
+lo\import.fods	Plain		10	shown	fig	0
+lo\import.fods	Plain		11	shown	grape	18
+lo\import.fods	Plain		12	shown	apple	10
+lo\import.fods	Plain		13	shown	ham?	55
+lo\import.fods	Tables	Id	2	shown	apple	10
+lo\import.fods	Tables	Id	3	shown	Banana	-5
+lo\import.fods	Tables	Id	4	shown	cherry	25.5
+lo\import.fods	Tables	Id	5	shown	A*star	7
+lo\import.fods	Tables	Id	6	shown	date	100
+lo\import.fods	Tables	Id	7	shown	Apricot	3
+lo\import.fods	Tables	Id	8	shown		42
+lo\import.fods	Tables	Id	9	shown	elder	
+lo\import.fods	Tables	Id	10	shown	fig	0
+lo\import.fods	Tables	Id	11	shown	grape	18
+lo\import.fods	Tables	Id	12	shown	apple	10
+lo\import.fods	Tables	Id	13	shown	ham?	55
+forms-v1.fods	F01	value	2	shown	apple	10
+forms-v1.fods	F01	value	3	hidden	Banana	-5
+forms-v1.fods	F01	value	4	hidden	cherry	25.5
+forms-v1.fods	F01	value	5	hidden	A*star	7
+forms-v1.fods	F01	value	6	hidden	date	100
+forms-v1.fods	F01	value	7	hidden	Apricot	3
+forms-v1.fods	F01	value	8	hidden		42
+forms-v1.fods	F01	value	9	hidden	elder	
+forms-v1.fods	F01	value	10	hidden	fig	0
+forms-v1.fods	F01	value	11	hidden	grape	18
+forms-v1.fods	F01	value	12	shown	apple	10
+forms-v1.fods	F01	value	13	hidden	ham?	55
+forms-v1.fods	F02	values	2	shown	apple	10
+forms-v1.fods	F02	values	3	hidden	Banana	-5
+forms-v1.fods	F02	values	4	hidden	cherry	25.5
+forms-v1.fods	F02	values	5	hidden	A*star	7
+forms-v1.fods	F02	values	6	hidden	date	100
+forms-v1.fods	F02	values	7	hidden	Apricot	3
+forms-v1.fods	F02	values	8	shown		42
+forms-v1.fods	F02	values	9	hidden	elder	
+forms-v1.fods	F02	values	10	hidden	fig	0
+forms-v1.fods	F02	values	11	hidden	grape	18
+forms-v1.fods	F02	values	12	shown	apple	10
+forms-v1.fods	F02	values	13	hidden	ham?	55
+forms-v1.fods	F03	blank	2	hidden	apple	10
+forms-v1.fods	F03	blank	3	hidden	Banana	-5
+forms-v1.fods	F03	blank	4	hidden	cherry	25.5
+forms-v1.fods	F03	blank	5	hidden	A*star	7
+forms-v1.fods	F03	blank	6	hidden	date	100
+forms-v1.fods	F03	blank	7	hidden	Apricot	3
+forms-v1.fods	F03	blank	8	shown		42
+forms-v1.fods	F03	blank	9	hidden	elder	
+forms-v1.fods	F03	blank	10	hidden	fig	0
+forms-v1.fods	F03	blank	11	hidden	grape	18
+forms-v1.fods	F03	blank	12	hidden	apple	10
+forms-v1.fods	F03	blank	13	hidden	ham?	55
+forms-v1.fods	F04	num_value	2	shown	apple	10
+forms-v1.fods	F04	num_value	3	hidden	Banana	-5
+forms-v1.fods	F04	num_value	4	hidden	cherry	25.5
+forms-v1.fods	F04	num_value	5	hidden	A*star	7
+forms-v1.fods	F04	num_value	6	hidden	date	100
+forms-v1.fods	F04	num_value	7	hidden	Apricot	3
+forms-v1.fods	F04	num_value	8	hidden		42
+forms-v1.fods	F04	num_value	9	hidden	elder	
+forms-v1.fods	F04	num_value	10	hidden	fig	0
+forms-v1.fods	F04	num_value	11	hidden	grape	18
+forms-v1.fods	F04	num_value	12	shown	apple	10
+forms-v1.fods	F04	num_value	13	hidden	ham?	55
+forms-v1.fods	F05	bool	2	shown	apple	10
+forms-v1.fods	F05	bool	3	hidden	Banana	-5
+forms-v1.fods	F05	bool	4	shown	cherry	25.5
+forms-v1.fods	F05	bool	5	hidden	A*star	7
+forms-v1.fods	F05	bool	6	shown	date	100
+forms-v1.fods	F05	bool	7	hidden	Apricot	3
+forms-v1.fods	F05	bool	8	hidden		42
+forms-v1.fods	F05	bool	9	shown	elder	
+forms-v1.fods	F05	bool	10	hidden	fig	0
+forms-v1.fods	F05	bool	11	shown	grape	18
+forms-v1.fods	F05	bool	12	hidden	apple	10
+forms-v1.fods	F05	bool	13	shown	ham?	55
+forms-v1.fods	F06	date_value	2	shown	apple	10
+forms-v1.fods	F06	date_value	3	hidden	Banana	-5
+forms-v1.fods	F06	date_value	4	hidden	cherry	25.5
+forms-v1.fods	F06	date_value	5	hidden	A*star	7
+forms-v1.fods	F06	date_value	6	hidden	date	100
+forms-v1.fods	F06	date_value	7	hidden	Apricot	3
+forms-v1.fods	F06	date_value	8	hidden		42
+forms-v1.fods	F06	date_value	9	hidden	elder	
+forms-v1.fods	F06	date_value	10	hidden	fig	0
+forms-v1.fods	F06	date_value	11	hidden	grape	18
+forms-v1.fods	F06	date_value	12	hidden	apple	10
+forms-v1.fods	F06	date_value	13	hidden	ham?	55
+forms-v1.fods	F07	eq	2	hidden	apple	10
+forms-v1.fods	F07	eq	3	hidden	Banana	-5
+forms-v1.fods	F07	eq	4	hidden	cherry	25.5
+forms-v1.fods	F07	eq	5	hidden	A*star	7
+forms-v1.fods	F07	eq	6	hidden	date	100
+forms-v1.fods	F07	eq	7	hidden	Apricot	3
+forms-v1.fods	F07	eq	8	shown		42
+forms-v1.fods	F07	eq	9	hidden	elder	
+forms-v1.fods	F07	eq	10	hidden	fig	0
+forms-v1.fods	F07	eq	11	hidden	grape	18
+forms-v1.fods	F07	eq	12	hidden	apple	10
+forms-v1.fods	F07	eq	13	hidden	ham?	55
+forms-v1.fods	F08	ne	2	hidden	apple	10
+forms-v1.fods	F08	ne	3	shown	Banana	-5
+forms-v1.fods	F08	ne	4	shown	cherry	25.5
+forms-v1.fods	F08	ne	5	shown	A*star	7
+forms-v1.fods	F08	ne	6	shown	date	100
+forms-v1.fods	F08	ne	7	shown	Apricot	3
+forms-v1.fods	F08	ne	8	shown		42
+forms-v1.fods	F08	ne	9	shown	elder	
+forms-v1.fods	F08	ne	10	shown	fig	0
+forms-v1.fods	F08	ne	11	shown	grape	18
+forms-v1.fods	F08	ne	12	hidden	apple	10
+forms-v1.fods	F08	ne	13	shown	ham?	55
+forms-v1.fods	F09	gt	2	hidden	apple	10
+forms-v1.fods	F09	gt	3	hidden	Banana	-5
+forms-v1.fods	F09	gt	4	shown	cherry	25.5
+forms-v1.fods	F09	gt	5	hidden	A*star	7
+forms-v1.fods	F09	gt	6	shown	date	100
+forms-v1.fods	F09	gt	7	hidden	Apricot	3
+forms-v1.fods	F09	gt	8	shown		42
+forms-v1.fods	F09	gt	9	hidden	elder	
+forms-v1.fods	F09	gt	10	hidden	fig	0
+forms-v1.fods	F09	gt	11	shown	grape	18
+forms-v1.fods	F09	gt	12	hidden	apple	10
+forms-v1.fods	F09	gt	13	shown	ham?	55
+forms-v1.fods	F10	ge	2	shown	apple	10
+forms-v1.fods	F10	ge	3	hidden	Banana	-5
+forms-v1.fods	F10	ge	4	shown	cherry	25.5
+forms-v1.fods	F10	ge	5	hidden	A*star	7
+forms-v1.fods	F10	ge	6	shown	date	100
+forms-v1.fods	F10	ge	7	hidden	Apricot	3
+forms-v1.fods	F10	ge	8	shown		42
+forms-v1.fods	F10	ge	9	hidden	elder	
+forms-v1.fods	F10	ge	10	hidden	fig	0
+forms-v1.fods	F10	ge	11	shown	grape	18
+forms-v1.fods	F10	ge	12	shown	apple	10
+forms-v1.fods	F10	ge	13	shown	ham?	55
+forms-v1.fods	F11	lt	2	hidden	apple	10
+forms-v1.fods	F11	lt	3	shown	Banana	-5
+forms-v1.fods	F11	lt	4	hidden	cherry	25.5
+forms-v1.fods	F11	lt	5	shown	A*star	7
+forms-v1.fods	F11	lt	6	hidden	date	100
+forms-v1.fods	F11	lt	7	shown	Apricot	3
+forms-v1.fods	F11	lt	8	hidden		42
+forms-v1.fods	F11	lt	9	hidden	elder	
+forms-v1.fods	F11	lt	10	shown	fig	0
+forms-v1.fods	F11	lt	11	hidden	grape	18
+forms-v1.fods	F11	lt	12	hidden	apple	10
+forms-v1.fods	F11	lt	13	hidden	ham?	55
+forms-v1.fods	F12	le	2	shown	apple	10
+forms-v1.fods	F12	le	3	shown	Banana	-5
+forms-v1.fods	F12	le	4	hidden	cherry	25.5
+forms-v1.fods	F12	le	5	shown	A*star	7
+forms-v1.fods	F12	le	6	hidden	date	100
+forms-v1.fods	F12	le	7	shown	Apricot	3
+forms-v1.fods	F12	le	8	hidden		42
+forms-v1.fods	F12	le	9	hidden	elder	
+forms-v1.fods	F12	le	10	shown	fig	0
+forms-v1.fods	F12	le	11	hidden	grape	18
+forms-v1.fods	F12	le	12	shown	apple	10
+forms-v1.fods	F12	le	13	hidden	ham?	55
+forms-v1.fods	F13	text_gt	2	hidden	apple	10
+forms-v1.fods	F13	text_gt	3	hidden	Banana	-5
+forms-v1.fods	F13	text_gt	4	hidden	cherry	25.5
+forms-v1.fods	F13	text_gt	5	hidden	A*star	7
+forms-v1.fods	F13	text_gt	6	shown	date	100
+forms-v1.fods	F13	text_gt	7	hidden	Apricot	3
+forms-v1.fods	F13	text_gt	8	hidden		42
+forms-v1.fods	F13	text_gt	9	shown	elder	
+forms-v1.fods	F13	text_gt	10	shown	fig	0
+forms-v1.fods	F13	text_gt	11	shown	grape	18
+forms-v1.fods	F13	text_gt	12	hidden	apple	10
+forms-v1.fods	F13	text_gt	13	shown	ham?	55
+forms-v1.fods	F14	begins	2	hidden	apple	10
+forms-v1.fods	F14	begins	3	hidden	Banana	-5
+forms-v1.fods	F14	begins	4	hidden	cherry	25.5
+forms-v1.fods	F14	begins	5	hidden	A*star	7
+forms-v1.fods	F14	begins	6	hidden	date	100
+forms-v1.fods	F14	begins	7	hidden	Apricot	3
+forms-v1.fods	F14	begins	8	hidden		42
+forms-v1.fods	F14	begins	9	hidden	elder	
+forms-v1.fods	F14	begins	10	hidden	fig	0
+forms-v1.fods	F14	begins	11	hidden	grape	18
+forms-v1.fods	F14	begins	12	hidden	apple	10
+forms-v1.fods	F14	begins	13	hidden	ham?	55
+forms-v1.fods	F15	ends	2	shown	apple	10
+forms-v1.fods	F15	ends	3	hidden	Banana	-5
+forms-v1.fods	F15	ends	4	hidden	cherry	25.5
+forms-v1.fods	F15	ends	5	hidden	A*star	7
+forms-v1.fods	F15	ends	6	shown	date	100
+forms-v1.fods	F15	ends	7	hidden	Apricot	3
+forms-v1.fods	F15	ends	8	hidden		42
+forms-v1.fods	F15	ends	9	hidden	elder	
+forms-v1.fods	F15	ends	10	hidden	fig	0
+forms-v1.fods	F15	ends	11	shown	grape	18
+forms-v1.fods	F15	ends	12	shown	apple	10
+forms-v1.fods	F15	ends	13	hidden	ham?	55
+forms-v1.fods	F16	contains	2	hidden	apple	10
+forms-v1.fods	F16	contains	3	shown	Banana	-5
+forms-v1.fods	F16	contains	4	hidden	cherry	25.5
+forms-v1.fods	F16	contains	5	hidden	A*star	7
+forms-v1.fods	F16	contains	6	hidden	date	100
+forms-v1.fods	F16	contains	7	hidden	Apricot	3
+forms-v1.fods	F16	contains	8	hidden		42
+forms-v1.fods	F16	contains	9	hidden	elder	
+forms-v1.fods	F16	contains	10	hidden	fig	0
+forms-v1.fods	F16	contains	11	hidden	grape	18
+forms-v1.fods	F16	contains	12	hidden	apple	10
+forms-v1.fods	F16	contains	13	hidden	ham?	55
+forms-v1.fods	F17	not_contains	2	shown	apple	10
+forms-v1.fods	F17	not_contains	3	shown	Banana	-5
+forms-v1.fods	F17	not_contains	4	shown	cherry	25.5
+forms-v1.fods	F17	not_contains	5	shown	A*star	7
+forms-v1.fods	F17	not_contains	6	shown	date	100
+forms-v1.fods	F17	not_contains	7	shown	Apricot	3
+forms-v1.fods	F17	not_contains	8	shown		42
+forms-v1.fods	F17	not_contains	9	shown	elder	
+forms-v1.fods	F17	not_contains	10	shown	fig	0
+forms-v1.fods	F17	not_contains	11	shown	grape	18
+forms-v1.fods	F17	not_contains	12	shown	apple	10
+forms-v1.fods	F17	not_contains	13	shown	ham?	55
+forms-v1.fods	F18	qmark	2	hidden	apple	10
+forms-v1.fods	F18	qmark	3	hidden	Banana	-5
+forms-v1.fods	F18	qmark	4	hidden	cherry	25.5
+forms-v1.fods	F18	qmark	5	hidden	A*star	7
+forms-v1.fods	F18	qmark	6	hidden	date	100
+forms-v1.fods	F18	qmark	7	hidden	Apricot	3
+forms-v1.fods	F18	qmark	8	hidden		42
+forms-v1.fods	F18	qmark	9	hidden	elder	
+forms-v1.fods	F18	qmark	10	hidden	fig	0
+forms-v1.fods	F18	qmark	11	hidden	grape	18
+forms-v1.fods	F18	qmark	12	hidden	apple	10
+forms-v1.fods	F18	qmark	13	hidden	ham?	55
+forms-v1.fods	F19	escaped	2	hidden	apple	10
+forms-v1.fods	F19	escaped	3	hidden	Banana	-5
+forms-v1.fods	F19	escaped	4	hidden	cherry	25.5
+forms-v1.fods	F19	escaped	5	hidden	A*star	7
+forms-v1.fods	F19	escaped	6	hidden	date	100
+forms-v1.fods	F19	escaped	7	hidden	Apricot	3
+forms-v1.fods	F19	escaped	8	hidden		42
+forms-v1.fods	F19	escaped	9	hidden	elder	
+forms-v1.fods	F19	escaped	10	hidden	fig	0
+forms-v1.fods	F19	escaped	11	hidden	grape	18
+forms-v1.fods	F19	escaped	12	hidden	apple	10
+forms-v1.fods	F19	escaped	13	hidden	ham?	55
+forms-v1.fods	F20	and	2	shown	apple	10
+forms-v1.fods	F20	and	3	hidden	Banana	-5
+forms-v1.fods	F20	and	4	shown	cherry	25.5
+forms-v1.fods	F20	and	5	shown	A*star	7
+forms-v1.fods	F20	and	6	hidden	date	100
+forms-v1.fods	F20	and	7	hidden	Apricot	3
+forms-v1.fods	F20	and	8	hidden		42
+forms-v1.fods	F20	and	9	hidden	elder	
+forms-v1.fods	F20	and	10	hidden	fig	0
+forms-v1.fods	F20	and	11	shown	grape	18
+forms-v1.fods	F20	and	12	shown	apple	10
+forms-v1.fods	F20	and	13	hidden	ham?	55
+forms-v1.fods	F21	or	2	hidden	apple	10
+forms-v1.fods	F21	or	3	shown	Banana	-5
+forms-v1.fods	F21	or	4	hidden	cherry	25.5
+forms-v1.fods	F21	or	5	hidden	A*star	7
+forms-v1.fods	F21	or	6	shown	date	100
+forms-v1.fods	F21	or	7	hidden	Apricot	3
+forms-v1.fods	F21	or	8	hidden		42
+forms-v1.fods	F21	or	9	hidden	elder	
+forms-v1.fods	F21	or	10	hidden	fig	0
+forms-v1.fods	F21	or	11	hidden	grape	18
+forms-v1.fods	F21	or	12	hidden	apple	10
+forms-v1.fods	F21	or	13	shown	ham?	55
+forms-v1.fods	F22	top3	2	hidden	apple	10
+forms-v1.fods	F22	top3	3	hidden	Banana	-5
+forms-v1.fods	F22	top3	4	hidden	cherry	25.5
+forms-v1.fods	F22	top3	5	hidden	A*star	7
+forms-v1.fods	F22	top3	6	shown	date	100
+forms-v1.fods	F22	top3	7	hidden	Apricot	3
+forms-v1.fods	F22	top3	8	shown		42
+forms-v1.fods	F22	top3	9	hidden	elder	
+forms-v1.fods	F22	top3	10	hidden	fig	0
+forms-v1.fods	F22	top3	11	hidden	grape	18
+forms-v1.fods	F22	top3	12	hidden	apple	10
+forms-v1.fods	F22	top3	13	shown	ham?	55
+forms-v1.fods	F23	bottom2	2	hidden	apple	10
+forms-v1.fods	F23	bottom2	3	shown	Banana	-5
+forms-v1.fods	F23	bottom2	4	hidden	cherry	25.5
+forms-v1.fods	F23	bottom2	5	hidden	A*star	7
+forms-v1.fods	F23	bottom2	6	hidden	date	100
+forms-v1.fods	F23	bottom2	7	hidden	Apricot	3
+forms-v1.fods	F23	bottom2	8	hidden		42
+forms-v1.fods	F23	bottom2	9	hidden	elder	
+forms-v1.fods	F23	bottom2	10	shown	fig	0
+forms-v1.fods	F23	bottom2	11	hidden	grape	18
+forms-v1.fods	F23	bottom2	12	hidden	apple	10
+forms-v1.fods	F23	bottom2	13	hidden	ham?	55
+forms-v1.fods	F24	top25pct	2	hidden	apple	10
+forms-v1.fods	F24	top25pct	3	hidden	Banana	-5
+forms-v1.fods	F24	top25pct	4	hidden	cherry	25.5
+forms-v1.fods	F24	top25pct	5	hidden	A*star	7
+forms-v1.fods	F24	top25pct	6	shown	date	100
+forms-v1.fods	F24	top25pct	7	hidden	Apricot	3
+forms-v1.fods	F24	top25pct	8	hidden		42
+forms-v1.fods	F24	top25pct	9	hidden	elder	
+forms-v1.fods	F24	top25pct	10	hidden	fig	0
+forms-v1.fods	F24	top25pct	11	hidden	grape	18
+forms-v1.fods	F24	top25pct	12	hidden	apple	10
+forms-v1.fods	F24	top25pct	13	shown	ham?	55
+forms-v1.fods	F25	above_avg	2	shown	apple	10
+forms-v1.fods	F25	above_avg	3	shown	Banana	-5
+forms-v1.fods	F25	above_avg	4	shown	cherry	25.5
+forms-v1.fods	F25	above_avg	5	shown	A*star	7
+forms-v1.fods	F25	above_avg	6	shown	date	100
+forms-v1.fods	F25	above_avg	7	shown	Apricot	3
+forms-v1.fods	F25	above_avg	8	shown		42
+forms-v1.fods	F25	above_avg	9	shown	elder	
+forms-v1.fods	F25	above_avg	10	shown	fig	0
+forms-v1.fods	F25	above_avg	11	shown	grape	18
+forms-v1.fods	F25	above_avg	12	shown	apple	10
+forms-v1.fods	F25	above_avg	13	shown	ham?	55
+forms-v1.fods	F26	below_avg	2	shown	apple	10
+forms-v1.fods	F26	below_avg	3	shown	Banana	-5
+forms-v1.fods	F26	below_avg	4	shown	cherry	25.5
+forms-v1.fods	F26	below_avg	5	shown	A*star	7
+forms-v1.fods	F26	below_avg	6	shown	date	100
+forms-v1.fods	F26	below_avg	7	shown	Apricot	3
+forms-v1.fods	F26	below_avg	8	shown		42
+forms-v1.fods	F26	below_avg	9	shown	elder	
+forms-v1.fods	F26	below_avg	10	shown	fig	0
+forms-v1.fods	F26	below_avg	11	shown	grape	18
+forms-v1.fods	F26	below_avg	12	shown	apple	10
+forms-v1.fods	F26	below_avg	13	shown	ham?	55
+forms-v1.fods	F27	date_gt	2	hidden	apple	10
+forms-v1.fods	F27	date_gt	3	hidden	Banana	-5
+forms-v1.fods	F27	date_gt	4	shown	cherry	25.5
+forms-v1.fods	F27	date_gt	5	hidden	A*star	7
+forms-v1.fods	F27	date_gt	6	hidden	date	100
+forms-v1.fods	F27	date_gt	7	shown	Apricot	3
+forms-v1.fods	F27	date_gt	8	hidden		42
+forms-v1.fods	F27	date_gt	9	hidden	elder	
+forms-v1.fods	F27	date_gt	10	hidden	fig	0
+forms-v1.fods	F27	date_gt	11	hidden	grape	18
+forms-v1.fods	F27	date_gt	12	hidden	apple	10
+forms-v1.fods	F27	date_gt	13	shown	ham?	55
+forms-v1.fods	F28	today	2	shown	apple	10
+forms-v1.fods	F28	today	3	shown	Banana	-5
+forms-v1.fods	F28	today	4	shown	cherry	25.5
+forms-v1.fods	F28	today	5	shown	A*star	7
+forms-v1.fods	F28	today	6	shown	date	100
+forms-v1.fods	F28	today	7	shown	Apricot	3
+forms-v1.fods	F28	today	8	shown		42
+forms-v1.fods	F28	today	9	shown	elder	
+forms-v1.fods	F28	today	10	shown	fig	0
+forms-v1.fods	F28	today	11	shown	grape	18
+forms-v1.fods	F28	today	12	shown	apple	10
+forms-v1.fods	F28	today	13	shown	ham?	55
+forms-v1.fods	F29	yesterday	2	shown	apple	10
+forms-v1.fods	F29	yesterday	3	shown	Banana	-5
+forms-v1.fods	F29	yesterday	4	shown	cherry	25.5
+forms-v1.fods	F29	yesterday	5	shown	A*star	7
+forms-v1.fods	F29	yesterday	6	shown	date	100
+forms-v1.fods	F29	yesterday	7	shown	Apricot	3
+forms-v1.fods	F29	yesterday	8	shown		42
+forms-v1.fods	F29	yesterday	9	shown	elder	
+forms-v1.fods	F29	yesterday	10	shown	fig	0
+forms-v1.fods	F29	yesterday	11	shown	grape	18
+forms-v1.fods	F29	yesterday	12	shown	apple	10
+forms-v1.fods	F29	yesterday	13	shown	ham?	55
+forms-v1.fods	F30	thisMonth	2	shown	apple	10
+forms-v1.fods	F30	thisMonth	3	shown	Banana	-5
+forms-v1.fods	F30	thisMonth	4	shown	cherry	25.5
+forms-v1.fods	F30	thisMonth	5	shown	A*star	7
+forms-v1.fods	F30	thisMonth	6	shown	date	100
+forms-v1.fods	F30	thisMonth	7	shown	Apricot	3
+forms-v1.fods	F30	thisMonth	8	shown		42
+forms-v1.fods	F30	thisMonth	9	shown	elder	
+forms-v1.fods	F30	thisMonth	10	shown	fig	0
+forms-v1.fods	F30	thisMonth	11	shown	grape	18
+forms-v1.fods	F30	thisMonth	12	shown	apple	10
+forms-v1.fods	F30	thisMonth	13	shown	ham?	55
+forms-v1.fods	F31	lastMonth	2	shown	apple	10
+forms-v1.fods	F31	lastMonth	3	shown	Banana	-5
+forms-v1.fods	F31	lastMonth	4	shown	cherry	25.5
+forms-v1.fods	F31	lastMonth	5	shown	A*star	7
+forms-v1.fods	F31	lastMonth	6	shown	date	100
+forms-v1.fods	F31	lastMonth	7	shown	Apricot	3
+forms-v1.fods	F31	lastMonth	8	shown		42
+forms-v1.fods	F31	lastMonth	9	shown	elder	
+forms-v1.fods	F31	lastMonth	10	shown	fig	0
+forms-v1.fods	F31	lastMonth	11	shown	grape	18
+forms-v1.fods	F31	lastMonth	12	shown	apple	10
+forms-v1.fods	F31	lastMonth	13	shown	ham?	55
+forms-v1.fods	F32	thisYear	2	shown	apple	10
+forms-v1.fods	F32	thisYear	3	shown	Banana	-5
+forms-v1.fods	F32	thisYear	4	shown	cherry	25.5
+forms-v1.fods	F32	thisYear	5	shown	A*star	7
+forms-v1.fods	F32	thisYear	6	shown	date	100
+forms-v1.fods	F32	thisYear	7	shown	Apricot	3
+forms-v1.fods	F32	thisYear	8	shown		42
+forms-v1.fods	F32	thisYear	9	shown	elder	
+forms-v1.fods	F32	thisYear	10	shown	fig	0
+forms-v1.fods	F32	thisYear	11	shown	grape	18
+forms-v1.fods	F32	thisYear	12	shown	apple	10
+forms-v1.fods	F32	thisYear	13	shown	ham?	55
+forms-v1.fods	F33	yearToDate	2	shown	apple	10
+forms-v1.fods	F33	yearToDate	3	shown	Banana	-5
+forms-v1.fods	F33	yearToDate	4	shown	cherry	25.5
+forms-v1.fods	F33	yearToDate	5	shown	A*star	7
+forms-v1.fods	F33	yearToDate	6	shown	date	100
+forms-v1.fods	F33	yearToDate	7	shown	Apricot	3
+forms-v1.fods	F33	yearToDate	8	shown		42
+forms-v1.fods	F33	yearToDate	9	shown	elder	
+forms-v1.fods	F33	yearToDate	10	shown	fig	0
+forms-v1.fods	F33	yearToDate	11	shown	grape	18
+forms-v1.fods	F33	yearToDate	12	shown	apple	10
+forms-v1.fods	F33	yearToDate	13	shown	ham?	55
+forms-v1.fods	F34	thisWeek	2	shown	apple	10
+forms-v1.fods	F34	thisWeek	3	shown	Banana	-5
+forms-v1.fods	F34	thisWeek	4	shown	cherry	25.5
+forms-v1.fods	F34	thisWeek	5	shown	A*star	7
+forms-v1.fods	F34	thisWeek	6	shown	date	100
+forms-v1.fods	F34	thisWeek	7	shown	Apricot	3
+forms-v1.fods	F34	thisWeek	8	shown		42
+forms-v1.fods	F34	thisWeek	9	shown	elder	
+forms-v1.fods	F34	thisWeek	10	shown	fig	0
+forms-v1.fods	F34	thisWeek	11	shown	grape	18
+forms-v1.fods	F34	thisWeek	12	shown	apple	10
+forms-v1.fods	F34	thisWeek	13	shown	ham?	55
+forms-v1.fods	F35	Q2	2	shown	apple	10
+forms-v1.fods	F35	Q2	3	shown	Banana	-5
+forms-v1.fods	F35	Q2	4	shown	cherry	25.5
+forms-v1.fods	F35	Q2	5	shown	A*star	7
+forms-v1.fods	F35	Q2	6	shown	date	100
+forms-v1.fods	F35	Q2	7	shown	Apricot	3
+forms-v1.fods	F35	Q2	8	shown		42
+forms-v1.fods	F35	Q2	9	shown	elder	
+forms-v1.fods	F35	Q2	10	shown	fig	0
+forms-v1.fods	F35	Q2	11	shown	grape	18
+forms-v1.fods	F35	Q2	12	shown	apple	10
+forms-v1.fods	F35	Q2	13	shown	ham?	55
+forms-v1.fods	F36	M8	2	shown	apple	10
+forms-v1.fods	F36	M8	3	shown	Banana	-5
+forms-v1.fods	F36	M8	4	shown	cherry	25.5
+forms-v1.fods	F36	M8	5	shown	A*star	7
+forms-v1.fods	F36	M8	6	shown	date	100
+forms-v1.fods	F36	M8	7	shown	Apricot	3
+forms-v1.fods	F36	M8	8	shown		42
+forms-v1.fods	F36	M8	9	shown	elder	
+forms-v1.fods	F36	M8	10	shown	fig	0
+forms-v1.fods	F36	M8	11	shown	grape	18
+forms-v1.fods	F36	M8	12	shown	apple	10
+forms-v1.fods	F36	M8	13	shown	ham?	55
+forms-v1.fods	F37	two_columns	2	shown	apple	10
+forms-v1.fods	F37	two_columns	3	hidden	Banana	-5
+forms-v1.fods	F37	two_columns	4	shown	cherry	25.5
+forms-v1.fods	F37	two_columns	5	hidden	A*star	7
+forms-v1.fods	F37	two_columns	6	shown	date	100
+forms-v1.fods	F37	two_columns	7	hidden	Apricot	3
+forms-v1.fods	F37	two_columns	8	hidden		42
+forms-v1.fods	F37	two_columns	9	hidden	elder	
+forms-v1.fods	F37	two_columns	10	hidden	fig	0
+forms-v1.fods	F37	two_columns	11	shown	grape	18
+forms-v1.fods	F37	two_columns	12	hidden	apple	10
+forms-v1.fods	F37	two_columns	13	shown	ham?	55
+forms-v1.fods	F38	by_letter	2	hidden	apple	10
+forms-v1.fods	F38	by_letter	3	hidden	Banana	-5
+forms-v1.fods	F38	by_letter	4	shown	cherry	25.5
+forms-v1.fods	F38	by_letter	5	hidden	A*star	7
+forms-v1.fods	F38	by_letter	6	shown	date	100
+forms-v1.fods	F38	by_letter	7	hidden	Apricot	3
+forms-v1.fods	F38	by_letter	8	shown		42
+forms-v1.fods	F38	by_letter	9	hidden	elder	
+forms-v1.fods	F38	by_letter	10	hidden	fig	0
+forms-v1.fods	F38	by_letter	11	hidden	grape	18
+forms-v1.fods	F38	by_letter	12	hidden	apple	10
+forms-v1.fods	F38	by_letter	13	shown	ham?	55
+forms-v1.fods	F39	by_position	2	hidden	apple	10
+forms-v1.fods	F39	by_position	3	hidden	Banana	-5
+forms-v1.fods	F39	by_position	4	shown	cherry	25.5
+forms-v1.fods	F39	by_position	5	hidden	A*star	7
+forms-v1.fods	F39	by_position	6	shown	date	100
+forms-v1.fods	F39	by_position	7	hidden	Apricot	3
+forms-v1.fods	F39	by_position	8	shown		42
+forms-v1.fods	F39	by_position	9	hidden	elder	
+forms-v1.fods	F39	by_position	10	hidden	fig	0
+forms-v1.fods	F39	by_position	11	hidden	grape	18
+forms-v1.fods	F39	by_position	12	hidden	apple	10
+forms-v1.fods	F39	by_position	13	shown	ham?	55
+forms-v1.fods	S01	sort_asc	2	shown	Banana	-5
+forms-v1.fods	S01	sort_asc	3	shown	fig	0
+forms-v1.fods	S01	sort_asc	4	shown	Apricot	3
+forms-v1.fods	S01	sort_asc	5	shown	A*star	7
+forms-v1.fods	S01	sort_asc	6	shown	apple	10
+forms-v1.fods	S01	sort_asc	7	shown	apple	10
+forms-v1.fods	S01	sort_asc	8	shown	grape	18
+forms-v1.fods	S01	sort_asc	9	shown	cherry	25.5
+forms-v1.fods	S01	sort_asc	10	shown		42
+forms-v1.fods	S01	sort_asc	11	shown	ham?	55
+forms-v1.fods	S01	sort_asc	12	shown	date	100
+forms-v1.fods	S01	sort_asc	13	shown	elder	
+forms-v1.fods	S02	sort_desc	2	shown	date	100
+forms-v1.fods	S02	sort_desc	3	shown	ham?	55
+forms-v1.fods	S02	sort_desc	4	shown		42
+forms-v1.fods	S02	sort_desc	5	shown	cherry	25.5
+forms-v1.fods	S02	sort_desc	6	shown	grape	18
+forms-v1.fods	S02	sort_desc	7	shown	apple	10
+forms-v1.fods	S02	sort_desc	8	shown	apple	10
+forms-v1.fods	S02	sort_desc	9	shown	A*star	7
+forms-v1.fods	S02	sort_desc	10	shown	Apricot	3
+forms-v1.fods	S02	sort_desc	11	shown	fig	0
+forms-v1.fods	S02	sort_desc	12	shown	Banana	-5
+forms-v1.fods	S02	sort_desc	13	shown	elder	
+forms-v1.fods	S03	sort_text	2	shown	A*star	7
+forms-v1.fods	S03	sort_text	3	shown	apple	10
+forms-v1.fods	S03	sort_text	4	shown	apple	10
+forms-v1.fods	S03	sort_text	5	shown	Apricot	3
+forms-v1.fods	S03	sort_text	6	shown	Banana	-5
+forms-v1.fods	S03	sort_text	7	shown	cherry	25.5
+forms-v1.fods	S03	sort_text	8	shown	date	100
+forms-v1.fods	S03	sort_text	9	shown	elder	
+forms-v1.fods	S03	sort_text	10	shown	fig	0
+forms-v1.fods	S03	sort_text	11	shown	grape	18
+forms-v1.fods	S03	sort_text	12	shown	ham?	55
+forms-v1.fods	S03	sort_text	13	shown		42
+forms-v1.fods	S04	sort_two	2	shown	apple	10
+forms-v1.fods	S04	sort_two	3	shown	grape	18
+forms-v1.fods	S04	sort_two	4	shown	cherry	25.5
+forms-v1.fods	S04	sort_two	5	shown	ham?	55
+forms-v1.fods	S04	sort_two	6	shown	date	100
+forms-v1.fods	S04	sort_two	7	shown	elder	
+forms-v1.fods	S04	sort_two	8	shown	Banana	-5
+forms-v1.fods	S04	sort_two	9	shown	fig	0
+forms-v1.fods	S04	sort_two	10	shown	A*star	7
+forms-v1.fods	S04	sort_two	11	shown	apple	10
+forms-v1.fods	S04	sort_two	12	shown		42
+forms-v1.fods	S04	sort_two	13	shown	Apricot	3
+forms-v1.fods	S05	sort_date	2	shown	ham?	55
+forms-v1.fods	S05	sort_date	3	shown	Apricot	3
+forms-v1.fods	S05	sort_date	4	shown	cherry	25.5
+forms-v1.fods	S05	sort_date	5	shown	apple	10
+forms-v1.fods	S05	sort_date	6	shown	Banana	-5
+forms-v1.fods	S05	sort_date	7	shown	A*star	7
+forms-v1.fods	S05	sort_date	8	shown	apple	10
+forms-v1.fods	S05	sort_date	9	shown	date	100
+forms-v1.fods	S05	sort_date	10	shown	grape	18
+forms-v1.fods	S05	sort_date	11	shown	fig	0
+forms-v1.fods	S05	sort_date	12	shown	elder	
+forms-v1.fods	S05	sort_date	13	shown		42
+forms-v1.fods	Plain		2	shown	apple	10
+forms-v1.fods	Plain		3	shown	Banana	-5
+forms-v1.fods	Plain		4	shown	cherry	25.5
+forms-v1.fods	Plain		5	shown	A*star	7
+forms-v1.fods	Plain		6	shown	date	100
+forms-v1.fods	Plain		7	shown	Apricot	3
+forms-v1.fods	Plain		8	shown		42
+forms-v1.fods	Plain		9	shown	elder	
+forms-v1.fods	Plain		10	shown	fig	0
+forms-v1.fods	Plain		11	shown	grape	18
+forms-v1.fods	Plain		12	shown	apple	10
+forms-v1.fods	Plain		13	shown	ham?	55
+forms-v1.fods	Tables	Id	2	shown	apple	10
+forms-v1.fods	Tables	Id	3	shown	Banana	-5
+forms-v1.fods	Tables	Id	4	shown	cherry	25.5
+forms-v1.fods	Tables	Id	5	shown	A*star	7
+forms-v1.fods	Tables	Id	6	shown	date	100
+forms-v1.fods	Tables	Id	7	shown	Apricot	3
+forms-v1.fods	Tables	Id	8	shown		42
+forms-v1.fods	Tables	Id	9	shown	elder	
+forms-v1.fods	Tables	Id	10	shown	fig	0
+forms-v1.fods	Tables	Id	11	shown	grape	18
+forms-v1.fods	Tables	Id	12	shown	apple	10
+forms-v1.fods	Tables	Id	13	shown	ham?	55
+forms-v2.fods	F01	value	2	hidden	apple	10
+forms-v2.fods	F01	value	3	hidden	Banana	-5
+forms-v2.fods	F01	value	4	hidden	cherry	25.5
+forms-v2.fods	F01	value	5	hidden	A*star	7
+forms-v2.fods	F01	value	6	hidden	date	100
+forms-v2.fods	F01	value	7	hidden	Apricot	3
+forms-v2.fods	F01	value	8	hidden		42
+forms-v2.fods	F01	value	9	hidden	elder	
+forms-v2.fods	F01	value	10	hidden	fig	0
+forms-v2.fods	F01	value	11	hidden	grape	18
+forms-v2.fods	F01	value	12	hidden	apple	10
+forms-v2.fods	F01	value	13	hidden	ham?	55
+forms-v2.fods	F02	values	2	hidden	apple	10
+forms-v2.fods	F02	values	3	hidden	Banana	-5
+forms-v2.fods	F02	values	4	hidden	cherry	25.5
+forms-v2.fods	F02	values	5	hidden	A*star	7
+forms-v2.fods	F02	values	6	hidden	date	100
+forms-v2.fods	F02	values	7	hidden	Apricot	3
+forms-v2.fods	F02	values	8	hidden		42
+forms-v2.fods	F02	values	9	hidden	elder	
+forms-v2.fods	F02	values	10	hidden	fig	0
+forms-v2.fods	F02	values	11	hidden	grape	18
+forms-v2.fods	F02	values	12	hidden	apple	10
+forms-v2.fods	F02	values	13	hidden	ham?	55
+forms-v2.fods	F03	blank	2	hidden	apple	10
+forms-v2.fods	F03	blank	3	hidden	Banana	-5
+forms-v2.fods	F03	blank	4	hidden	cherry	25.5
+forms-v2.fods	F03	blank	5	hidden	A*star	7
+forms-v2.fods	F03	blank	6	hidden	date	100
+forms-v2.fods	F03	blank	7	hidden	Apricot	3
+forms-v2.fods	F03	blank	8	hidden		42
+forms-v2.fods	F03	blank	9	hidden	elder	
+forms-v2.fods	F03	blank	10	hidden	fig	0
+forms-v2.fods	F03	blank	11	hidden	grape	18
+forms-v2.fods	F03	blank	12	hidden	apple	10
+forms-v2.fods	F03	blank	13	hidden	ham?	55
+forms-v2.fods	F04	num_value	2	hidden	apple	10
+forms-v2.fods	F04	num_value	3	hidden	Banana	-5
+forms-v2.fods	F04	num_value	4	hidden	cherry	25.5
+forms-v2.fods	F04	num_value	5	hidden	A*star	7
+forms-v2.fods	F04	num_value	6	hidden	date	100
+forms-v2.fods	F04	num_value	7	hidden	Apricot	3
+forms-v2.fods	F04	num_value	8	shown		42
+forms-v2.fods	F04	num_value	9	hidden	elder	
+forms-v2.fods	F04	num_value	10	hidden	fig	0
+forms-v2.fods	F04	num_value	11	hidden	grape	18
+forms-v2.fods	F04	num_value	12	hidden	apple	10
+forms-v2.fods	F04	num_value	13	hidden	ham?	55
+forms-v2.fods	F05	bool	2	hidden	apple	10
+forms-v2.fods	F05	bool	3	hidden	Banana	-5
+forms-v2.fods	F05	bool	4	hidden	cherry	25.5
+forms-v2.fods	F05	bool	5	hidden	A*star	7
+forms-v2.fods	F05	bool	6	hidden	date	100
+forms-v2.fods	F05	bool	7	hidden	Apricot	3
+forms-v2.fods	F05	bool	8	hidden		42
+forms-v2.fods	F05	bool	9	hidden	elder	
+forms-v2.fods	F05	bool	10	shown	fig	0
+forms-v2.fods	F05	bool	11	hidden	grape	18
+forms-v2.fods	F05	bool	12	hidden	apple	10
+forms-v2.fods	F05	bool	13	hidden	ham?	55
+forms-v2.fods	F06	date_value	2	hidden	apple	10
+forms-v2.fods	F06	date_value	3	hidden	Banana	-5
+forms-v2.fods	F06	date_value	4	hidden	cherry	25.5
+forms-v2.fods	F06	date_value	5	shown	A*star	7
+forms-v2.fods	F06	date_value	6	hidden	date	100
+forms-v2.fods	F06	date_value	7	hidden	Apricot	3
+forms-v2.fods	F06	date_value	8	hidden		42
+forms-v2.fods	F06	date_value	9	hidden	elder	
+forms-v2.fods	F06	date_value	10	hidden	fig	0
+forms-v2.fods	F06	date_value	11	hidden	grape	18
+forms-v2.fods	F06	date_value	12	hidden	apple	10
+forms-v2.fods	F06	date_value	13	hidden	ham?	55
+forms-v2.fods	F07	eq	2	shown	apple	10
+forms-v2.fods	F07	eq	3	hidden	Banana	-5
+forms-v2.fods	F07	eq	4	hidden	cherry	25.5
+forms-v2.fods	F07	eq	5	shown	A*star	7
+forms-v2.fods	F07	eq	6	hidden	date	100
+forms-v2.fods	F07	eq	7	shown	Apricot	3
+forms-v2.fods	F07	eq	8	hidden		42
+forms-v2.fods	F07	eq	9	hidden	elder	
+forms-v2.fods	F07	eq	10	hidden	fig	0
+forms-v2.fods	F07	eq	11	hidden	grape	18
+forms-v2.fods	F07	eq	12	shown	apple	10
+forms-v2.fods	F07	eq	13	hidden	ham?	55
+forms-v2.fods	F08	ne	2	hidden	apple	10
+forms-v2.fods	F08	ne	3	hidden	Banana	-5
+forms-v2.fods	F08	ne	4	hidden	cherry	25.5
+forms-v2.fods	F08	ne	5	hidden	A*star	7
+forms-v2.fods	F08	ne	6	hidden	date	100
+forms-v2.fods	F08	ne	7	hidden	Apricot	3
+forms-v2.fods	F08	ne	8	hidden		42
+forms-v2.fods	F08	ne	9	hidden	elder	
+forms-v2.fods	F08	ne	10	hidden	fig	0
+forms-v2.fods	F08	ne	11	hidden	grape	18
+forms-v2.fods	F08	ne	12	hidden	apple	10
+forms-v2.fods	F08	ne	13	hidden	ham?	55
+forms-v2.fods	F09	gt	2	shown	apple	10
+forms-v2.fods	F09	gt	3	hidden	Banana	-5
+forms-v2.fods	F09	gt	4	shown	cherry	25.5
+forms-v2.fods	F09	gt	5	shown	A*star	7
+forms-v2.fods	F09	gt	6	shown	date	100
+forms-v2.fods	F09	gt	7	shown	Apricot	3
+forms-v2.fods	F09	gt	8	shown		42
+forms-v2.fods	F09	gt	9	shown	elder	
+forms-v2.fods	F09	gt	10	shown	fig	0
+forms-v2.fods	F09	gt	11	shown	grape	18
+forms-v2.fods	F09	gt	12	shown	apple	10
+forms-v2.fods	F09	gt	13	shown	ham?	55
+forms-v2.fods	F10	ge	2	shown	apple	10
+forms-v2.fods	F10	ge	3	hidden	Banana	-5
+forms-v2.fods	F10	ge	4	hidden	cherry	25.5
+forms-v2.fods	F10	ge	5	hidden	A*star	7
+forms-v2.fods	F10	ge	6	shown	date	100
+forms-v2.fods	F10	ge	7	hidden	Apricot	3
+forms-v2.fods	F10	ge	8	hidden		42
+forms-v2.fods	F10	ge	9	hidden	elder	
+forms-v2.fods	F10	ge	10	hidden	fig	0
+forms-v2.fods	F10	ge	11	shown	grape	18
+forms-v2.fods	F10	ge	12	shown	apple	10
+forms-v2.fods	F10	ge	13	hidden	ham?	55
+forms-v2.fods	F11	lt	2	hidden	apple	10
+forms-v2.fods	F11	lt	3	shown	Banana	-5
+forms-v2.fods	F11	lt	4	hidden	cherry	25.5
+forms-v2.fods	F11	lt	5	shown	A*star	7
+forms-v2.fods	F11	lt	6	hidden	date	100
+forms-v2.fods	F11	lt	7	shown	Apricot	3
+forms-v2.fods	F11	lt	8	hidden		42
+forms-v2.fods	F11	lt	9	hidden	elder	
+forms-v2.fods	F11	lt	10	shown	fig	0
+forms-v2.fods	F11	lt	11	hidden	grape	18
+forms-v2.fods	F11	lt	12	hidden	apple	10
+forms-v2.fods	F11	lt	13	hidden	ham?	55
+forms-v2.fods	F12	le	2	shown	apple	10
+forms-v2.fods	F12	le	3	shown	Banana	-5
+forms-v2.fods	F12	le	4	hidden	cherry	25.5
+forms-v2.fods	F12	le	5	shown	A*star	7
+forms-v2.fods	F12	le	6	hidden	date	100
+forms-v2.fods	F12	le	7	shown	Apricot	3
+forms-v2.fods	F12	le	8	hidden		42
+forms-v2.fods	F12	le	9	hidden	elder	
+forms-v2.fods	F12	le	10	shown	fig	0
+forms-v2.fods	F12	le	11	hidden	grape	18
+forms-v2.fods	F12	le	12	shown	apple	10
+forms-v2.fods	F12	le	13	hidden	ham?	55
+forms-v2.fods	F13	text_gt	2	hidden	apple	10
+forms-v2.fods	F13	text_gt	3	hidden	Banana	-5
+forms-v2.fods	F13	text_gt	4	hidden	cherry	25.5
+forms-v2.fods	F13	text_gt	5	hidden	A*star	7
+forms-v2.fods	F13	text_gt	6	shown	date	100
+forms-v2.fods	F13	text_gt	7	hidden	Apricot	3
+forms-v2.fods	F13	text_gt	8	hidden		42
+forms-v2.fods	F13	text_gt	9	shown	elder	
+forms-v2.fods	F13	text_gt	10	shown	fig	0
+forms-v2.fods	F13	text_gt	11	shown	grape	18
+forms-v2.fods	F13	text_gt	12	hidden	apple	10
+forms-v2.fods	F13	text_gt	13	shown	ham?	55
+forms-v2.fods	F14	begins	2	shown	apple	10
+forms-v2.fods	F14	begins	3	hidden	Banana	-5
+forms-v2.fods	F14	begins	4	hidden	cherry	25.5
+forms-v2.fods	F14	begins	5	shown	A*star	7
+forms-v2.fods	F14	begins	6	hidden	date	100
+forms-v2.fods	F14	begins	7	shown	Apricot	3
+forms-v2.fods	F14	begins	8	hidden		42
+forms-v2.fods	F14	begins	9	hidden	elder	
+forms-v2.fods	F14	begins	10	hidden	fig	0
+forms-v2.fods	F14	begins	11	hidden	grape	18
+forms-v2.fods	F14	begins	12	shown	apple	10
+forms-v2.fods	F14	begins	13	hidden	ham?	55
+forms-v2.fods	F15	ends	2	shown	apple	10
+forms-v2.fods	F15	ends	3	hidden	Banana	-5
+forms-v2.fods	F15	ends	4	hidden	cherry	25.5
+forms-v2.fods	F15	ends	5	hidden	A*star	7
+forms-v2.fods	F15	ends	6	shown	date	100
+forms-v2.fods	F15	ends	7	hidden	Apricot	3
+forms-v2.fods	F15	ends	8	hidden		42
+forms-v2.fods	F15	ends	9	hidden	elder	
+forms-v2.fods	F15	ends	10	hidden	fig	0
+forms-v2.fods	F15	ends	11	shown	grape	18
+forms-v2.fods	F15	ends	12	shown	apple	10
+forms-v2.fods	F15	ends	13	hidden	ham?	55
+forms-v2.fods	F16	contains	2	hidden	apple	10
+forms-v2.fods	F16	contains	3	shown	Banana	-5
+forms-v2.fods	F16	contains	4	hidden	cherry	25.5
+forms-v2.fods	F16	contains	5	hidden	A*star	7
+forms-v2.fods	F16	contains	6	hidden	date	100
+forms-v2.fods	F16	contains	7	hidden	Apricot	3
+forms-v2.fods	F16	contains	8	hidden		42
+forms-v2.fods	F16	contains	9	hidden	elder	
+forms-v2.fods	F16	contains	10	hidden	fig	0
+forms-v2.fods	F16	contains	11	hidden	grape	18
+forms-v2.fods	F16	contains	12	hidden	apple	10
+forms-v2.fods	F16	contains	13	hidden	ham?	55
+forms-v2.fods	F17	not_contains	2	shown	apple	10
+forms-v2.fods	F17	not_contains	3	hidden	Banana	-5
+forms-v2.fods	F17	not_contains	4	shown	cherry	25.5
+forms-v2.fods	F17	not_contains	5	shown	A*star	7
+forms-v2.fods	F17	not_contains	6	shown	date	100
+forms-v2.fods	F17	not_contains	7	shown	Apricot	3
+forms-v2.fods	F17	not_contains	8	shown		42
+forms-v2.fods	F17	not_contains	9	shown	elder	
+forms-v2.fods	F17	not_contains	10	shown	fig	0
+forms-v2.fods	F17	not_contains	11	shown	grape	18
+forms-v2.fods	F17	not_contains	12	shown	apple	10
+forms-v2.fods	F17	not_contains	13	shown	ham?	55
+forms-v2.fods	F18	qmark	2	hidden	apple	10
+forms-v2.fods	F18	qmark	3	hidden	Banana	-5
+forms-v2.fods	F18	qmark	4	hidden	cherry	25.5
+forms-v2.fods	F18	qmark	5	hidden	A*star	7
+forms-v2.fods	F18	qmark	6	hidden	date	100
+forms-v2.fods	F18	qmark	7	hidden	Apricot	3
+forms-v2.fods	F18	qmark	8	hidden		42
+forms-v2.fods	F18	qmark	9	hidden	elder	
+forms-v2.fods	F18	qmark	10	hidden	fig	0
+forms-v2.fods	F18	qmark	11	hidden	grape	18
+forms-v2.fods	F18	qmark	12	hidden	apple	10
+forms-v2.fods	F18	qmark	13	hidden	ham?	55
+forms-v2.fods	F19	escaped	2	hidden	apple	10
+forms-v2.fods	F19	escaped	3	hidden	Banana	-5
+forms-v2.fods	F19	escaped	4	hidden	cherry	25.5
+forms-v2.fods	F19	escaped	5	hidden	A*star	7
+forms-v2.fods	F19	escaped	6	hidden	date	100
+forms-v2.fods	F19	escaped	7	hidden	Apricot	3
+forms-v2.fods	F19	escaped	8	hidden		42
+forms-v2.fods	F19	escaped	9	hidden	elder	
+forms-v2.fods	F19	escaped	10	hidden	fig	0
+forms-v2.fods	F19	escaped	11	hidden	grape	18
+forms-v2.fods	F19	escaped	12	hidden	apple	10
+forms-v2.fods	F19	escaped	13	hidden	ham?	55
+forms-v2.fods	F20	and	2	shown	apple	10
+forms-v2.fods	F20	and	3	hidden	Banana	-5
+forms-v2.fods	F20	and	4	shown	cherry	25.5
+forms-v2.fods	F20	and	5	shown	A*star	7
+forms-v2.fods	F20	and	6	hidden	date	100
+forms-v2.fods	F20	and	7	hidden	Apricot	3
+forms-v2.fods	F20	and	8	hidden		42
+forms-v2.fods	F20	and	9	hidden	elder	
+forms-v2.fods	F20	and	10	hidden	fig	0
+forms-v2.fods	F20	and	11	shown	grape	18
+forms-v2.fods	F20	and	12	shown	apple	10
+forms-v2.fods	F20	and	13	hidden	ham?	55
+forms-v2.fods	F21	or	2	hidden	apple	10
+forms-v2.fods	F21	or	3	shown	Banana	-5
+forms-v2.fods	F21	or	4	hidden	cherry	25.5
+forms-v2.fods	F21	or	5	hidden	A*star	7
+forms-v2.fods	F21	or	6	shown	date	100
+forms-v2.fods	F21	or	7	hidden	Apricot	3
+forms-v2.fods	F21	or	8	hidden		42
+forms-v2.fods	F21	or	9	hidden	elder	
+forms-v2.fods	F21	or	10	hidden	fig	0
+forms-v2.fods	F21	or	11	hidden	grape	18
+forms-v2.fods	F21	or	12	hidden	apple	10
+forms-v2.fods	F21	or	13	shown	ham?	55
+forms-v2.fods	F22	top3	2	hidden	apple	10
+forms-v2.fods	F22	top3	3	hidden	Banana	-5
+forms-v2.fods	F22	top3	4	hidden	cherry	25.5
+forms-v2.fods	F22	top3	5	hidden	A*star	7
+forms-v2.fods	F22	top3	6	shown	date	100
+forms-v2.fods	F22	top3	7	hidden	Apricot	3
+forms-v2.fods	F22	top3	8	shown		42
+forms-v2.fods	F22	top3	9	hidden	elder	
+forms-v2.fods	F22	top3	10	hidden	fig	0
+forms-v2.fods	F22	top3	11	hidden	grape	18
+forms-v2.fods	F22	top3	12	hidden	apple	10
+forms-v2.fods	F22	top3	13	shown	ham?	55
+forms-v2.fods	F23	bottom2	2	hidden	apple	10
+forms-v2.fods	F23	bottom2	3	shown	Banana	-5
+forms-v2.fods	F23	bottom2	4	hidden	cherry	25.5
+forms-v2.fods	F23	bottom2	5	hidden	A*star	7
+forms-v2.fods	F23	bottom2	6	hidden	date	100
+forms-v2.fods	F23	bottom2	7	hidden	Apricot	3
+forms-v2.fods	F23	bottom2	8	hidden		42
+forms-v2.fods	F23	bottom2	9	hidden	elder	
+forms-v2.fods	F23	bottom2	10	shown	fig	0
+forms-v2.fods	F23	bottom2	11	hidden	grape	18
+forms-v2.fods	F23	bottom2	12	hidden	apple	10
+forms-v2.fods	F23	bottom2	13	hidden	ham?	55
+forms-v2.fods	F24	top25pct	2	hidden	apple	10
+forms-v2.fods	F24	top25pct	3	hidden	Banana	-5
+forms-v2.fods	F24	top25pct	4	hidden	cherry	25.5
+forms-v2.fods	F24	top25pct	5	hidden	A*star	7
+forms-v2.fods	F24	top25pct	6	shown	date	100
+forms-v2.fods	F24	top25pct	7	hidden	Apricot	3
+forms-v2.fods	F24	top25pct	8	hidden		42
+forms-v2.fods	F24	top25pct	9	hidden	elder	
+forms-v2.fods	F24	top25pct	10	hidden	fig	0
+forms-v2.fods	F24	top25pct	11	hidden	grape	18
+forms-v2.fods	F24	top25pct	12	hidden	apple	10
+forms-v2.fods	F24	top25pct	13	shown	ham?	55
+forms-v2.fods	F25	above_avg	2	shown	apple	10
+forms-v2.fods	F25	above_avg	3	shown	Banana	-5
+forms-v2.fods	F25	above_avg	4	shown	cherry	25.5
+forms-v2.fods	F25	above_avg	5	shown	A*star	7
+forms-v2.fods	F25	above_avg	6	shown	date	100
+forms-v2.fods	F25	above_avg	7	shown	Apricot	3
+forms-v2.fods	F25	above_avg	8	shown		42
+forms-v2.fods	F25	above_avg	9	shown	elder	
+forms-v2.fods	F25	above_avg	10	shown	fig	0
+forms-v2.fods	F25	above_avg	11	shown	grape	18
+forms-v2.fods	F25	above_avg	12	shown	apple	10
+forms-v2.fods	F25	above_avg	13	shown	ham?	55
+forms-v2.fods	F26	below_avg	2	shown	apple	10
+forms-v2.fods	F26	below_avg	3	shown	Banana	-5
+forms-v2.fods	F26	below_avg	4	shown	cherry	25.5
+forms-v2.fods	F26	below_avg	5	shown	A*star	7
+forms-v2.fods	F26	below_avg	6	shown	date	100
+forms-v2.fods	F26	below_avg	7	shown	Apricot	3
+forms-v2.fods	F26	below_avg	8	shown		42
+forms-v2.fods	F26	below_avg	9	shown	elder	
+forms-v2.fods	F26	below_avg	10	shown	fig	0
+forms-v2.fods	F26	below_avg	11	shown	grape	18
+forms-v2.fods	F26	below_avg	12	shown	apple	10
+forms-v2.fods	F26	below_avg	13	shown	ham?	55
+forms-v2.fods	F27	date_gt	2	hidden	apple	10
+forms-v2.fods	F27	date_gt	3	hidden	Banana	-5
+forms-v2.fods	F27	date_gt	4	shown	cherry	25.5
+forms-v2.fods	F27	date_gt	5	hidden	A*star	7
+forms-v2.fods	F27	date_gt	6	hidden	date	100
+forms-v2.fods	F27	date_gt	7	shown	Apricot	3
+forms-v2.fods	F27	date_gt	8	hidden		42
+forms-v2.fods	F27	date_gt	9	hidden	elder	
+forms-v2.fods	F27	date_gt	10	hidden	fig	0
+forms-v2.fods	F27	date_gt	11	hidden	grape	18
+forms-v2.fods	F27	date_gt	12	hidden	apple	10
+forms-v2.fods	F27	date_gt	13	shown	ham?	55
+forms-v2.fods	F28	today	2	shown	apple	10
+forms-v2.fods	F28	today	3	shown	Banana	-5
+forms-v2.fods	F28	today	4	shown	cherry	25.5
+forms-v2.fods	F28	today	5	shown	A*star	7
+forms-v2.fods	F28	today	6	shown	date	100
+forms-v2.fods	F28	today	7	shown	Apricot	3
+forms-v2.fods	F28	today	8	shown		42
+forms-v2.fods	F28	today	9	shown	elder	
+forms-v2.fods	F28	today	10	shown	fig	0
+forms-v2.fods	F28	today	11	shown	grape	18
+forms-v2.fods	F28	today	12	shown	apple	10
+forms-v2.fods	F28	today	13	shown	ham?	55
+forms-v2.fods	F29	yesterday	2	shown	apple	10
+forms-v2.fods	F29	yesterday	3	shown	Banana	-5
+forms-v2.fods	F29	yesterday	4	shown	cherry	25.5
+forms-v2.fods	F29	yesterday	5	shown	A*star	7
+forms-v2.fods	F29	yesterday	6	shown	date	100
+forms-v2.fods	F29	yesterday	7	shown	Apricot	3
+forms-v2.fods	F29	yesterday	8	shown		42
+forms-v2.fods	F29	yesterday	9	shown	elder	
+forms-v2.fods	F29	yesterday	10	shown	fig	0
+forms-v2.fods	F29	yesterday	11	shown	grape	18
+forms-v2.fods	F29	yesterday	12	shown	apple	10
+forms-v2.fods	F29	yesterday	13	shown	ham?	55
+forms-v2.fods	F30	thisMonth	2	shown	apple	10
+forms-v2.fods	F30	thisMonth	3	shown	Banana	-5
+forms-v2.fods	F30	thisMonth	4	shown	cherry	25.5
+forms-v2.fods	F30	thisMonth	5	shown	A*star	7
+forms-v2.fods	F30	thisMonth	6	shown	date	100
+forms-v2.fods	F30	thisMonth	7	shown	Apricot	3
+forms-v2.fods	F30	thisMonth	8	shown		42
+forms-v2.fods	F30	thisMonth	9	shown	elder	
+forms-v2.fods	F30	thisMonth	10	shown	fig	0
+forms-v2.fods	F30	thisMonth	11	shown	grape	18
+forms-v2.fods	F30	thisMonth	12	shown	apple	10
+forms-v2.fods	F30	thisMonth	13	shown	ham?	55
+forms-v2.fods	F31	lastMonth	2	shown	apple	10
+forms-v2.fods	F31	lastMonth	3	shown	Banana	-5
+forms-v2.fods	F31	lastMonth	4	shown	cherry	25.5
+forms-v2.fods	F31	lastMonth	5	shown	A*star	7
+forms-v2.fods	F31	lastMonth	6	shown	date	100
+forms-v2.fods	F31	lastMonth	7	shown	Apricot	3
+forms-v2.fods	F31	lastMonth	8	shown		42
+forms-v2.fods	F31	lastMonth	9	shown	elder	
+forms-v2.fods	F31	lastMonth	10	shown	fig	0
+forms-v2.fods	F31	lastMonth	11	shown	grape	18
+forms-v2.fods	F31	lastMonth	12	shown	apple	10
+forms-v2.fods	F31	lastMonth	13	shown	ham?	55
+forms-v2.fods	F32	thisYear	2	shown	apple	10
+forms-v2.fods	F32	thisYear	3	shown	Banana	-5
+forms-v2.fods	F32	thisYear	4	shown	cherry	25.5
+forms-v2.fods	F32	thisYear	5	shown	A*star	7
+forms-v2.fods	F32	thisYear	6	shown	date	100
+forms-v2.fods	F32	thisYear	7	shown	Apricot	3
+forms-v2.fods	F32	thisYear	8	shown		42
+forms-v2.fods	F32	thisYear	9	shown	elder	
+forms-v2.fods	F32	thisYear	10	shown	fig	0
+forms-v2.fods	F32	thisYear	11	shown	grape	18
+forms-v2.fods	F32	thisYear	12	shown	apple	10
+forms-v2.fods	F32	thisYear	13	shown	ham?	55
+forms-v2.fods	F33	yearToDate	2	shown	apple	10
+forms-v2.fods	F33	yearToDate	3	shown	Banana	-5
+forms-v2.fods	F33	yearToDate	4	shown	cherry	25.5
+forms-v2.fods	F33	yearToDate	5	shown	A*star	7
+forms-v2.fods	F33	yearToDate	6	shown	date	100
+forms-v2.fods	F33	yearToDate	7	shown	Apricot	3
+forms-v2.fods	F33	yearToDate	8	shown		42
+forms-v2.fods	F33	yearToDate	9	shown	elder	
+forms-v2.fods	F33	yearToDate	10	shown	fig	0
+forms-v2.fods	F33	yearToDate	11	shown	grape	18
+forms-v2.fods	F33	yearToDate	12	shown	apple	10
+forms-v2.fods	F33	yearToDate	13	shown	ham?	55
+forms-v2.fods	F34	thisWeek	2	shown	apple	10
+forms-v2.fods	F34	thisWeek	3	shown	Banana	-5
+forms-v2.fods	F34	thisWeek	4	shown	cherry	25.5
+forms-v2.fods	F34	thisWeek	5	shown	A*star	7
+forms-v2.fods	F34	thisWeek	6	shown	date	100
+forms-v2.fods	F34	thisWeek	7	shown	Apricot	3
+forms-v2.fods	F34	thisWeek	8	shown		42
+forms-v2.fods	F34	thisWeek	9	shown	elder	
+forms-v2.fods	F34	thisWeek	10	shown	fig	0
+forms-v2.fods	F34	thisWeek	11	shown	grape	18
+forms-v2.fods	F34	thisWeek	12	shown	apple	10
+forms-v2.fods	F34	thisWeek	13	shown	ham?	55
+forms-v2.fods	F35	Q2	2	shown	apple	10
+forms-v2.fods	F35	Q2	3	shown	Banana	-5
+forms-v2.fods	F35	Q2	4	shown	cherry	25.5
+forms-v2.fods	F35	Q2	5	shown	A*star	7
+forms-v2.fods	F35	Q2	6	shown	date	100
+forms-v2.fods	F35	Q2	7	shown	Apricot	3
+forms-v2.fods	F35	Q2	8	shown		42
+forms-v2.fods	F35	Q2	9	shown	elder	
+forms-v2.fods	F35	Q2	10	shown	fig	0
+forms-v2.fods	F35	Q2	11	shown	grape	18
+forms-v2.fods	F35	Q2	12	shown	apple	10
+forms-v2.fods	F35	Q2	13	shown	ham?	55
+forms-v2.fods	F36	M8	2	shown	apple	10
+forms-v2.fods	F36	M8	3	shown	Banana	-5
+forms-v2.fods	F36	M8	4	shown	cherry	25.5
+forms-v2.fods	F36	M8	5	shown	A*star	7
+forms-v2.fods	F36	M8	6	shown	date	100
+forms-v2.fods	F36	M8	7	shown	Apricot	3
+forms-v2.fods	F36	M8	8	shown		42
+forms-v2.fods	F36	M8	9	shown	elder	
+forms-v2.fods	F36	M8	10	shown	fig	0
+forms-v2.fods	F36	M8	11	shown	grape	18
+forms-v2.fods	F36	M8	12	shown	apple	10
+forms-v2.fods	F36	M8	13	shown	ham?	55
+forms-v2.fods	F37	two_columns	2	shown	apple	10
+forms-v2.fods	F37	two_columns	3	hidden	Banana	-5
+forms-v2.fods	F37	two_columns	4	shown	cherry	25.5
+forms-v2.fods	F37	two_columns	5	hidden	A*star	7
+forms-v2.fods	F37	two_columns	6	shown	date	100
+forms-v2.fods	F37	two_columns	7	hidden	Apricot	3
+forms-v2.fods	F37	two_columns	8	hidden		42
+forms-v2.fods	F37	two_columns	9	hidden	elder	
+forms-v2.fods	F37	two_columns	10	hidden	fig	0
+forms-v2.fods	F37	two_columns	11	shown	grape	18
+forms-v2.fods	F37	two_columns	12	hidden	apple	10
+forms-v2.fods	F37	two_columns	13	shown	ham?	55
+forms-v2.fods	F38	by_letter	2	hidden	apple	10
+forms-v2.fods	F38	by_letter	3	hidden	Banana	-5
+forms-v2.fods	F38	by_letter	4	shown	cherry	25.5
+forms-v2.fods	F38	by_letter	5	hidden	A*star	7
+forms-v2.fods	F38	by_letter	6	shown	date	100
+forms-v2.fods	F38	by_letter	7	hidden	Apricot	3
+forms-v2.fods	F38	by_letter	8	shown		42
+forms-v2.fods	F38	by_letter	9	hidden	elder	
+forms-v2.fods	F38	by_letter	10	hidden	fig	0
+forms-v2.fods	F38	by_letter	11	hidden	grape	18
+forms-v2.fods	F38	by_letter	12	hidden	apple	10
+forms-v2.fods	F38	by_letter	13	shown	ham?	55
+forms-v2.fods	F39	by_position	2	hidden	apple	10
+forms-v2.fods	F39	by_position	3	hidden	Banana	-5
+forms-v2.fods	F39	by_position	4	shown	cherry	25.5
+forms-v2.fods	F39	by_position	5	hidden	A*star	7
+forms-v2.fods	F39	by_position	6	shown	date	100
+forms-v2.fods	F39	by_position	7	hidden	Apricot	3
+forms-v2.fods	F39	by_position	8	shown		42
+forms-v2.fods	F39	by_position	9	hidden	elder	
+forms-v2.fods	F39	by_position	10	hidden	fig	0
+forms-v2.fods	F39	by_position	11	hidden	grape	18
+forms-v2.fods	F39	by_position	12	hidden	apple	10
+forms-v2.fods	F39	by_position	13	shown	ham?	55
+forms-v2.fods	S01	sort_asc	2	shown	Banana	-5
+forms-v2.fods	S01	sort_asc	3	shown	fig	0
+forms-v2.fods	S01	sort_asc	4	shown	Apricot	3
+forms-v2.fods	S01	sort_asc	5	shown	A*star	7
+forms-v2.fods	S01	sort_asc	6	shown	apple	10
+forms-v2.fods	S01	sort_asc	7	shown	apple	10
+forms-v2.fods	S01	sort_asc	8	shown	grape	18
+forms-v2.fods	S01	sort_asc	9	shown	cherry	25.5
+forms-v2.fods	S01	sort_asc	10	shown		42
+forms-v2.fods	S01	sort_asc	11	shown	ham?	55
+forms-v2.fods	S01	sort_asc	12	shown	date	100
+forms-v2.fods	S01	sort_asc	13	shown	elder	
+forms-v2.fods	S02	sort_desc	2	shown	date	100
+forms-v2.fods	S02	sort_desc	3	shown	ham?	55
+forms-v2.fods	S02	sort_desc	4	shown		42
+forms-v2.fods	S02	sort_desc	5	shown	cherry	25.5
+forms-v2.fods	S02	sort_desc	6	shown	grape	18
+forms-v2.fods	S02	sort_desc	7	shown	apple	10
+forms-v2.fods	S02	sort_desc	8	shown	apple	10
+forms-v2.fods	S02	sort_desc	9	shown	A*star	7
+forms-v2.fods	S02	sort_desc	10	shown	Apricot	3
+forms-v2.fods	S02	sort_desc	11	shown	fig	0
+forms-v2.fods	S02	sort_desc	12	shown	Banana	-5
+forms-v2.fods	S02	sort_desc	13	shown	elder	
+forms-v2.fods	S03	sort_text	2	shown	A*star	7
+forms-v2.fods	S03	sort_text	3	shown	apple	10
+forms-v2.fods	S03	sort_text	4	shown	apple	10
+forms-v2.fods	S03	sort_text	5	shown	Apricot	3
+forms-v2.fods	S03	sort_text	6	shown	Banana	-5
+forms-v2.fods	S03	sort_text	7	shown	cherry	25.5
+forms-v2.fods	S03	sort_text	8	shown	date	100
+forms-v2.fods	S03	sort_text	9	shown	elder	
+forms-v2.fods	S03	sort_text	10	shown	fig	0
+forms-v2.fods	S03	sort_text	11	shown	grape	18
+forms-v2.fods	S03	sort_text	12	shown	ham?	55
+forms-v2.fods	S03	sort_text	13	shown		42
+forms-v2.fods	S04	sort_two	2	shown	apple	10
+forms-v2.fods	S04	sort_two	3	shown	grape	18
+forms-v2.fods	S04	sort_two	4	shown	cherry	25.5
+forms-v2.fods	S04	sort_two	5	shown	ham?	55
+forms-v2.fods	S04	sort_two	6	shown	date	100
+forms-v2.fods	S04	sort_two	7	shown	elder	
+forms-v2.fods	S04	sort_two	8	shown	Banana	-5
+forms-v2.fods	S04	sort_two	9	shown	fig	0
+forms-v2.fods	S04	sort_two	10	shown	A*star	7
+forms-v2.fods	S04	sort_two	11	shown	apple	10
+forms-v2.fods	S04	sort_two	12	shown		42
+forms-v2.fods	S04	sort_two	13	shown	Apricot	3
+forms-v2.fods	S05	sort_date	2	shown	ham?	55
+forms-v2.fods	S05	sort_date	3	shown	Apricot	3
+forms-v2.fods	S05	sort_date	4	shown	cherry	25.5
+forms-v2.fods	S05	sort_date	5	shown	apple	10
+forms-v2.fods	S05	sort_date	6	shown	Banana	-5
+forms-v2.fods	S05	sort_date	7	shown	A*star	7
+forms-v2.fods	S05	sort_date	8	shown	apple	10
+forms-v2.fods	S05	sort_date	9	shown	date	100
+forms-v2.fods	S05	sort_date	10	shown	grape	18
+forms-v2.fods	S05	sort_date	11	shown	fig	0
+forms-v2.fods	S05	sort_date	12	shown	elder	
+forms-v2.fods	S05	sort_date	13	shown		42
+forms-v2.fods	Plain		2	shown	apple	10
+forms-v2.fods	Plain		3	shown	Banana	-5
+forms-v2.fods	Plain		4	shown	cherry	25.5
+forms-v2.fods	Plain		5	shown	A*star	7
+forms-v2.fods	Plain		6	shown	date	100
+forms-v2.fods	Plain		7	shown	Apricot	3
+forms-v2.fods	Plain		8	shown		42
+forms-v2.fods	Plain		9	shown	elder	
+forms-v2.fods	Plain		10	shown	fig	0
+forms-v2.fods	Plain		11	shown	grape	18
+forms-v2.fods	Plain		12	shown	apple	10
+forms-v2.fods	Plain		13	shown	ham?	55
+forms-v2.fods	Tables	Id	2	shown	apple	10
+forms-v2.fods	Tables	Id	3	shown	Banana	-5
+forms-v2.fods	Tables	Id	4	shown	cherry	25.5
+forms-v2.fods	Tables	Id	5	shown	A*star	7
+forms-v2.fods	Tables	Id	6	shown	date	100
+forms-v2.fods	Tables	Id	7	shown	Apricot	3
+forms-v2.fods	Tables	Id	8	shown		42
+forms-v2.fods	Tables	Id	9	shown	elder	
+forms-v2.fods	Tables	Id	10	shown	fig	0
+forms-v2.fods	Tables	Id	11	shown	grape	18
+forms-v2.fods	Tables	Id	12	shown	apple	10
+forms-v2.fods	Tables	Id	13	shown	ham?	55

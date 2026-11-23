@@ -1,0 +1,585 @@
+value	1	false	Name	Num
+value	2	false	apple	10
+value	3	true	Banana	-5
+value	4	true	cherry	25.5
+value	5	true	A*star	7
+value	6	true	date	100
+value	7	true	Apricot	3
+value	8	true		42
+value	9	true	elder	
+value	10	true	fig	0
+value	11	true	grape	18
+value	12	false	apple	10
+value	13	true	ham?	55
+values	1	false	Name	Num
+values	2	false	apple	10
+values	3	true	Banana	-5
+values	4	false	cherry	25.5
+values	5	true	A*star	7
+values	6	true	date	100
+values	7	true	Apricot	3
+values	8	true		42
+values	9	true	elder	
+values	10	true	fig	0
+values	11	true	grape	18
+values	12	false	apple	10
+values	13	true	ham?	55
+blank	1	false	Name	Num
+blank	2	true	apple	10
+blank	3	true	Banana	-5
+blank	4	true	cherry	25.5
+blank	5	true	A*star	7
+blank	6	true	date	100
+blank	7	true	Apricot	3
+blank	8	false		42
+blank	9	true	elder	
+blank	10	true	fig	0
+blank	11	true	grape	18
+blank	12	true	apple	10
+blank	13	true	ham?	55
+num_value	1	false	Name	Num
+num_value	2	false	apple	10
+num_value	3	true	Banana	-5
+num_value	4	true	cherry	25.5
+num_value	5	true	A*star	7
+num_value	6	true	date	100
+num_value	7	true	Apricot	3
+num_value	8	true		42
+num_value	9	true	elder	
+num_value	10	true	fig	0
+num_value	11	true	grape	18
+num_value	12	false	apple	10
+num_value	13	true	ham?	55
+bool	1	false	Name	Num
+bool	2	false	apple	10
+bool	3	true	Banana	-5
+bool	4	false	cherry	25.5
+bool	5	true	A*star	7
+bool	6	false	date	100
+bool	7	true	Apricot	3
+bool	8	true		42
+bool	9	false	elder	
+bool	10	true	fig	0
+bool	11	false	grape	18
+bool	12	true	apple	10
+bool	13	false	ham?	55
+date_value	1	false	Name	Num
+date_value	2	false	apple	10
+date_value	3	true	Banana	-5
+date_value	4	true	cherry	25.5
+date_value	5	true	A*star	7
+date_value	6	true	date	100
+date_value	7	true	Apricot	3
+date_value	8	true		42
+date_value	9	true	elder	
+date_value	10	true	fig	0
+date_value	11	true	grape	18
+date_value	12	true	apple	10
+date_value	13	true	ham?	55
+eq	1	false	Name	Num
+eq	2	false	apple	10
+eq	3	true	Banana	-5
+eq	4	true	cherry	25.5
+eq	5	true	A*star	7
+eq	6	true	date	100
+eq	7	true	Apricot	3
+eq	8	true		42
+eq	9	true	elder	
+eq	10	true	fig	0
+eq	11	true	grape	18
+eq	12	false	apple	10
+eq	13	true	ham?	55
+ne	1	false	Name	Num
+ne	2	true	apple	10
+ne	3	false	Banana	-5
+ne	4	false	cherry	25.5
+ne	5	false	A*star	7
+ne	6	false	date	100
+ne	7	false	Apricot	3
+ne	8	false		42
+ne	9	false	elder	
+ne	10	false	fig	0
+ne	11	false	grape	18
+ne	12	true	apple	10
+ne	13	false	ham?	55
+gt	1	false	Name	Num
+gt	2	true	apple	10
+gt	3	true	Banana	-5
+gt	4	false	cherry	25.5
+gt	5	true	A*star	7
+gt	6	false	date	100
+gt	7	true	Apricot	3
+gt	8	false		42
+gt	9	true	elder	
+gt	10	true	fig	0
+gt	11	false	grape	18
+gt	12	true	apple	10
+gt	13	false	ham?	55
+ge	1	false	Name	Num
+ge	2	false	apple	10
+ge	3	true	Banana	-5
+ge	4	false	cherry	25.5
+ge	5	true	A*star	7
+ge	6	false	date	100
+ge	7	true	Apricot	3
+ge	8	false		42
+ge	9	true	elder	
+ge	10	true	fig	0
+ge	11	false	grape	18
+ge	12	false	apple	10
+ge	13	false	ham?	55
+lt	1	false	Name	Num
+lt	2	true	apple	10
+lt	3	false	Banana	-5
+lt	4	true	cherry	25.5
+lt	5	false	A*star	7
+lt	6	true	date	100
+lt	7	false	Apricot	3
+lt	8	true		42
+lt	9	true	elder	
+lt	10	false	fig	0
+lt	11	true	grape	18
+lt	12	true	apple	10
+lt	13	true	ham?	55
+le	1	false	Name	Num
+le	2	false	apple	10
+le	3	false	Banana	-5
+le	4	true	cherry	25.5
+le	5	false	A*star	7
+le	6	true	date	100
+le	7	false	Apricot	3
+le	8	true		42
+le	9	true	elder	
+le	10	false	fig	0
+le	11	true	grape	18
+le	12	false	apple	10
+le	13	true	ham?	55
+text_gt	1	false	Name	Num
+text_gt	2	true	apple	10
+text_gt	3	true	Banana	-5
+text_gt	4	true	cherry	25.5
+text_gt	5	true	A*star	7
+text_gt	6	false	date	100
+text_gt	7	true	Apricot	3
+text_gt	8	true		42
+text_gt	9	false	elder	
+text_gt	10	false	fig	0
+text_gt	11	false	grape	18
+text_gt	12	true	apple	10
+text_gt	13	false	ham?	55
+begins	1	false	Name	Num
+begins	2	false	apple	10
+begins	3	true	Banana	-5
+begins	4	true	cherry	25.5
+begins	5	false	A*star	7
+begins	6	true	date	100
+begins	7	false	Apricot	3
+begins	8	true		42
+begins	9	true	elder	
+begins	10	true	fig	0
+begins	11	true	grape	18
+begins	12	false	apple	10
+begins	13	true	ham?	55
+ends	1	false	Name	Num
+ends	2	false	apple	10
+ends	3	true	Banana	-5
+ends	4	true	cherry	25.5
+ends	5	true	A*star	7
+ends	6	false	date	100
+ends	7	true	Apricot	3
+ends	8	true		42
+ends	9	true	elder	
+ends	10	true	fig	0
+ends	11	false	grape	18
+ends	12	false	apple	10
+ends	13	true	ham?	55
+contains	1	false	Name	Num
+contains	2	true	apple	10
+contains	3	false	Banana	-5
+contains	4	true	cherry	25.5
+contains	5	true	A*star	7
+contains	6	true	date	100
+contains	7	true	Apricot	3
+contains	8	true		42
+contains	9	true	elder	
+contains	10	true	fig	0
+contains	11	true	grape	18
+contains	12	true	apple	10
+contains	13	true	ham?	55
+not_contains	1	false	Name	Num
+not_contains	2	false	apple	10
+not_contains	3	true	Banana	-5
+not_contains	4	false	cherry	25.5
+not_contains	5	false	A*star	7
+not_contains	6	false	date	100
+not_contains	7	false	Apricot	3
+not_contains	8	false		42
+not_contains	9	false	elder	
+not_contains	10	false	fig	0
+not_contains	11	false	grape	18
+not_contains	12	false	apple	10
+not_contains	13	false	ham?	55
+qmark	1	false	Name	Num
+qmark	2	true	apple	10
+qmark	3	true	Banana	-5
+qmark	4	true	cherry	25.5
+qmark	5	true	A*star	7
+qmark	6	true	date	100
+qmark	7	true	Apricot	3
+qmark	8	true		42
+qmark	9	true	elder	
+qmark	10	false	fig	0
+qmark	11	true	grape	18
+qmark	12	true	apple	10
+qmark	13	true	ham?	55
+escaped	1	false	Name	Num
+escaped	2	true	apple	10
+escaped	3	true	Banana	-5
+escaped	4	true	cherry	25.5
+escaped	5	false	A*star	7
+escaped	6	true	date	100
+escaped	7	true	Apricot	3
+escaped	8	true		42
+escaped	9	true	elder	
+escaped	10	true	fig	0
+escaped	11	true	grape	18
+escaped	12	true	apple	10
+escaped	13	true	ham?	55
+and	1	false	Name	Num
+and	2	false	apple	10
+and	3	true	Banana	-5
+and	4	false	cherry	25.5
+and	5	false	A*star	7
+and	6	true	date	100
+and	7	true	Apricot	3
+and	8	true		42
+and	9	true	elder	
+and	10	true	fig	0
+and	11	false	grape	18
+and	12	false	apple	10
+and	13	true	ham?	55
+or	1	false	Name	Num
+or	2	true	apple	10
+or	3	false	Banana	-5
+or	4	true	cherry	25.5
+or	5	true	A*star	7
+or	6	false	date	100
+or	7	true	Apricot	3
+or	8	true		42
+or	9	true	elder	
+or	10	true	fig	0
+or	11	true	grape	18
+or	12	true	apple	10
+or	13	false	ham?	55
+top3	1	false	Name	Num
+top3	2	true	apple	10
+top3	3	true	Banana	-5
+top3	4	true	cherry	25.5
+top3	5	true	A*star	7
+top3	6	false	date	100
+top3	7	true	Apricot	3
+top3	8	false		42
+top3	9	true	elder	
+top3	10	true	fig	0
+top3	11	true	grape	18
+top3	12	true	apple	10
+top3	13	false	ham?	55
+bottom2	1	false	Name	Num
+bottom2	2	true	apple	10
+bottom2	3	false	Banana	-5
+bottom2	4	true	cherry	25.5
+bottom2	5	true	A*star	7
+bottom2	6	true	date	100
+bottom2	7	true	Apricot	3
+bottom2	8	true		42
+bottom2	9	true	elder	
+bottom2	10	false	fig	0
+bottom2	11	true	grape	18
+bottom2	12	true	apple	10
+bottom2	13	true	ham?	55
+top25pct	1	false	Name	Num
+top25pct	2	true	apple	10
+top25pct	3	true	Banana	-5
+top25pct	4	true	cherry	25.5
+top25pct	5	true	A*star	7
+top25pct	6	false	date	100
+top25pct	7	true	Apricot	3
+top25pct	8	true		42
+top25pct	9	true	elder	
+top25pct	10	true	fig	0
+top25pct	11	true	grape	18
+top25pct	12	true	apple	10
+top25pct	13	false	ham?	55
+above_avg	1	false	Name	Num
+above_avg	2	true	apple	10
+above_avg	3	true	Banana	-5
+above_avg	4	false	cherry	25.5
+above_avg	5	true	A*star	7
+above_avg	6	false	date	100
+above_avg	7	true	Apricot	3
+above_avg	8	false		42
+above_avg	9	true	elder	
+above_avg	10	true	fig	0
+above_avg	11	true	grape	18
+above_avg	12	true	apple	10
+above_avg	13	false	ham?	55
+below_avg	1	false	Name	Num
+below_avg	2	false	apple	10
+below_avg	3	false	Banana	-5
+below_avg	4	true	cherry	25.5
+below_avg	5	false	A*star	7
+below_avg	6	true	date	100
+below_avg	7	false	Apricot	3
+below_avg	8	true		42
+below_avg	9	true	elder	
+below_avg	10	false	fig	0
+below_avg	11	false	grape	18
+below_avg	12	false	apple	10
+below_avg	13	true	ham?	55
+date_gt	1	false	Name	Num
+date_gt	2	true	apple	10
+date_gt	3	true	Banana	-5
+date_gt	4	false	cherry	25.5
+date_gt	5	true	A*star	7
+date_gt	6	true	date	100
+date_gt	7	false	Apricot	3
+date_gt	8	true		42
+date_gt	9	true	elder	
+date_gt	10	true	fig	0
+date_gt	11	true	grape	18
+date_gt	12	true	apple	10
+date_gt	13	false	ham?	55
+today	1	false	Name	Num
+today	2	false	apple	10
+today	3	true	Banana	-5
+today	4	true	cherry	25.5
+today	5	true	A*star	7
+today	6	true	date	100
+today	7	true	Apricot	3
+today	8	true		42
+today	9	true	elder	
+today	10	true	fig	0
+today	11	true	grape	18
+today	12	true	apple	10
+today	13	true	ham?	55
+yesterday	1	false	Name	Num
+yesterday	2	true	apple	10
+yesterday	3	false	Banana	-5
+yesterday	4	true	cherry	25.5
+yesterday	5	true	A*star	7
+yesterday	6	true	date	100
+yesterday	7	true	Apricot	3
+yesterday	8	true		42
+yesterday	9	true	elder	
+yesterday	10	true	fig	0
+yesterday	11	true	grape	18
+yesterday	12	true	apple	10
+yesterday	13	true	ham?	55
+thisMonth	1	false	Name	Num
+thisMonth	2	false	apple	10
+thisMonth	3	false	Banana	-5
+thisMonth	4	false	cherry	25.5
+thisMonth	5	false	A*star	7
+thisMonth	6	true	date	100
+thisMonth	7	true	Apricot	3
+thisMonth	8	true		42
+thisMonth	9	true	elder	
+thisMonth	10	true	fig	0
+thisMonth	11	true	grape	18
+thisMonth	12	false	apple	10
+thisMonth	13	true	ham?	55
+lastMonth	1	false	Name	Num
+lastMonth	2	true	apple	10
+lastMonth	3	true	Banana	-5
+lastMonth	4	true	cherry	25.5
+lastMonth	5	true	A*star	7
+lastMonth	6	false	date	100
+lastMonth	7	true	Apricot	3
+lastMonth	8	true		42
+lastMonth	9	true	elder	
+lastMonth	10	true	fig	0
+lastMonth	11	true	grape	18
+lastMonth	12	true	apple	10
+lastMonth	13	true	ham?	55
+thisYear	1	false	Name	Num
+thisYear	2	false	apple	10
+thisYear	3	false	Banana	-5
+thisYear	4	false	cherry	25.5
+thisYear	5	false	A*star	7
+thisYear	6	false	date	100
+thisYear	7	false	Apricot	3
+thisYear	8	true		42
+thisYear	9	false	elder	
+thisYear	10	false	fig	0
+thisYear	11	false	grape	18
+thisYear	12	false	apple	10
+thisYear	13	true	ham?	55
+yearToDate	1	false	Name	Num
+yearToDate	2	false	apple	10
+yearToDate	3	false	Banana	-5
+yearToDate	4	true	cherry	25.5
+yearToDate	5	false	A*star	7
+yearToDate	6	false	date	100
+yearToDate	7	true	Apricot	3
+yearToDate	8	true		42
+yearToDate	9	false	elder	
+yearToDate	10	false	fig	0
+yearToDate	11	false	grape	18
+yearToDate	12	false	apple	10
+yearToDate	13	true	ham?	55
+thisWeek	1	false	Name	Num
+thisWeek	2	false	apple	10
+thisWeek	3	false	Banana	-5
+thisWeek	4	false	cherry	25.5
+thisWeek	5	true	A*star	7
+thisWeek	6	true	date	100
+thisWeek	7	true	Apricot	3
+thisWeek	8	true		42
+thisWeek	9	true	elder	
+thisWeek	10	true	fig	0
+thisWeek	11	true	grape	18
+thisWeek	12	true	apple	10
+thisWeek	13	true	ham?	55
+Q2	1	false	Name	Num
+Q2	2	true	apple	10
+Q2	3	true	Banana	-5
+Q2	4	true	cherry	25.5
+Q2	5	true	A*star	7
+Q2	6	true	date	100
+Q2	7	true	Apricot	3
+Q2	8	true		42
+Q2	9	true	elder	
+Q2	10	false	fig	0
+Q2	11	true	grape	18
+Q2	12	true	apple	10
+Q2	13	true	ham?	55
+M8	1	false	Name	Num
+M8	2	true	apple	10
+M8	3	true	Banana	-5
+M8	4	true	cherry	25.5
+M8	5	true	A*star	7
+M8	6	true	date	100
+M8	7	true	Apricot	3
+M8	8	true		42
+M8	9	true	elder	
+M8	10	true	fig	0
+M8	11	false	grape	18
+M8	12	true	apple	10
+M8	13	true	ham?	55
+two_columns	1	false	Name	Num
+two_columns	2	false	apple	10
+two_columns	3	true	Banana	-5
+two_columns	4	false	cherry	25.5
+two_columns	5	true	A*star	7
+two_columns	6	false	date	100
+two_columns	7	true	Apricot	3
+two_columns	8	true		42
+two_columns	9	true	elder	
+two_columns	10	true	fig	0
+two_columns	11	false	grape	18
+two_columns	12	true	apple	10
+two_columns	13	false	ham?	55
+by_letter	1	false	Name	Num
+by_letter	2	true	apple	10
+by_letter	3	true	Banana	-5
+by_letter	4	false	cherry	25.5
+by_letter	5	true	A*star	7
+by_letter	6	false	date	100
+by_letter	7	true	Apricot	3
+by_letter	8	false		42
+by_letter	9	true	elder	
+by_letter	10	true	fig	0
+by_letter	11	true	grape	18
+by_letter	12	true	apple	10
+by_letter	13	false	ham?	55
+by_position	1	false	Name	Num
+by_position	2	true	apple	10
+by_position	3	true	Banana	-5
+by_position	4	false	cherry	25.5
+by_position	5	true	A*star	7
+by_position	6	false	date	100
+by_position	7	true	Apricot	3
+by_position	8	false		42
+by_position	9	true	elder	
+by_position	10	true	fig	0
+by_position	11	true	grape	18
+by_position	12	true	apple	10
+by_position	13	false	ham?	55
+sort_asc	1	false	Name	Num
+sort_asc	2	false	Banana	-5
+sort_asc	3	false	fig	0
+sort_asc	4	false	Apricot	3
+sort_asc	5	false	A*star	7
+sort_asc	6	false	apple	10
+sort_asc	7	false	apple	10
+sort_asc	8	false	grape	18
+sort_asc	9	false	cherry	25.5
+sort_asc	10	false		42
+sort_asc	11	false	ham?	55
+sort_asc	12	false	date	100
+sort_asc	13	false	elder	
+sort_desc	1	false	Name	Num
+sort_desc	2	false	date	100
+sort_desc	3	false	ham?	55
+sort_desc	4	false		42
+sort_desc	5	false	cherry	25.5
+sort_desc	6	false	grape	18
+sort_desc	7	false	apple	10
+sort_desc	8	false	apple	10
+sort_desc	9	false	A*star	7
+sort_desc	10	false	Apricot	3
+sort_desc	11	false	fig	0
+sort_desc	12	false	Banana	-5
+sort_desc	13	false	elder	
+sort_text	1	false	Name	Num
+sort_text	2	false	A*star	7
+sort_text	3	false	apple	10
+sort_text	4	false	apple	10
+sort_text	5	false	Apricot	3
+sort_text	6	false	Banana	-5
+sort_text	7	false	cherry	25.5
+sort_text	8	false	date	100
+sort_text	9	false	elder	
+sort_text	10	false	fig	0
+sort_text	11	false	grape	18
+sort_text	12	false	ham?	55
+sort_text	13	false		42
+sort_two	1	false	Name	Num
+sort_two	2	false	apple	10
+sort_two	3	false	grape	18
+sort_two	4	false	cherry	25.5
+sort_two	5	false	ham?	55
+sort_two	6	false	date	100
+sort_two	7	false	elder	
+sort_two	8	false	Banana	-5
+sort_two	9	false	fig	0
+sort_two	10	false	A*star	7
+sort_two	11	false	apple	10
+sort_two	12	false		42
+sort_two	13	false	Apricot	3
+sort_date	1	false	Name	Num
+sort_date	2	false	ham?	55
+sort_date	3	false	Apricot	3
+sort_date	4	false	cherry	25.5
+sort_date	5	false	apple	10
+sort_date	6	false	Banana	-5
+sort_date	7	false	A*star	7
+sort_date	8	false	apple	10
+sort_date	9	false	date	100
+sort_date	10	false	grape	18
+sort_date	11	false	fig	0
+sort_date	12	false	elder	
+sort_date	13	false		42
+plain_autofilter	1	false	Name	Num
+plain_autofilter	2	false	apple	10
+plain_autofilter	3	false	Banana	-5
+plain_autofilter	4	false	cherry	25.5
+plain_autofilter	5	false	A*star	7
+plain_autofilter	6	false	date	100
+plain_autofilter	7	false	Apricot	3
+plain_autofilter	8	false		42
+plain_autofilter	9	false	elder	
+plain_autofilter	10	false	fig	0
+plain_autofilter	11	false	grape	18
+plain_autofilter	12	false	apple	10
+plain_autofilter	13	false	ham?	55

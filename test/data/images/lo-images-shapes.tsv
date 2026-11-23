@@ -1,0 +1,96 @@
+own	Own	0	com.sun.star.drawing.GraphicObjectShape		page	2358,502	2540x1270		
+own	Own	1	com.sun.star.drawing.GraphicObjectShape		$Own.$D$2	6873,502	2540x1270		
+own	Own	2	com.sun.star.drawing.GraphicObjectShape		$Own.$F$2	11389,502	1000x3000		
+own	Own	3	com.sun.star.drawing.GraphicObjectShape	MyPicture	$Own.$B$10	2358,4114	1000x3000	Pic title	Pic description
+own	Own	4	com.sun.star.drawing.GraphicObjectShape		$Own.$D$10	6873,4114	7488x5609		
+own	Own	5	com.sun.star.drawing.GraphicObjectShape		$Own.$B$20	2358,8630	500x500		
+own	Own	6	com.sun.star.drawing.GraphicObjectShape		$Own.$D$20	6873,8630	2540x1270		
+del0	Own	0	com.sun.star.drawing.GraphicObjectShape		page	2358,502	2540x1270		
+del0	Own	1	com.sun.star.drawing.GraphicObjectShape		$Own.$D$2	6873,502	2540x1270		
+del0	Own	2	com.sun.star.drawing.GraphicObjectShape		$Own.$F$2	11389,502	1000x3000		
+del0	Own	3	com.sun.star.drawing.GraphicObjectShape	MyPicture	$Own.$B$10	2358,4114	1000x3000	Pic title	Pic description
+del0	Own	4	com.sun.star.drawing.GraphicObjectShape		$Own.$D$10	6873,4114	7488x5609		
+del0	Own	5	com.sun.star.drawing.GraphicObjectShape		$Own.$B$20	2358,8630	500x500		
+del0	Own	6	com.sun.star.drawing.GraphicObjectShape		$Own.$D$20	6873,8630	2540x1270		
+del0	Del	0	com.sun.star.drawing.GraphicObjectShape	tinyB3	$Del.$B$3	2358,953	200x200		
+del0	Del	1	com.sun.star.drawing.GraphicObjectShape	tallD3	$Del.$D$3	6873,953	200x2000		
+del0	Del	2	com.sun.star.drawing.GraphicObjectShape	wideB10	$Del.$B$10	2358,4114	5000x200		
+del0	Del	3	com.sun.star.drawing.GraphicObjectShape	tinyF10	$Del.$F$10	11389,4114	200x200		
+del0	Del	4	com.sun.star.drawing.GraphicObjectShape	pageH15	page	15904,6372	200x200		
+del_r3	Own	0	com.sun.star.drawing.GraphicObjectShape		page	2358,502	2540x1270		
+del_r3	Own	1	com.sun.star.drawing.GraphicObjectShape		$Own.$D$2	6873,502	2540x1270		
+del_r3	Own	2	com.sun.star.drawing.GraphicObjectShape		$Own.$F$2	11389,502	1000x3000		
+del_r3	Own	3	com.sun.star.drawing.GraphicObjectShape	MyPicture	$Own.$B$10	2358,4114	1000x3000	Pic title	Pic description
+del_r3	Own	4	com.sun.star.drawing.GraphicObjectShape		$Own.$D$10	6873,4114	7488x5609		
+del_r3	Own	5	com.sun.star.drawing.GraphicObjectShape		$Own.$B$20	2358,8630	500x500		
+del_r3	Own	6	com.sun.star.drawing.GraphicObjectShape		$Own.$D$20	6873,8630	2540x1270		
+del_r3	Del	0	com.sun.star.drawing.GraphicObjectShape	tallD3	$Del.$D$3	6873,953	200x2000		
+del_r3	Del	1	com.sun.star.drawing.GraphicObjectShape	wideB10	$Del.$B$9	2358,3662	5000x200		
+del_r3	Del	2	com.sun.star.drawing.GraphicObjectShape	tinyF10	$Del.$F$9	11389,3662	200x200		
+del_r3	Del	3	com.sun.star.drawing.GraphicObjectShape	pageH15	page	15904,6372	200x200		
+del_cF	Own	0	com.sun.star.drawing.GraphicObjectShape		page	2358,502	2540x1270		
+del_cF	Own	1	com.sun.star.drawing.GraphicObjectShape		$Own.$D$2	6873,502	2540x1270		
+del_cF	Own	2	com.sun.star.drawing.GraphicObjectShape		$Own.$F$2	11389,502	1000x3000		
+del_cF	Own	3	com.sun.star.drawing.GraphicObjectShape	MyPicture	$Own.$B$10	2358,4114	1000x3000	Pic title	Pic description
+del_cF	Own	4	com.sun.star.drawing.GraphicObjectShape		$Own.$D$10	6873,4114	7488x5609		
+del_cF	Own	5	com.sun.star.drawing.GraphicObjectShape		$Own.$B$20	2358,8630	500x500		
+del_cF	Own	6	com.sun.star.drawing.GraphicObjectShape		$Own.$D$20	6873,8630	2540x1270		
+del_cF	Del	0	com.sun.star.drawing.GraphicObjectShape	tallD3	$Del.$D$3	6873,953	200x2000		
+del_cF	Del	1	com.sun.star.drawing.GraphicObjectShape	wideB10	$Del.$B$9	2358,3662	5000x200		
+del_cF	Del	2	com.sun.star.drawing.GraphicObjectShape	pageH15	page	15904,6372	200x200		
+del_cB	Own	0	com.sun.star.drawing.GraphicObjectShape		page	2358,502	2540x1270		
+del_cB	Own	1	com.sun.star.drawing.GraphicObjectShape		$Own.$D$2	6873,502	2540x1270		
+del_cB	Own	2	com.sun.star.drawing.GraphicObjectShape		$Own.$F$2	11389,502	1000x3000		
+del_cB	Own	3	com.sun.star.drawing.GraphicObjectShape	MyPicture	$Own.$B$10	2358,4114	1000x3000	Pic title	Pic description
+del_cB	Own	4	com.sun.star.drawing.GraphicObjectShape		$Own.$D$10	6873,4114	7488x5609		
+del_cB	Own	5	com.sun.star.drawing.GraphicObjectShape		$Own.$B$20	2358,8630	500x500		
+del_cB	Own	6	com.sun.star.drawing.GraphicObjectShape		$Own.$D$20	6873,8630	2540x1270		
+del_cB	Del	0	com.sun.star.drawing.GraphicObjectShape	tallD3	$Del.$C$3	4616,953	200x2000		
+del_cB	Del	1	com.sun.star.drawing.GraphicObjectShape	wideB10	$Del.$B$9	2358,3662	5000x200		
+del_cB	Del	2	com.sun.star.drawing.GraphicObjectShape	pageH15	page	15904,6372	200x200		
+del_r14	Own	0	com.sun.star.drawing.GraphicObjectShape		page	2358,502	2540x1270		
+del_r14	Own	1	com.sun.star.drawing.GraphicObjectShape		$Own.$D$2	6873,502	2540x1270		
+del_r14	Own	2	com.sun.star.drawing.GraphicObjectShape		$Own.$F$2	11389,502	1000x3000		
+del_r14	Own	3	com.sun.star.drawing.GraphicObjectShape	MyPicture	$Own.$B$10	2358,4114	1000x3000	Pic title	Pic description
+del_r14	Own	4	com.sun.star.drawing.GraphicObjectShape		$Own.$D$10	6873,4114	7488x5609		
+del_r14	Own	5	com.sun.star.drawing.GraphicObjectShape		$Own.$B$20	2358,8630	500x500		
+del_r14	Own	6	com.sun.star.drawing.GraphicObjectShape		$Own.$D$20	6873,8630	2540x1270		
+del_r14	Del	0	com.sun.star.drawing.GraphicObjectShape	tallD3	$Del.$C$3	4616,953	200x2000		
+del_r14	Del	1	com.sun.star.drawing.GraphicObjectShape	wideB10	$Del.$B$9	2358,3662	5000x200		
+del_r14	Del	2	com.sun.star.drawing.GraphicObjectShape	pageH15	page	15904,6372	200x200		
+ins_r1_2	Own	0	com.sun.star.drawing.GraphicObjectShape		page	2358,502	2540x1270		
+ins_r1_2	Own	1	com.sun.star.drawing.GraphicObjectShape		$Own.$D$4	6873,1405	2540x1270		
+ins_r1_2	Own	2	com.sun.star.drawing.GraphicObjectShape		$Own.$F$4	11389,1405	1000x3000		
+ins_r1_2	Own	3	com.sun.star.drawing.GraphicObjectShape	MyPicture	$Own.$B$12	2358,5017	1000x3000	Pic title	Pic description
+ins_r1_2	Own	4	com.sun.star.drawing.GraphicObjectShape		$Own.$D$12	6873,5017	7488x5609		
+ins_r1_2	Own	5	com.sun.star.drawing.GraphicObjectShape		$Own.$B$22	2358,9533	500x500		
+ins_r1_2	Own	6	com.sun.star.drawing.GraphicObjectShape		$Own.$D$22	6873,9533	2540x1270		
+ins_r1_2	Del	0	com.sun.star.drawing.GraphicObjectShape	tallD3	$Del.$C$3	4616,953	200x2000		
+ins_r1_2	Del	1	com.sun.star.drawing.GraphicObjectShape	wideB10	$Del.$B$9	2358,3662	5000x200		
+ins_r1_2	Del	2	com.sun.star.drawing.GraphicObjectShape	pageH15	page	15904,6372	200x200		
+del_r12	Own	0	com.sun.star.drawing.GraphicObjectShape		page	2358,502	2540x1270		
+del_r12	Own	1	com.sun.star.drawing.GraphicObjectShape		$Own.$D$4	6873,1405	2540x1270		
+del_r12	Own	2	com.sun.star.drawing.GraphicObjectShape		$Own.$F$4	11389,1405	1000x3000		
+del_r12	Own	3	com.sun.star.drawing.GraphicObjectShape	MyPicture	$Own.$B$12	2358,5017	1000x3000	Pic title	Pic description
+del_r12	Own	4	com.sun.star.drawing.GraphicObjectShape		$Own.$D$12	6873,5017	7488x5609		
+del_r12	Own	5	com.sun.star.drawing.GraphicObjectShape		$Own.$B$21	2358,9081	500x500		
+del_r12	Own	6	com.sun.star.drawing.GraphicObjectShape		$Own.$D$21	6873,9081	2540x1270		
+del_r12	Del	0	com.sun.star.drawing.GraphicObjectShape	tallD3	$Del.$C$3	4616,953	200x2000		
+del_r12	Del	1	com.sun.star.drawing.GraphicObjectShape	wideB10	$Del.$B$9	2358,3662	5000x200		
+del_r12	Del	2	com.sun.star.drawing.GraphicObjectShape	pageH15	page	15904,6372	200x200		
+del_cB	Own	0	com.sun.star.drawing.GraphicObjectShape		page	2358,502	2540x1270		
+del_cB	Own	1	com.sun.star.drawing.GraphicObjectShape		$Own.$C$4	4616,1405	2540x1270		
+del_cB	Own	2	com.sun.star.drawing.GraphicObjectShape		$Own.$E$4	9131,1405	1000x3000		
+del_cB	Own	3	com.sun.star.drawing.GraphicObjectShape		$Own.$C$12	4616,5017	7488x5609		
+del_cB	Own	4	com.sun.star.drawing.GraphicObjectShape		$Own.$C$21	4616,9081	2540x1270		
+del_cB	Del	0	com.sun.star.drawing.GraphicObjectShape	tallD3	$Del.$C$3	4616,953	200x2000		
+del_cB	Del	1	com.sun.star.drawing.GraphicObjectShape	wideB10	$Del.$B$9	2358,3662	5000x200		
+del_cB	Del	2	com.sun.star.drawing.GraphicObjectShape	pageH15	page	15904,6372	200x200		
+import	Img	0	com.sun.star.drawing.GraphicObjectShape	Image 2	$Img.$B$2	2240,556	4479x1110		
+import	Img	1	com.sun.star.drawing.GraphicObjectShape	Image 3	$Img.$F$2	11201,556	6719x2777		
+import	Img	2	com.sun.star.drawing.GraphicObjectShape	Image 4	$Img.$B$10	2240,5001	6720x3888		
+import	Img	3	com.sun.star.drawing.GraphicObjectShape	Image 5	$Img.$F$10	11201,5001	8959x6111		
+import	Img	4	com.sun.star.drawing.GraphicObjectShape	Image 6	$Img.$B$20	2240,10557	2239x555		
+import	Img	5	com.sun.star.drawing.GraphicObjectShape	Image 7	$Img.$D$20	6720,10557	2240x3333		
+import	Img	6	com.sun.star.drawing.GraphicObjectShape	Image 8	$Img.$F$20	11201,10557	4479x1110		
+import	Second	0	com.sun.star.drawing.GraphicObjectShape	Image 2	$Second.$C$3	4480,1111	2239x3333		

@@ -297,6 +297,7 @@ function _write_row_mapped!(st::_PatchState, ln::XML.LazyNode, text::SubString{S
                 k = max(1, _attr_int(celltext, "table:number-columns-repeated", 1))
                 k = min(k, SheetCore.MAX_COLS - ocol + 1)
                 if k > 0
+                    ex = nothing; exread = false          # the cell's extras, read when an edit reaches it
                     for (po, plen, pc) in _pieces(cm, ocol, k)
                         pc > cur && _write_model_cols!(st, a, cur, pc - 1, nothing, rowdefault)   # inserted columns
                         x = pc
@@ -307,7 +308,15 @@ function _write_row_mapped!(st::_PatchState, ln::XML.LazyNode, text::SubString{S
                             end
                             if ci <= length(cols) && first(cols[ci]) <= x
                                 y = min(last(cols[ci]), y1)
-                                _write_model_cols!(st, a, x, y, celltext, rowdefault)
+                                if !exread
+                                    ex = _maybe_extras(celltext) ? _cell_extras(src, XML.LazyNode(ch), celltext) : nothing
+                                    exread = true
+                                end
+                                if ex === nothing
+                                    _write_model_cols!(st, a, x, y, celltext, rowdefault)
+                                else
+                                    _write_model_cols!(st, a, x, y, celltext, rowdefault, ex, orow, po + (x - pc))
+                                end
                             else
                                 y = ci <= length(cols) ? min(first(cols[ci]) - 1, y1) : y1
                                 cnt = y - x + 1

@@ -1,0 +1,10 @@
+F01	w_empty_eq66
+F02	w_notempty_eq67
+F03	w_notempty_op67
+F04	w_empty_op66
+F05	w_match_q
+F06	w_match_escape
+F07	w_match_star
+F08	w_match_partial
+F09	w_nomatch
+F10	w_match_ends

@@ -61,6 +61,7 @@ lo_profile_url(path) = "file://" * (startswith(path, "/") ? "" : "/") * replace(
         include("write/test_protection.jl")
         include("write/test_printing.jl")
         include("write/test_docprops.jl")
+        include("write/test_extras.jl")
     end
     @testset "styles" begin
         include("styles/test_stylesheet.jl")
