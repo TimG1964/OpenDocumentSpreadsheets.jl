@@ -126,11 +126,14 @@ struct StyleIndex
     numbuf::Vector{UInt8}             # the writer's digit buffer (a document is written by one task at a time)
     xmls::Vector{String}              # the XML the styles were read from
     sheet::Vector{Union{Nothing,StyleSheet}}   # [the full styles], once built (phase 4)
+    rich::Vector{String}              # the paragraphs of `F_RICH` cells (hyperlinks, D-072), by `bits`
+    richinfo::Vector{Tuple{String,String}}   # and their link: (href, text), unescaped
+    linkflat::Vector{Bool}            # [whether a new document's relative hrefs are in a flat file's form] (F-065)
 end
 
 StyleIndex(xmls::Vector{String} = String[]) =
     StyleIndex(Dict{String,Int32}(), ["Default"], [NO_DATA_STYLE], Set{String}(), Dict{Symbol,Int32}(),
-               Dict{Tuple{Int32,UInt8,Bool},String}(), zeros(UInt8, 64), xmls, Union{Nothing,StyleSheet}[nothing])
+               Dict{Tuple{Int32,UInt8,Bool},String}(), zeros(UInt8, 64), xmls, Union{Nothing,StyleSheet}[nothing], String[], Tuple{String,String}[], [false])
 
 @inline style_info(s::StyleIndex, id::Integer) = @inbounds s.info[id + 1]
 @inline style_name(s::StyleIndex, id::Integer) = @inbounds s.names[id + 1]

@@ -28,6 +28,8 @@ end
 
 const F_INTLIKE = 0x01     # the stored number text is a whole number that fits an Int64
 const F_COVERED = 0x02     # a table:covered-table-cell
+const F_RICH = 0x04        # a string cell written from markup: `bits` indexes `StyleIndex.rich` (a hyperlink, D-072)
+const F_PLAIN = 0x08       # a string cell whose original paragraphs are not kept on save (a link removed, D-072)
 
 """
     CellData

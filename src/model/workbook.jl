@@ -112,6 +112,17 @@ mutable struct ViewEdits
 end
 ViewEdits() = ViewEdits(IdDict{Any,ViewItems}(), ViewItems())
 
+# The URL fields of a sheet's original cells (phase 6 step 3, D-072), read on first use: `nrows` × `ncols`
+# alike original cells from (`row`, `col`), their links as (href, text), unescaped, and the cell's text.
+struct FileLinkRun
+    row::Int
+    nrows::Int
+    col::Int
+    ncols::Int
+    links::Vector{Tuple{String,String}}
+    text::String
+end
+
 """
     Worksheet
 
@@ -137,11 +148,12 @@ mutable struct Worksheet
     props::Union{Nothing,SheetProps}  # visibility and tab colour, once read (phase 5)
     protection::Union{Nothing,SheetProtection}   # its protection, once read (phase 5 step 9)
     print::Union{Nothing,PrintState}  # its page style and print range, once read (phase 5 step 10)
+    links::Union{Nothing,Vector{FileLinkRun}}   # the URL fields its file holds, once read (phase 6 step 3)
 end
 
 Worksheet(xf, name, index, entry, visible, store, localnames, lock) =
     Worksheet(xf, name, index, entry, visible, store, localnames, lock, Dict{Int,Vector{Int}}(), nothing, nothing, nothing, 0, false,
-              NameEdits(), nothing, nothing, nothing)
+              NameEdits(), nothing, nothing, nothing, nothing)
 
 # Whether the sheet was made by OpenDocumentSpreadsheets (so it is written whole), not read from the file.
 isnewsheet(ws::Worksheet) = ws.entry === nothing

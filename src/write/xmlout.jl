@@ -281,7 +281,11 @@ function write_cell(io::IO, d::Union{Nothing,CellData}, styles::StyleIndex; repe
         print(io, " office:boolean-value=\"", b ? "true" : "false", "\"><text:p>", b ? "TRUE" : "FALSE", "</text:p>")
     else # CK_STRING
         print(io, '>')
-        _write_paragraphs(io, something(d.text, ""))
+        if (d.flags & F_RICH) != 0
+            print(io, styles.rich[d.bits])          # a hyperlink's paragraphs (D-072)
+        else
+            _write_paragraphs(io, something(d.text, ""))
+        end
     end
     print(io, covered ? "</table:covered-table-cell>" : "</table:table-cell>")
     return

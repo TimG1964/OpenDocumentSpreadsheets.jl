@@ -494,7 +494,7 @@ function _write_model_cols!(st::_PatchState, r::Int, x::Int, y::Int, celltext, r
     isempty(ex.validation) || (frag = _with_validation(frag, ex.validation))
     if ex.single && x == y && _has_children(ex)
         run = _run_at(_runs_of(st.store.rows, r), x)
-        keep = ex.paras !== nothing && run !== nothing && run.data.kind === CK_STRING &&
+        keep = ex.paras !== nothing && run !== nothing && run.data.kind === CK_STRING && (run.data.flags & (F_RICH | F_PLAIN)) == 0 &&
                run.data.formula === nothing && run.data.text == ex.text
         _emit_with_children(st, frag, ex, keep; row, col)
     else
@@ -773,7 +773,7 @@ function _top_elements(xml::AbstractString)
 end
 
 # The namespace declarations the written XML needs, added to the root's start tag.
-function _ns_splice!(splices, src::AbstractString, rootspan, svg::Bool, loext::Bool)
+function _ns_splice!(splices, src::AbstractString, rootspan, svg::Bool, loext::Bool; xlink::Bool = false)
     roottext = SubString(src, first(rootspan), last(rootspan))
     tagend = first(rootspan) - 1 + _start_tag_end(roottext)
     tagend_at = src[prevind(src, tagend)] == '/' ? prevind(src, tagend) : tagend
@@ -781,6 +781,7 @@ function _ns_splice!(splices, src::AbstractString, rootspan, svg::Bool, loext::B
     ns = join(" xmlns:$p=\"$u\"" for (p, u) in _NAMESPACES if !occursin("xmlns:$p=", starttag))
     svg && !occursin("xmlns:svg=", starttag) && (ns *= " xmlns:svg=\"$_SVG_NS\"")
     loext && !occursin("xmlns:loext=", starttag) && (ns *= " xmlns:loext=\"$_LOEXT_NS\"")
+    xlink && !occursin("xmlns:xlink=", starttag) && (ns *= " xmlns:xlink=\"$_XLINK_NS\"")
     isempty(ns) || push!(splices, (tagend_at, tagend_at - 1, ns))
     return
 end
@@ -850,7 +851,8 @@ function write_patched_content(out::_ChunkedIO, xf::ODSFile; display::Bool = tru
     facedecls = get(kids, "office:font-face-decls", nothing)
     splices = _Splice[]
     fx = added_faces_xml(xf.styles)
-    _ns_splice!(splices, src, rootspan, !isempty(fx), _needs_loext(xf.styles) || _needs_protection_loext(xf))
+    _ns_splice!(splices, src, rootspan, !isempty(fx), _needs_loext(xf.styles) || _needs_protection_loext(xf);
+                xlink = _needs_xlink(xf.styles))
     # font faces (phase 4): in office:font-face-decls, which comes before the styles
     stylesnode = get(kids, "office:styles", nothing)
     isempty(fx) || _append_splice!(splices, src, facedecls, "office:font-face-decls", fx,

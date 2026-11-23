@@ -247,6 +247,7 @@ function writeods(dest::Union{AbstractString,IO}, xf::ODSFile; overwrite::Bool =
     mt = _mediatype(fmt)
     if isnewfile(xf)
         _check_version(version)
+        _set_link_base!(xf.styles, fmt === :fods)      # relative hrefs in the output's form (F-065)
         if fmt === :fods
             write_flat(dest, io -> write_new_flat(io, xf, version, mt; display))
         else

@@ -206,6 +206,17 @@ getCustomProperties
 deleteCustomProperty
 ```
 
+## Hyperlinks
+
+LibreOffice's two kinds of link: a URL field in a cell's text, and a cell link in its style (F-058):
+
+```@docs
+addHyperlink
+getHyperlink
+getHyperlinks
+deleteHyperlink
+```
+
 ## Formatting
 
 Fonts, fills, borders and alignment:

@@ -95,6 +95,7 @@ include("write/views.jl")
 include("write/protection.jl")
 include("write/printing.jl")
 include("write/docprops.jl")
+include("write/hyperlinks.jl")
 include("write/save.jl")
 include("write/stream.jl")
 include("write/writetable.jl")
@@ -126,7 +127,9 @@ export
     protectSheet, unprotectSheet, setCellProtection, protectWorkbook, unprotectWorkbook,
     setPageSetup, setPageMargins, setPrintOptions, setPrintArea, removePrintArea, setPrintTitles, removePrintTitles,
     setHeaderFooter, removeHeaderFooter, headerFooterField, headerFooterFont,
-    setDocumentProperties, setCustomProperty, deleteCustomProperty
+    setDocumentProperties, setCustomProperty, deleteCustomProperty,
+    # rich objects (phase 6)
+    addHyperlink, deleteHyperlink
 
 @static if VERSION >= v"1.11"
     eval(Meta.parse("public getcell, getcellrange, getFormula, get_dimension, ODSError, Cell, EmptyCell, DataTable, TableRow, TableRowIterator, SheetRow, StreamWriter, StreamSheet, " *
@@ -134,7 +137,8 @@ export
                     "getDefinedNames, getAllDefinedNames, DefinedName, isRowHidden, isColumnHidden, getSheetVisibility, getTabColor, getRowOutlineLevel, getColumnOutlineLevel, getSheetView, " *
                     "isSheetProtected, getSheetProtection, getCellProtection, isWorkbookProtected, getWorkbookProtection, " *
                     "getPageSetup, getPageMargins, getPrintOptions, getPrintArea, getPrintTitles, getHeaderFooter, " *
-                    "getDocumentProperties, getCustomProperty, getCustomProperties"))
+                    "getDocumentProperties, getCustomProperty, getCustomProperties, " *
+                    "getHyperlink, getHyperlinks"))
 end
 
 include("precompile.jl")
