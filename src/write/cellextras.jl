@@ -88,8 +88,8 @@ end
 
 struct _CellExtras
     validation::String                       # ` table:content-validation-name="…"` as written, or ""
-    lead::Vector{SubString{String}}          # children before the paragraphs
-    tail::Vector{SubString{String}}          # children after them
+    lead::Vector{Union{String,SubString{String}}}   # children before the paragraphs (original, or new: a note)
+    tail::Vector{Union{String,SubString{String}}}   # children after them
     paras::Union{Nothing,SubString{String}}  # the paragraphs, first to last, when they hold markup
     text::Union{Nothing,String}              # the paragraphs' text (as the reader reads it)
     single::Bool                             # the original is one cell (not repeated)
@@ -105,8 +105,8 @@ function _cell_extras(src::String, cell::XML.LazyNode, celltext::SubString{Strin
         k == "table:content-validation-name" && (val = string(' ', k, '=', v))
     end
     single = _attr_int(celltext, "table:number-columns-repeated", 1) <= 1
-    lead = SubString{String}[]
-    tail = SubString{String}[]
+    lead = Union{String,SubString{String}}[]
+    tail = Union{String,SubString{String}}[]
     pfirst = 0; plast = 0
     markup = false
     buf = IOBuffer()
@@ -134,7 +134,7 @@ function _cell_extras(src::String, cell::XML.LazyNode, celltext::SubString{Strin
     paras = nothing
     text = nothing
     if markup && single
-        inside(x) = pfirst <= first(_span(x)) <= plast
+        inside(x) = x isa SubString{String} && pfirst <= first(_span(x)) <= plast
         # paragraphs interleaved with other children are not kept as one piece
         if !any(inside, lead) && !any(inside, tail)
             paras = SubString(src, pfirst, plast)
@@ -165,7 +165,7 @@ function _emit_with_children(st, frag::String, ex::_CellExtras, keep::Bool; row:
         print(out, SubString(frag, 1, e))
     end
     for s in ex.lead
-        _emit(st, s; row, col, orig = _span(s))
+        s isa SubString{String} ? _emit(st, s; row, col, orig = _span(s)) : print(out, s)
     end
     if keep
         _emit(st, ex.paras; row, col, orig = _span(ex.paras))
@@ -173,8 +173,62 @@ function _emit_with_children(st, frag::String, ex::_CellExtras, keep::Bool; row:
         print(out, SubString(frag, nextind(frag, e), ncodeunits(frag) - ncodeunits(endtag)))
     end
     for s in ex.tail
-        _emit(st, s; row, col, orig = _span(s))
+        s isa SubString{String} ? _emit(st, s; row, col, orig = _span(s)) : print(out, s)
     end
     print(out, endtag)
     return
+end
+
+# The extras of a cell written alone with the note `nd` (D-073): the original's annotation replaced by
+# `nd`'s, or removed (`nd === nothing`); its other extras kept.
+function _with_note(ex::Union{Nothing,_CellExtras}, nd::Union{Nothing,NoteData})
+    lead = Union{String,SubString{String}}[]
+    nd === nothing || push!(lead, _note_xml(nd))
+    ex === nothing && return _CellExtras("", lead, Union{String,SubString{String}}[], nothing, nothing, true)
+    for s in ex.lead
+        startswith(s, "<office:annotation") || push!(lead, s)
+    end
+    return _CellExtras(ex.validation, lead, ex.tail, ex.paras, ex.text, true)
+end
+
+# Whether a sheet's original table (`src[a:b]`) may hold any cell extras at all: an annotation, a
+# shape, a detective mark or a cell range source, a paragraph element other than plain text's, or a
+# validation's name in a cell's start tag. One tight pass over the table where it is written
+# (D-066), cached on the sheet: a table with none skips `_maybe_extras` on every cell it rewrites,
+# whose cost inside the save's cell loop is several times its own (D-071).
+function _table_may_have_extras(src::String, a::Int, b::Int)
+    i = a
+    while (j = findnext('<', src, i)) !== nothing && j < b
+        k = j + 1
+        if codeunit(src, k) != UInt8('/')
+            if _bytes_at(src, k, "text:")
+                (_tag_at(src, k, "text:p") || _tag_at(src, k, "text:h") || _plain_para_tag(src, k)) || return true
+            elseif _bytes_at(src, k, "office:annotation") || _bytes_at(src, k, "draw:") || _bytes_at(src, k, "dr3d:") ||
+                   _bytes_at(src, k, "table:detective") || _bytes_at(src, k, "table:cell-range-source")
+                return true
+            elseif _bytes_at(src, k, "table:table-cell") || _bytes_at(src, k, "table:covered-table-cell")
+                e = findnext('>', src, k)
+                e === nothing && return true
+                _has_validation(SubString(src, j, e)) && return true
+            end
+        end
+        i = k
+    end
+    return false
+end
+
+function _sheet_may_have_extras(ws::Worksheet, src::String, a::Int, b::Int)
+    ws.mayextras === nothing && (ws.mayextras = _table_may_have_extras(src, a, b))
+    return ws.mayextras
+end
+
+# Whether a cell being rewritten needs the quick test: while few cells were rewritten, every one is
+# tested; past 4096, the table is scanned once (`_sheet_may_have_extras`) and a table with no extras
+# skips the test (a one-cell edit never pays for the scan).
+function _extras_possible(st)
+    st.extras >= 0 && return st.extras == 1
+    st.tested += 1
+    st.tested <= 4096 && return true
+    st.extras = _sheet_may_have_extras(st.ws, st.src, first(st.tspan), last(st.tspan)) ? Int8(1) : Int8(0)
+    return st.extras == 1
 end

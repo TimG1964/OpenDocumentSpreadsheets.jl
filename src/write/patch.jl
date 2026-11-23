@@ -149,6 +149,9 @@ mutable struct _PatchState
     orow::Int                      # original rows walked so far (the mapped walk)
     ocol::Int                      # original columns walked so far
     posrow::Int                    # original rows before `pos` (the mapped walk; -1 elsewhere)
+    extras::Int8                   # whether the original table may hold cell extras (D-071): 1, 0, or -1 unknown yet
+    tested::Int                    # cells given the quick test while unknown
+    tspan::UnitRange{Int}          # the original table, in src
 end
 
 # Copies original text to the output: as it is, or with its references replayed through the
@@ -239,7 +242,7 @@ function _write_new_rows!(st::_PatchState, at::Function)
         i = _first_row_index(st.store, st.nextrow)
         write_rows(st.out, @view(st.store.rows[i:end]), st.styles, st.nextrow; st.display)
     else
-        write_model_rows(st.out, st.store, st.fmt, st.styles, st.nextrow; st.display)
+        write_model_rows(st.out, st.store, st.fmt, st.styles, st.nextrow; st.display, notes = st.ws.notes)
     end
 end
 
@@ -480,14 +483,26 @@ end
 
 # Columns x:y of row r from the model; `celltext` is the original cell they replace
 # (`nothing` past the row's cells).
-_write_model_cols!(st::_PatchState, r::Int, x::Int, y::Int, celltext, rowdefault::Bool) =
-    _write_model_cells!(st.out, st, r, x, y, celltext, rowdefault)
+function _write_model_cols!(st::_PatchState, r::Int, x::Int, y::Int, celltext, rowdefault::Bool)
+    ne = _note_edits_in(st.ws, r, x, y)
+    isempty(ne) ? _write_model_cells!(st.out, st, r, x, y, celltext, rowdefault) :
+                  _write_noted_cols!(st, r, x, y, celltext, rowdefault, nothing, 0, 0, ne)
+    return
+end
 
 # The same, for an original cell that holds more than its value (`ex`, D-071); `row`, `col`: its
 # original position (for `_emit`). Callers test `ex === nothing` themselves: a keyword or a union
 # here costs a dynamic call on every cell of a restyled block.
 function _write_model_cols!(st::_PatchState, r::Int, x::Int, y::Int, celltext, rowdefault::Bool,
                             ex::_CellExtras, row::Int, col::Int)
+    ne = _note_edits_in(st.ws, r, x, y)
+    isempty(ne) || return _write_noted_cols!(st, r, x, y, celltext, rowdefault, ex, row, col, ne)
+    _write_with_extras!(st, r, x, y, celltext, rowdefault, ex, row, col)
+    return
+end
+
+function _write_with_extras!(st::_PatchState, r::Int, x::Int, y::Int, celltext, rowdefault::Bool,
+                             ex::_CellExtras, row::Int, col::Int)
     buf = IOBuffer()
     _write_model_cells!(buf, st, r, x, y, celltext, rowdefault)
     frag = String(take!(buf))
@@ -542,9 +557,12 @@ function _write_edited_row!(st::_PatchState, ln::XML.LazyNode, text::SubString{S
                 k = max(1, _attr_int(celltext, "table:number-columns-repeated", 1))
                 lastc = col + k - 1
                 cur = col
-                ex = ci <= length(cols) && first(cols[ci]) <= lastc && _maybe_extras(celltext) ?
-                     _cell_extras(src, XML.LazyNode(ch), celltext) : nothing
+                ex = nothing; exread = false     # the cell's extras (D-071), read when an edit reaches it
                 while ci <= length(cols) && first(cols[ci]) <= lastc
+                    if !exread
+                        ex = _extras_possible(st) && _maybe_extras(celltext) ? _cell_extras(src, XML.LazyNode(ch), celltext) : nothing
+                        exread = true
+                    end
                     x = max(first(cols[ci]), cur); y = min(last(cols[ci]), lastc)
                     x > cur && _emit(st, _retag(celltext, "table:number-columns-repeated", x - cur))
                     if ex === nothing
@@ -614,7 +632,7 @@ function write_patched_table(out::_ChunkedIO, ws::Worksheet; display::Bool = tru
     erows = _merge_ranges(ranges)
     sp = XML.sourcespan(node)
     st = _PatchState(ws, store, get_odsfile(ws).styles, src, out,
-                     first(sp), 1, 0, need, false, false, drows, dcols, erows, f, display, rw, ws.entry.name, 0, 0, -1)
+                     first(sp), 1, 0, need, false, false, drows, dcols, erows, f, display, rw, ws.entry.name, 0, 0, -1, ws.mayextras === nothing ? Int8(-1) : Int8(ws.mayextras), 0, sp)
     _start_tag_changed(ws) && _renamed_start_tag!(st, ws)
     if ws.rowmap !== nothing || ws.colmap !== nothing
         st.posrow = 0
@@ -851,7 +869,7 @@ function write_patched_content(out::_ChunkedIO, xf::ODSFile; display::Bool = tru
     facedecls = get(kids, "office:font-face-decls", nothing)
     splices = _Splice[]
     fx = added_faces_xml(xf.styles)
-    _ns_splice!(splices, src, rootspan, !isempty(fx), _needs_loext(xf.styles) || _needs_protection_loext(xf);
+    _ns_splice!(splices, src, rootspan, !isempty(fx) || _has_notes(xf), _needs_loext(xf.styles) || _needs_protection_loext(xf) || _has_threads(xf);
                 xlink = _needs_xlink(xf.styles))
     # font faces (phase 4): in office:font-face-decls, which comes before the styles
     stylesnode = get(kids, "office:styles", nothing)
@@ -885,6 +903,18 @@ function write_patched_content(out::_ChunkedIO, xf::ODSFile; display::Bool = tru
         if !isempty(newsheets)
             at = last_table_end > 0 ? nextind(src, last_table_end) : _spreadsheet_end(body, src)
             push!(splices, (at, at - 1, io -> foreach(ws -> _write_sheet(io, ws, rw; display), newsheets)))
+        end
+    end
+    # the threads' people (phase 6 step 4): added to the file's loext:persons, or in a new one after the
+    # tables (before the names, as LibreOffice writes them)
+    if !isempty(xf.persons.added)
+        px = _persons_xml(xf.persons.added)
+        k = findfirst("</loext:persons>", src)
+        if k !== nothing
+            push!(splices, (first(k), first(k) - 1, px))
+        else
+            at = last_table_end > 0 ? nextind(src, last_table_end) : _spreadsheet_end(body, src)
+            push!(splices, (at, at - 1, "<loext:persons>" * px * "</loext:persons>"))
         end
     end
     # the workbook's names (phase 5): deleted ones removed, added ones written, in a new element after
@@ -1021,4 +1051,20 @@ function _spreadsheet_end(body, src::String)
     r = findlast("</office:spreadsheet>", text)
     r === nothing && throw(ODSError("The document's body has no office:spreadsheet to add sheets to."))
     return first(sp) - 1 + r[1]
+end
+
+# Columns x:y of row r where some cells' notes were set or removed (D-073, `ne`: column => note or
+# nothing, sorted): each such cell written alone, with its note in place of the original's (`ex`).
+function _write_noted_cols!(st::_PatchState, r::Int, x::Int, y::Int, celltext, rowdefault::Bool,
+                            ex::Union{Nothing,_CellExtras}, row::Int, col::Int, ne)
+    pos = x
+    seg(a, b) = ex === nothing ? _write_model_cells!(st.out, st, r, a, b, celltext, rowdefault) :
+                                 _write_with_extras!(st, r, a, b, celltext, rowdefault, ex, row, col + (a - x))
+    for (c, nd) in ne
+        c > pos && seg(pos, c - 1)
+        _write_with_extras!(st, r, c, c, celltext, rowdefault, _with_note(ex, nd), row, col + (c - x))
+        pos = c + 1
+    end
+    pos <= y && seg(pos, y)
+    return
 end

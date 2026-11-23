@@ -320,6 +320,7 @@ function copysheet!(ws::Worksheet, name::AbstractString = "")
         new.props = deepcopy(ws.props)                 # visibility and tab colour (phase 5 step 6)
         new.protection = deepcopy(ws.protection)       # protection (phase 5 step 9)
         new.print = deepcopy(ws.print)                 # page style and print area (phase 5 step 10)
+        new.notes = deepcopy(ws.notes)                 # notes (phase 6 step 4; a file sheet's copy has them in its text)
         for rd in new.store.rows, (j, r) in enumerate(rd.runs)
             r.data.formula === nothing && continue
             d = r.data

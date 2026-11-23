@@ -123,6 +123,44 @@ struct FileLinkRun
     text::String
 end
 
+# Annotations and threaded comments (phase 6 step 4, D-073). One comment of a thread: the first, or a reply.
+struct ThreadEntry
+    id::String                        # loext:id ({GUID})
+    person::String                    # loext:person-id ("" if none)
+    author::String                    # the person's display name
+    date::Union{Nothing,Dates.DateTime}
+    text::String
+end
+
+# An annotation (a note), as written or to be written: its author (dc:creator), text (one line per
+# paragraph), date (dc:date as written), whether it is shown, its size (svg:width, svg:height as
+# written), and its thread (LibreOffice's `loext:threaded-comment`, F-059), if it has one.
+mutable struct NoteData
+    author::String
+    text::String
+    date::Union{Nothing,String}
+    visible::Bool
+    width::Union{Nothing,String}
+    height::Union{Nothing,String}
+    thread::Union{Nothing,Vector{ThreadEntry}}
+    resolved::Bool
+end
+
+# A note of a sheet's original cells, at its original row and column.
+struct FileNote
+    row::Int
+    col::Int
+    note::NoteData
+end
+
+# The workbook's people (`loext:persons`, the threads' authors): the file's, by id, once read; and
+# those OpenDocumentSpreadsheets added, as id => display name.
+mutable struct PersonEdits
+    file::Union{Nothing,Dict{String,String}}
+    added::Vector{Pair{String,String}}
+end
+PersonEdits() = PersonEdits(nothing, Pair{String,String}[])
+
 """
     Worksheet
 
@@ -149,11 +187,14 @@ mutable struct Worksheet
     protection::Union{Nothing,SheetProtection}   # its protection, once read (phase 5 step 9)
     print::Union{Nothing,PrintState}  # its page style and print range, once read (phase 5 step 10)
     links::Union{Nothing,Vector{FileLinkRun}}   # the URL fields its file holds, once read (phase 6 step 3)
+    notes::Union{Nothing,Dict{Tuple{Int,Int},Union{Nothing,NoteData}}}   # notes set (or removed: nothing) since, by cell (phase 6 step 4)
+    filenotes::Union{Nothing,Vector{FileNote}}   # the notes its file holds, once read
+    mayextras::Union{Nothing,Bool}   # whether its original table may hold cell extras, once known (D-071)
 end
 
 Worksheet(xf, name, index, entry, visible, store, localnames, lock) =
     Worksheet(xf, name, index, entry, visible, store, localnames, lock, Dict{Int,Vector{Int}}(), nothing, nothing, nothing, 0, false,
-              NameEdits(), nothing, nothing, nothing, nothing)
+              NameEdits(), nothing, nothing, nothing, nothing, nothing, nothing, nothing)
 
 # Whether the sheet was made by OpenDocumentSpreadsheets (so it is written whole), not read from the file.
 isnewsheet(ws::Worksheet) = ws.entry === nothing
@@ -189,14 +230,15 @@ mutable struct ODSFile
     wbprotection::Union{Nothing,WorkbookProtection}   # the structure's protection, once read (phase 5 step 9)
     pageedits::PageEdits              # page styles derived (phase 5 step 10)
     meta::Union{Nothing,MetaEdits}    # the document properties, once read (phase 5 step 11)
+    persons::PersonEdits              # the threads' people (phase 6 step 4)
 end
 
 ODSFile(source, container, content, version, styles, sheets, names, null_date, use_cache) =
     ODSFile(source, container, content, version, styles, sheets, names, null_date, use_cache, false, nothing,
-            nothing, ReentrantLock(), Any[], Any[], Any[], Pair{String,String}[], NameEdits(), TableStyleEdits(), ViewEdits(), nothing, PageEdits(), nothing)
+            nothing, ReentrantLock(), Any[], Any[], Any[], Pair{String,String}[], NameEdits(), TableStyleEdits(), ViewEdits(), nothing, PageEdits(), nothing, PersonEdits())
 ODSFile(source, container, content, version, styles, sheets, names, null_date, use_cache, writable, source_io) =
     ODSFile(source, container, content, version, styles, sheets, names, null_date, use_cache, writable, source_io,
-            nothing, ReentrantLock(), Any[], Any[], Any[], Pair{String,String}[], NameEdits(), TableStyleEdits(), ViewEdits(), nothing, PageEdits(), nothing)
+            nothing, ReentrantLock(), Any[], Any[], Any[], Pair{String,String}[], NameEdits(), TableStyleEdits(), ViewEdits(), nothing, PageEdits(), nothing, PersonEdits())
 
 #
 # The sheet index is built as far as it is needed: `xf["Sheet1"]` or `xf[1]` finds the first

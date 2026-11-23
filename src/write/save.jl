@@ -25,6 +25,7 @@ _meta_body(xf::ODSFile) = xf.meta === nothing ? _meta_body() : _meta_element(xf)
 function _write_body(io::IO, xf::ODSFile; display::Bool = true)
     print(io, "<office:body><office:spreadsheet", _wb_protection_attrs_xml(xf), ">")   # structure protection (phase 5 step 9)
     foreach(ws -> write_table(io, ws; display), xf.sheets)
+    isempty(xf.persons.added) || print(io, "<loext:persons>", _persons_xml(xf.persons.added), "</loext:persons>")   # threads' people (phase 6 step 4)
     isempty(xf.names) || print(io, "<table:named-expressions>", _names_xml(xf.names), "</table:named-expressions>")
     print(io, "</office:spreadsheet></office:body>")
     return nothing
@@ -32,11 +33,13 @@ end
 
 const _XMLDECL = """<?xml version="1.0" encoding="UTF-8"?>\n"""
 
-# The font faces OpenDocumentSpreadsheets declared (phase 4), and the namespace they need.
+# The font faces OpenDocumentSpreadsheets declared (phase 4), and the namespaces content.xml needs:
+# svg for them and for notes' sizes, loext for LibreOffice's extensions and threads (phase 6 step 4).
 function _faces(xf::ODSFile)
     fx = added_faces_xml(xf.styles)
-    lx = _needs_loext(xf.styles) || _needs_protection_loext(xf) ? " xmlns:loext=\"$_LOEXT_NS\"" : ""
-    return isempty(fx) ? (lx, "") : (" xmlns:svg=\"$_SVG_NS\"" * lx, "<office:font-face-decls>$fx</office:font-face-decls>")
+    lx = _needs_loext(xf.styles) || _needs_protection_loext(xf) || _has_threads(xf) ? " xmlns:loext=\"$_LOEXT_NS\"" : ""
+    sx = !isempty(fx) || _has_notes(xf) ? " xmlns:svg=\"$_SVG_NS\"" : ""
+    return (sx * lx, isempty(fx) ? "" : "<office:font-face-decls>$fx</office:font-face-decls>")
 end
 
 # A new file's content.xml, written to `io` as it is made (D-048). The styles come first:

@@ -309,7 +309,7 @@ function _write_row_mapped!(st::_PatchState, ln::XML.LazyNode, text::SubString{S
                             if ci <= length(cols) && first(cols[ci]) <= x
                                 y = min(last(cols[ci]), y1)
                                 if !exread
-                                    ex = _maybe_extras(celltext) ? _cell_extras(src, XML.LazyNode(ch), celltext) : nothing
+                                    ex = _extras_possible(st) && _maybe_extras(celltext) ? _cell_extras(src, XML.LazyNode(ch), celltext) : nothing
                                     exread = true
                                 end
                                 if ex === nothing

@@ -422,12 +422,13 @@ row formats (and empty rows between them). With `pad`, empty rows fill the rest 
 `upto`. Returns the row after the last one written.
 """
 function write_model_rows(io::IO, s::SheetStore, f::SheetFormats, styles::StyleIndex, from::Int; display::Bool = true,
-                          upto::Int = SheetCore.MAX_ROWS, pad::Bool = false)
+                          upto::Int = SheetCore.MAX_ROWS, pad::Bool = false, notes = nothing)
     bps = Int[]
     last = upto
     _row_bounds!(bps, s.rows, from, last)
     _row_bounds!(bps, f.cells, from, last)
     _row_bounds!(bps, f.rows, from, last)
+    notes === nothing || _note_bounds!(bps, notes, from, last)        # a row with notes is written alone (D-073)
     if isempty(bps)
         pad || return from
         _write_empty_rows(io, upto - from + 1)
@@ -451,8 +452,13 @@ function write_model_rows(io::IO, s::SheetStore, f::SheetFormats, styles::StyleI
             print(io, "<table:table-cell/>")
         else
             rowdefault = rf !== nothing && rf.default >= 0
-            write_merged_cells(io, styles, vals, emps, 1, lastc, rowdefault, (p, q) -> _any_col_default(f.cols, p, q),
-                               n -> write_cell(io, nothing, styles; repeat = n); display)
+            nc = notes === nothing ? _NO_NOTE_EDITS : _note_edits_in(notes, a, 1, lastc)
+            if isempty(nc)
+                write_merged_cells(io, styles, vals, emps, 1, lastc, rowdefault, (p, q) -> _any_col_default(f.cols, p, q),
+                                   n -> write_cell(io, nothing, styles; repeat = n); display)
+            else
+                _write_noted_cells(io, styles, vals, emps, 1, lastc, rowdefault, (p, q) -> _any_col_default(f.cols, p, q), nc; display)
+            end
         end
         print(io, "</table:table-row>")
         next = b + 1
@@ -509,7 +515,7 @@ function _write_table_flat(io::IO, ws::Worksheet; display::Bool = true)
         end
         isempty(f.cols) || (ncols = max(ncols, _stop(f.cols[end])))
         write_columns(io, f.cols, styles, 1, ncols)
-        write_model_rows(io, s, f, styles, 1; display) == 1 && print(io, _EMPTY_ROW)
+        write_model_rows(io, s, f, styles, 1; display, notes = ws.notes) == 1 && print(io, _EMPTY_ROW)
     end
     ln = ws.localnames                             # its names (phase 5)
     (ln === nothing || isempty(ln)) || print(io, "<table:named-expressions>", _names_xml(ln), "</table:named-expressions>")

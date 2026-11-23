@@ -20,7 +20,12 @@ makedocs(
             "Saving and writing" => "guide/saving.md",
         ],
         "Coming from XLSX.jl" => "xlsx.md",
-        "API reference" => "api.md",
+        "API reference" => Any[
+            "Files, cells and tables" => "api.md",
+            "Formatting" => "api-formatting.md",
+            "Sheets and settings" => "api-sheets.md",
+            "Links, notes and objects" => "api-objects.md",
+        ],
     ],
     checkdocs = :public,
     # External links are checked only when asked, as they depend on other sites being up:

@@ -207,3 +207,32 @@ end
         @test _alltext(_kids(cells["D2"])[1]) == "here"
     end
 end
+
+@testset "past 4096 rewritten cells, the table is scanned once for extras" begin
+    dir = mktempdir()
+    xf = newods("S"); ws = xf["S"]
+    for r in 1:2100, c in 1:3
+        ws[r, c] = r * c
+    end
+    ws["B2100"] = "text"
+    addHyperlink(ws, "B2100"; url = "https://example.org/")
+    addComment(ws, "C2100", "last")
+    p = writeods(joinpath(dir, "big.fods"), xf)
+    x = openods(p; mode = "rw")
+    setFont(x["S"], "A1:C2100"; bold = true)                  # 6300 cells rewritten
+    r = readods(writeods(joinpath(dir, "big2.fods"), x))["S"]
+    @test O_X.getComment(r, "C2100").text == "last"
+    @test O_X.getHyperlink(r, "B2100").url == "https://example.org/"
+    @test x["S"].mayextras === true
+    # a table with none: the scan says so, and the cells are written as before
+    y = newods("S"); for r in 1:2100, c in 1:3; y["S"][r, c] = r + c; end
+    q = writeods(joinpath(dir, "plain.fods"), y)
+    z = openods(q; mode = "rw")
+    setFont(z["S"], "A1:C2100"; italic = true)
+    rz = readods(writeods(joinpath(dir, "plain2.fods"), z))["S"]
+    @test z["S"].mayextras === false && rz["C2100"] == 2103
+    @test O_X._table_may_have_extras("<table:table-cell><text:p>a<text:s/>b</text:p></table:table-cell>x", 1, 60) == false
+    @test O_X._table_may_have_extras("<table:table-cell table:content-validation-name=\"val1\"/>x", 1, 50)
+    @test O_X._table_may_have_extras("<table:table-cell><text:p><text:span>a</text:span></text:p></table:table-cell>x", 1, 70)
+    @test O_X._table_may_have_extras("<table:table-cell><draw:frame/></table:table-cell>x", 1, 45)
+end
