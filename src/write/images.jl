@@ -12,7 +12,8 @@
 # (64 × 20 pixels a cell), and the reading of a picture's type and size (`detect_image_ext`,
 # `image_dimensions`).
 
-const ImageInfo = NamedTuple{(:sheet, :media_name, :from, :to),NTuple{4,String}}
+# XLSX.jl's fields, then the frame's alt text and description, LibreOffice's (D-076).
+const ImageInfo = NamedTuple{(:sheet, :media_name, :from, :to, :alt, :description),NTuple{6,String}}
 
 #
 # The picture: its type and size (XLSX.jl's `detect_image_ext`, `image_dimensions`)
@@ -99,7 +100,10 @@ function _image_frame_xml(io::IO, ws::Worksheet, img::ImageData)
     else
         print(io, " xlink:href=\"", img.pic, "\" xlink:type=\"simple\" xlink:show=\"embed\" xlink:actuate=\"onLoad\" draw:mime-type=\"", img.mime, "\">")
     end
-    print(io, "<text:p/></draw:image></draw:frame>")
+    print(io, "<text:p/></draw:image>")
+    isempty(img.title) || (print(io, "<svg:title>"); _escape_text(io, img.title); print(io, "</svg:title>"))
+    isempty(img.desc) || (print(io, "<svg:desc>"); _escape_text(io, img.desc); print(io, "</svg:desc>"))
+    print(io, "</draw:frame>")
 end
 
 # The frames a cell edit adds: those a delete moved here (their original XML, with the structural
@@ -238,6 +242,12 @@ end
 
 _media_name(href::AbstractString) = isempty(href) ? "" : String(last(split(href, '/')))
 
+# A frame's alt text and description (its `svg:title` and `svg:desc`), "" where it has none.
+function _frame_alt(xml::AbstractString)
+    t = match(r"<svg:title>(.*?)</svg:title>"s, xml); d = match(r"<svg:desc>(.*?)</svg:desc>"s, xml)
+    return (t === nothing ? "" : XML.unescape(String(t.captures[1])), d === nothing ? "" : XML.unescape(String(d.captures[1])))
+end
+
 function _sheet_images(ws::Worksheet)
     out = Tuple{Int,Int,ImageInfo,Symbol,Int}[]     # (row, col, info, kind, k): kind :file, :moved, :added
     name(r, c) = string(SheetCore.encode_column_number(c), r)
@@ -248,7 +258,7 @@ function _sheet_images(ws::Worksheet)
             x = something(_attr_cm(ff.xml, "svg:x"), 0.0); y = something(_attr_cm(ff.xml, "svg:y"), 0.0)
             r = _line_at(ws, 2, 1, y); c = _line_at(ws, 1, 1, x)
             er, ec = _frame_end(ws, replace(ff.xml, r"\bsvg:[xy]=\"[^\"]*\"" => ""), r, c, false)
-            push!(out, (r, c, ImageInfo((ws.name, _media_name(ff.href), name(r, c), name(er, ec))), :page, ff.k))
+            push!(out, (r, c, ImageInfo((ws.name, _media_name(ff.href), name(r, c), name(er, ec), _frame_alt(ff.xml)...)), :page, ff.k))
             continue
         end
         r = _current_line(ws.rowmap, ff.row); c = _current_line(ws.colmap, ff.col)
@@ -256,7 +266,7 @@ function _sheet_images(ws::Worksheet)
         fe = frames === nothing ? nothing : get(frames, (r, c), nothing)
         fe !== nothing && ff.k in fe.removed && continue
         er, ec = _frame_end(ws, ff.xml, r, c, true)
-        push!(out, (r, c, ImageInfo((ws.name, _media_name(ff.href), name(r, c), name(er, ec))), :file, ff.k))
+        push!(out, (r, c, ImageInfo((ws.name, _media_name(ff.href), name(r, c), name(er, ec), _frame_alt(ff.xml)...)), :file, ff.k))
     end
     if frames !== nothing
         for ((r, c), fe) in frames
@@ -264,10 +274,10 @@ function _sheet_images(ws::Worksheet)
                 _is_picture(x) || continue
                 m = match(_HREF_RX, x)
                 er, ec = _frame_end(ws, _rewritten(x, isnewfile(get_odsfile(ws)) ? Any[] : get_odsfile(ws).ops[ws.opstart+1:end]), r, c, false)
-                push!(out, (r, c, ImageInfo((ws.name, _media_name(m === nothing ? "" : XML.unescape(m.captures[1])), name(r, c), name(er, ec))), :moved, j))
+                push!(out, (r, c, ImageInfo((ws.name, _media_name(m === nothing ? "" : XML.unescape(m.captures[1])), name(r, c), name(er, ec), _frame_alt(x)...)), :moved, j))
             end
             for (j, img) in enumerate(fe.added)
-                push!(out, (r, c, ImageInfo((ws.name, _media_name(img.pic), name(r, c), name(img.torow, img.tocol))), :added, j))
+                push!(out, (r, c, ImageInfo((ws.name, _media_name(img.pic), name(r, c), name(img.torow, img.tocol), img.title, img.desc)), :added, j))
             end
         end
     end
@@ -293,7 +303,7 @@ _frame_edit!(ws::Worksheet, r::Int, c::Int) =
     get!(FrameEdit, ws.frames === nothing ? (ws.frames = Dict{Tuple{Int,Int},FrameEdit}()) : ws.frames, (r, c))
 
 """
-    addImage(sheet, ref, image; size=nothing, inCell=false, alt="") -> NamedTuple
+    addImage(sheet, ref, image; size=nothing, inCell=false, alt="", description="") -> NamedTuple
     addImage(sheet, row, col, image; kw...) -> NamedTuple
 
 Insert a picture (PNG, JPEG or GIF, from a file path or an `IOBuffer`, which is left unchanged)
@@ -303,14 +313,16 @@ per 64 pixels of its width and per 20 of its height (its own size, or `size = (w
 pixels), as in XLSX.jl; for a range (`"B2:D6"`), the range. The picture is stored once in the file,
 however many times it is shown.
 
-LibreOffice has no pictures in cells: `inCell=true` (and so `alt`) is an error.
+LibreOffice has no pictures in cells: `inCell=true` is an error. `alt` is the picture's alt text,
+which LibreOffice keeps for every picture (its *Text Alternative*, `svg:title`), and `description`
+its longer description (`svg:desc`), LibreOffice's own (D-076).
 
-Returns `(sheet, media_name, from, to)`. The file must be writable.
+Returns `(sheet, media_name, from, to, alt, description)`. The file must be writable.
 """
 function addImage(ws::Worksheet, ref::Union{AbstractString,CellRef,CellRange}, image::Union{AbstractString,IOBuffer};
-                  size::Union{Nothing,Tuple{<:Integer,<:Integer}} = nothing, inCell::Bool = false, alt::AbstractString = "")
+                  size::Union{Nothing,Tuple{<:Integer,<:Integer}} = nothing, inCell::Bool = false, alt::AbstractString = "",
+                  description::AbstractString = "")
     inCell && throw(ODSError("LibreOffice has no pictures in cells (F-060): leave out `inCell`."))
-    isempty(alt) || throw(ODSError("`alt` is for a picture in a cell: give `inCell=true` too."))
     _require_writable(ws, "add an image")
     rows, cols = _link_block(ref)
     bytes = image isa IOBuffer ? take!(copy(image)) : read(image)
@@ -332,10 +344,11 @@ function addImage(ws::Worksheet, ref::Union{AbstractString,CellRef,CellRange}, i
         any(m -> m[1] == pic, xf.media) || push!(xf.media, (pic, mime, bytes))
     end
     width = sum(_col_cm(ws, x) for x in c:tc); height = sum(_row_cm(ws, x) for x in r:tr)
-    img = ImageData(pic, mime, tr, tc, width, height, _col_cm(ws, tc), _row_cm(ws, tr))
+    img = ImageData(pic, mime, tr, tc, width, height, _col_cm(ws, tc), _row_cm(ws, tr), String(alt), String(description))
     push!(_frame_edit!(ws, r, c).added, img)
     _touch_cell!(ws, r, c)
-    return ImageInfo((ws.name, _media_name(pic), string(SheetCore.encode_column_number(c), r), string(SheetCore.encode_column_number(tc), tr)))
+    return ImageInfo((ws.name, _media_name(pic), string(SheetCore.encode_column_number(c), r), string(SheetCore.encode_column_number(tc), tr),
+                      img.title, img.desc))
 end
 addImage(ws::Worksheet, row::Integer, col::Integer, image; kw...) = addImage(ws, CellRef(row, col), image; kw...)
 
@@ -343,7 +356,7 @@ addImage(ws::Worksheet, row::Integer, col::Integer, image; kw...) = addImage(ws,
     getImages(sheet) -> Vector{NamedTuple}
     getImages(xf::ODSFile) -> Vector{NamedTuple}
 
-The pictures of a sheet, or of every sheet, as `(sheet, media_name, from, to)`, by their first
+The pictures of a sheet, or of every sheet, as `(sheet, media_name, from, to, alt, description)`, by their first
 cell: those anchored in cells or to the page, read from the file or added. `to` is the cell a
 picture ends in. `media_name` is its part's name in `Pictures/` (`""` for a picture held in a flat
 file).

@@ -7,13 +7,14 @@ const NT_OWN = joinpath(@__DIR__, "..", "data", "links", "lo-links-own.fods")
 const NT_IMPORT = joinpath(@__DIR__, "..", "data", "links", "lo-links-xlsx-import.fods")
 const NT_D = DateTime(2026, 11, 23, 10, 30)
 
+_c4(c) = c[(:sheet, :ref, :author, :text)]      # XLSX.jl's fields (the date: test_lo_options.jl)
 _notes(x) = [(c.ref, c.author, c.text) for c in O_N.getComments(x)]
 _threads(x) = [(t.ref, t.author, t.text, t.date, t.resolved, [(r.author, r.text, r.date) for r in t.replies])
                for t in O_N.getThreadedComments(x)]
 
 @testset "LibreOffice's own notes" begin
     ws = readods(NT_OWN)["Own"]
-    @test O_N.getComment(ws, "B11") == (sheet = "Own", ref = "B11", author = "Unknown Author", text = "A note")
+    @test _c4(O_N.getComment(ws, "B11")) == (sheet = "Own", ref = "B11", author = "Unknown Author", text = "A note")
     @test O_N.getComment(ws, "B13").text == "Line one\nLine two"
     @test O_N.getComment(ws, 14, 2).text == "On seven"                   # on a number
     @test O_N.getComment(ws, "B17").text == "On an empty cell"
@@ -44,14 +45,14 @@ end
 
 @testset "notes: XLSX.jl's checks" begin
     xf = newods("Data"); ws = xf["Data"]
-    @test addComment(ws, "B3", "Checked"; author = "Tim") == (sheet = "Data", ref = "B3", author = "Tim", text = "Checked")
+    @test _c4(addComment(ws, "B3", "Checked"; author = "Tim")) == (sheet = "Data", ref = "B3", author = "Tim", text = "Checked")
     @test addComment(ws, 5, 2, "Line one\nLine two"; visible = true).ref == "B5"
     @test addComment(ws, CellRef("C1"), "x").author == ""
     @test_throws ODSError addComment(ws, "A1:B2", "range")
     @test_throws ODSError addComment(ws, "notacell", "x")
     @test_throws ODSError addComment(ws, "A1", "x"; width = 0)
     addComment(ws, "B3", "Replaced"; author = "Ann")
-    @test O_N.getComment(ws, "B3") == (sheet = "Data", ref = "B3", author = "Ann", text = "Replaced")
+    @test _c4(O_N.getComment(ws, "B3")) == (sheet = "Data", ref = "B3", author = "Ann", text = "Replaced")
     @test deleteComment(ws, "C1") && !deleteComment(ws, "C1") && !deleteComment(ws, 9, 9)
     @test _notes(ws) == [("B3", "Ann", "Replaced"), ("B5", "", "Line one\nLine two")]
     # a note on a value, in a sheet with no other formatting: written (the sheet gets its formats)

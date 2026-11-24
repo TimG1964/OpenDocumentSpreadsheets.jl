@@ -54,6 +54,7 @@ mutable struct StreamWriter
     formats::Dict{String,Int32}      # format code → its named cell style
     version::String
     started::Bool                    # content.xml's styles and the body's start are written
+    tables::Vector{Tuple{String,StreamSheet,Int}}   # tables (phase 6 step 7): name, sheet, columns
 end
 
 # A column style for a width (in characters), declared in content.xml's automatic styles:
@@ -127,11 +128,12 @@ function streamods(f::Function, dest::Union{AbstractString,IO}; overwrite::Bool 
     produce(w) = begin
         ZipArchives.zip_newfile(w, "content.xml"; compress = true)
         sw = StreamWriter(_StreamBuffer(IOBuffer(), w), styles, String[], nothing, display_text, IOBuffer(),
-                          Dict{String,String}(), Dict{String,Int32}(), version, false)
+                          Dict{String,String}(), Dict{String,Int32}(), version, false, Tuple{String,StreamSheet,Int}[])
         foreach(x -> _declare_width!(sw, x), declare_widths)
         f(sw)
         isempty(sw.names) && addsheet!(sw, "Sheet1")
         _close_sheet!(sw)
+        isempty(sw.tables) || print(sw.buf.io, "<table:database-ranges>", _stream_tables_xml(sw), "</table:database-ranges>")
         _flush!(sw.buf)
         print(w, "</office:spreadsheet></office:body></office:document-content>")
         ZipArchives.zip_commitfile(w)
@@ -166,16 +168,23 @@ function _close_sheet!(s::StreamWriter)
 end
 
 """
-    addsheet!(s::StreamWriter, name=""; columns=nothing, column_widths=nothing, column_formats=nothing) -> StreamSheet
-    addsheet!(s::StreamWriter, name, table; column_widths, column_formats) -> StreamSheet
+    addsheet!(s::StreamWriter, name=""; columns=nothing, column_widths=nothing, column_formats=nothing,
+              as_table=false, table_name="", table_style=nothing) -> StreamSheet
+    addsheet!(s::StreamWriter, name, table; column_widths, column_formats, as_table, table_name, table_style) -> StreamSheet
 
 Start the next sheet of a streamed file, finishing the one before. `columns` writes a header
 row; a Tables.jl `table` writes its header and all its rows. `column_widths` and
 `column_formats` set the columns' widths and the number formats of the rows written after
-the header, as in [`writetable!`](@ref).
+the header, as in [`writetable!`](@ref). `as_table=true` makes the sheet's rows a table, named
+`table_name` (`""`: the first free `TableN`), as `writetable!` does; it needs `columns`.
 """
 function addsheet!(s::StreamWriter, name::AbstractString = ""; columns = nothing, column_widths = nothing,
-                   column_formats = nothing)
+                   column_formats = nothing, as_table::Bool = false, table_name::AbstractString = "", table_style = nothing)
+    if as_table                                 # checked first: the sheet isn't started if refused
+        columns === nothing && throw(ODSError("`as_table=true` needs `columns`: a table needs a header row."))
+        _check_table_style(table_style)
+        table_name = _stream_table_name(s, table_name)
+    end
     widths, formats = _column_settings(columns === nothing ? nothing : [string(c) for c in columns], column_widths, column_formats)
     _close_sheet!(s)
     if isempty(name)
@@ -197,6 +206,7 @@ function addsheet!(s::StreamWriter, name::AbstractString = ""; columns = nothing
     sh = StreamSheet(String(name), s.buf, s.styles, 0, true, s.display, Dict{Int,Int32}())
     s.current = sh
     columns === nothing || writerow!(sh, [string(c) for c in columns])
+    as_table && push!(s.tables, (String(table_name), sh, length(columns)))
     for (c, fmt) in formats                     # the header keeps no format: set after it
         sh.colstyles[c] = _stream_format_style!(s, fmt)
     end
@@ -290,3 +300,21 @@ function writerows!(sh::StreamSheet, table)
     end
     return nothing
 end
+
+# A streamed table's name, checked as `addtable!` checks one, against the stream's tables.
+function _stream_table_name(s::StreamWriter, name::AbstractString)
+    used = Set(uppercase(t[1]) for t in s.tables)
+    if isempty(name)
+        i = 1
+        while uppercase("Table$i") in used; i += 1; end
+        return "Table$i"
+    end
+    startswith(name, _ANON_DB) && throw(ODSError("Table names starting with `$_ANON_DB` are LibreOffice's, for sheets' autofilters."))
+    _check_defined_name(name)
+    uppercase(name) in used && throw(ODSError("Table name `$name` is already in use (LibreOffice ignores case in them)."))
+    return String(name)
+end
+
+# The streamed tables, each over its sheet's rows, as `addtable!` writes them.
+_stream_tables_xml(s::StreamWriter) =
+    join(_db_xml(DBRange(n, (; name = sh.name), 1, 1, max(sh.row, 1), nc, true, false, true, "", 0.0)) for (n, sh, nc) in s.tables)

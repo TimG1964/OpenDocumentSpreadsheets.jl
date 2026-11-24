@@ -85,8 +85,9 @@ The formatting functions work as in XLSX.jl too, with the differences listed in
   [`setPrintArea`](@ref), [`setPrintTitles`](@ref), [`setHeaderFooter`](@ref) and their getters)
   takes XLSX.jl's arguments, Excel's header codes included, and stores everything as
   LibreOffice's xlsx import stores it: a page style of the sheet's own (`PageStyle_<sheet>`), ODF
-  fields and text styles for the codes, `table:print-ranges` and header-row containers. Paper sizes
-  are those the import knows (Excel's 1, 3, 4, 5, 7, 8, 9, 11, 12, 13 and 70); headers can't be
+  fields and text styles for the codes, `table:print-ranges` and header-row containers. `paperSize`s
+  are those the import knows (Excel's 1, 3, 4, 5, 7, 8, 9, 11, 12, 13 and 70), and any other size is
+  `paperWidth` and `paperHeight`; headers can't be
   told not to scale or align with the margins (`scaleWithDoc`, `alignWithMargins`), as in
   LibreOffice. A sheet without a page style of its own prints LibreOffice's default header and
   footer, and `getHeaderFooter` says so.
@@ -97,6 +98,15 @@ The formatting functions work as in XLSX.jl too, with the differences listed in
   `Manager`), which `getCustomProperties` leaves out. Custom numbers are ODF's floats (a whole one
   is read back as an `Int64`), and custom properties are kept in name order, as LibreOffice keeps
   them. `getCustomProperties` gives a `Vector` of pairs, not an `OrderedDict`.
-- **Not yet available:**
-  Excel-style tables, conditional formats, comments, images and charts, and `writetable`'s
-  `as_table` and `freeze_header`.
+- **Tables** ([`addtable!`](@ref), [`settotals!`](@ref), [`appendtable!`](@ref), [`table`](@ref),
+  `readtable(…; table_name)`, `writetable(…; as_table)` and the rest) are LibreOffice's database
+  ranges. LibreOffice has no table styles (`style` is an error) and keeps no totals settings: a
+  totals cell's setting is read from its formula, written as LibreOffice saves a structured
+  reference (`SUBTOTAL(109,$Sheet.$B$2:$B$5)`). As in LibreOffice, a table's name is formed as a
+  defined name's but is apart from them, tables may overlap, and a table may be its header alone.
+- **LibreOffice's own options** are keywords and fields of the XLSX.jl functions they belong with
+  (D-076): a validation's `caseSensitive` and `sortEntries`, cell protection's `hideAll` and
+  `hidePrint`, a note's `date`, a picture's `alt` and `description`, any paper size
+  (`paperWidth`, `paperHeight`), `scaleToPages`, six more print options, and a table's
+  `has_header_row` and `filterButtons`.
+- **Not yet available:** conditional formats, charts, and autofilters and sorts (phase 6).

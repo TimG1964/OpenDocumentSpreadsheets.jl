@@ -289,18 +289,26 @@ _cell_protect_value(locked::Bool, hidden::Bool) =
     locked && hidden ? "protected formula-hidden" : locked ? "protected" : hidden ? "formula-hidden" : "none"
 
 function _protection_transform(st::StyleIndex, caller::Symbol; locked::Union{Nothing,Bool} = nothing,
-                               hidden::Union{Nothing,Bool} = nothing, kw...)
+                               hidden::Union{Nothing,Bool} = nothing, hideAll::Union{Nothing,Bool} = nothing,
+                               hidePrint::Union{Nothing,Bool} = nothing, kw...)
     _check_keywords(caller, kw)
-    locked === nothing && hidden === nothing && return identity
+    locked === nothing && hidden === nothing && hideAll === nothing && hidePrint === nothing && return identity
     return function (cs)
-        l, h = _cell_protect_flags(getprop(cs.cell, "style:cell-protect"))
-        v = _cell_protect_value(something(locked, l), something(hidden, h))
-        with_cell(cs, setprops(cs.cell, "style:cell-protect" => v))
+        changes = Pair{String,String}[]
+        if locked !== nothing || hidden !== nothing || hideAll !== nothing
+            cur = getprop(cs.cell, "style:cell-protect")
+            l, h = _cell_protect_flags(cur)
+            all = something(hideAll, cur == "hidden-and-protected")
+            # LibreOffice's "hide all" stands for the cell's whole protection (D-076)
+            push!(changes, "style:cell-protect" => all ? "hidden-and-protected" : _cell_protect_value(something(locked, l), something(hidden, h)))
+        end
+        hidePrint === nothing || push!(changes, "style:print-content" => hidePrint ? "false" : "true")
+        with_cell(cs, setprops(cs.cell, changes...))
     end
 end
 
 """
-    setCellProtection(sheet, ref; locked=nothing, hidden=nothing) -> String or -1
+    setCellProtection(sheet, ref; locked=nothing, hidden=nothing, hideAll=nothing, hidePrint=nothing) -> String or -1
     setCellProtection(sheet, row, col; …) / setCellProtection(xf, "Sheet1.B2:D10"; …)
 
 Set whether cells are locked, and whether their formulas are hidden, on a protected sheet, as the
@@ -308,6 +316,10 @@ Set whether cells are locked, and whether their formulas are hidden, on a protec
 cell is locked unless its format says otherwise. Only the keywords given change, and the cells'
 other formatting is kept. Address forms as [`setFont`](@ref); as with the other format setters,
 whole columns and rows are formatted as such (D-033), not only up to the used range.
+
+Two options are LibreOffice's own, with no XLSX.jl counterpart (D-076): `hideAll` (LibreOffice's
+*Hide all*: on a protected sheet the cell shows nothing, and is locked; while it is set, `locked`
+and `hidden` change nothing) and `hidePrint` (*Hide when printing*, `style:print-content`).
 """
 setCellProtection(x::Union{Worksheet,ODSFile}, ref...; kw...) =
     apply_format!(_protection_transform(_styles_of(x), :setCellProtection; kw...), format_targets(x, ref...))
@@ -316,12 +328,15 @@ setCellProtection(x::Union{Worksheet,ODSFile}, ref...; kw...) =
     getCellProtection(sheet, ref) -> NamedTuple
     getCellProtection(sheet, row, col) / getCellProtection(xf, "Sheet1.B2")
 
-`(locked, hidden)` for one cell: locked and not hidden unless its format says otherwise. LibreOffice's
-"hide all" (`hidden-and-protected`) reads as both. Works on read-only files.
+`(locked, hidden, hideAll, hidePrint)` for one cell: locked and not hidden unless its format says
+otherwise. LibreOffice's *Hide all* (`hideAll`) also reads as locked and hidden; `hidePrint` is
+LibreOffice's *Hide when printing* (D-076). Works on read-only files.
 """
 function getCellProtection(x::Union{Worksheet,ODSFile}, ref...)
     ws, r, c = format_cell(x, ref...)
     cell, _, _ = resolved_props(get_odsfile(ws).styles, effective_style(ws, r, c); defaults = false)
-    l, h = _cell_protect_flags(get(cell, "style:cell-protect", nothing))
-    return (locked = l, hidden = h)
+    v = get(cell, "style:cell-protect", nothing)
+    l, h = _cell_protect_flags(v)
+    return (locked = l, hidden = h, hideAll = v == "hidden-and-protected",
+            hidePrint = get(cell, "style:print-content", "true") == "false")
 end

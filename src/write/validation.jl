@@ -13,10 +13,13 @@
 # contributors: names, keywords, checks and messages, and the return shape. Excel's limits (no comma
 # in a list item, 255 characters, 32-character titles) are not LibreOffice's, and are not kept.
 
+# XLSX.jl's fields, then LibreOffice's own options (D-076).
 const DataValidationInfo = NamedTuple{(:sheet, :range, :type, :operator, :formula1, :formula2, :allowBlank, :dropdown,
-                                       :showInputMessage, :promptTitle, :prompt, :showErrorMessage, :errorTitle, :error, :errorStyle),
+                                       :showInputMessage, :promptTitle, :prompt, :showErrorMessage, :errorTitle, :error, :errorStyle,
+                                       :caseSensitive, :sortEntries),
     Tuple{String,Union{CellRange,NonContiguousRange},Symbol,Union{Nothing,Symbol},Union{Nothing,String},Union{Nothing,String},
-          Bool,Bool,Bool,Union{Nothing,String},Union{Nothing,String},Bool,Union{Nothing,String},Union{Nothing,String},Symbol}}
+          Bool,Bool,Bool,Union{Nothing,String},Union{Nothing,String},Bool,Union{Nothing,String},Union{Nothing,String},Symbol,
+          Bool,Bool}}
 
 const DV_TYPES = (:any, :whole, :decimal, :list, :date, :time, :textLength, :custom)
 const DV_OPERATORS = (:between, :notBetween, :equal, :notEqual, :greaterThan, :lessThan, :greaterThanOrEqual, :lessThanOrEqual)
@@ -144,7 +147,8 @@ function _rule_xml(name::String, r::ValRule, base::String)
     cond = _dv_condition(r)
     cond === nothing || (print(io, " table:condition=\""); _escape_attr(io, cond); print(io, '"'))
     r.type === :any || print(io, " table:allow-empty-cell=\"", r.allowBlank, '"')
-    r.type === :list && print(io, " table:display-list=\"", r.dropdown ? "unsorted" : "no", '"')
+    r.caseSensitive && print(io, " table:case-sensitive=\"true\"")
+    r.type === :list && print(io, " table:display-list=\"", !r.dropdown ? "no" : r.sortEntries ? "sort-ascending" : "unsorted", '"')
     print(io, " table:base-cell-address=\""); _escape_attr(io, base); print(io, "\">")
     print(io, "<table:help-message")
     r.promptTitle === nothing || (print(io, " table:title=\""); _escape_attr(io, r.promptTitle); print(io, '"'))
@@ -230,9 +234,11 @@ function _file_rules(xf::ODSFile)
                     mt = something(_attr_in(e[1], "table:message-type"), "stop")
                     style = mt == "warning" ? :warning : mt == "information" ? :information : :stop
                 end
+                dl = something(_attr_in(tag, "table:display-list"), "unsorted")
                 rule = ValRule(t, op, f1, f2, something(_attr_in(tag, "table:allow-empty-cell"), "true") == "true",
-                               something(_attr_in(tag, "table:display-list"), "unsorted") != "no", showin, pt, pr, showerr, et, er, style,
-                               something(_attr_in(tag, "table:base-cell-address"), ""))
+                               dl != "no", showin, pt, pr, showerr, et, er, style,
+                               something(_attr_in(tag, "table:base-cell-address"), ""),
+                               _attr_in(tag, "table:case-sensitive") == "true", dl == "sort-ascending")
                 push!(out, FileRule(name, rg, rule))
                 pos = nextind(s, last(rg))
             end
@@ -268,9 +274,13 @@ function _replayed(r::ValRule, ops)
         f2 === nothing || (f2 = rewrite_formula(f2, op, ctx))
         base = _rewrite_base(base, op)
     end
-    return ValRule(r.type, r.operator, f1, f2, r.allowBlank, r.dropdown, r.showInputMessage, r.promptTitle, r.prompt,
-                   r.showErrorMessage, r.errorTitle, r.error, r.errorStyle, base)
+    return _rule_with(r, f1, f2, base)
 end
+
+# A rule with other formulas and base cell.
+_rule_with(r::ValRule, f1, f2, base::String) =
+    ValRule(r.type, r.operator, f1, f2, r.allowBlank, r.dropdown, r.showInputMessage, r.promptTitle, r.prompt,
+            r.showErrorMessage, r.errorTitle, r.error, r.errorStyle, base, r.caseSensitive, r.sortEntries)
 
 function _next_val_name(xf::ODSFile)
     n = 0
@@ -417,7 +427,7 @@ function _dv_info(ws::Worksheet, name::String, areas::Vector{_Area})
     range = length(rngs) == 1 ? rngs[1] : NonContiguousRange(ws.name, Union{CellRef,CellRange}[rngs...])
     return DataValidationInfo((ws.name, range, r.type, r.operator, _dv_ui(r.formula1), _dv_ui(r.formula2), r.allowBlank,
                                r.type === :list && r.dropdown, r.showInputMessage, r.promptTitle, r.prompt, r.showErrorMessage,
-                               r.errorTitle, r.error, r.errorStyle))
+                               r.errorTitle, r.error, r.errorStyle, r.caseSensitive, r.type === :list && r.dropdown && r.sortEntries))
 end
 
 #
@@ -602,8 +612,7 @@ function _rewrite_rule_refs!(xf::ODSFile, op)
         f1 = r.formula1 === nothing ? nothing : rewrite_formula(r.formula1, op, ctx)
         f2 = r.formula2 === nothing ? nothing : rewrite_formula(r.formula2, op, ctx)
         (f1 === r.formula1 && f2 === r.formula2) && continue
-        a.rule = ValRule(r.type, r.operator, f1, f2, r.allowBlank, r.dropdown, r.showInputMessage, r.promptTitle, r.prompt,
-                         r.showErrorMessage, r.errorTitle, r.error, r.errorStyle, r.base)
+        a.rule = _rule_with(r, f1, f2, r.base)
     end
     return
 end
@@ -670,7 +679,7 @@ end
 """
     addDataValidation(sheet, rng; type, operator, formula1, formula2, values, allowBlank=true, dropdown,
                       showInputMessage=true, promptTitle, prompt, showErrorMessage=true, errorTitle, error,
-                      errorStyle=:stop) -> NamedTuple
+                      errorStyle=:stop, caseSensitive=false, sortEntries=false) -> NamedTuple
     addDataValidation(xf, "Sheet1.B2:B20"; kw...)
 
 Restrict what may be typed into the cells of `rng` (a cell, range, whole columns `"B:B"` or rows,
@@ -690,6 +699,10 @@ and `showErrorMessage` with `error`, `errorTitle` and `errorStyle` (`:stop`, `:w
 `:information`) are as in XLSX.jl. As in LibreOffice, a cell has one validation: a new one replaces
 the validation of the cells it covers. Identical validations share one rule.
 
+Two options are LibreOffice's own, with no XLSX.jl counterpart (D-076): `caseSensitive`
+(`table:case-sensitive`: lists and comparisons with text tell upper and lower case apart) and
+`sortEntries` (a `:list`'s drop-down shows its items sorted ascending).
+
 Returns the validation, as [`getDataValidation`](@ref) reads it. An `:any` validation without a
 prompt or error message restricts nothing, and LibreOffice stores none: it removes the validation of
 its cells, and `nothing` is returned. The file must be writable.
@@ -700,7 +713,7 @@ function addDataValidation(ws::Worksheet, rng; type::Union{Nothing,Symbol} = not
                            showInputMessage::Bool = true, promptTitle::Union{Nothing,AbstractString} = nothing,
                            prompt::Union{Nothing,AbstractString} = nothing, showErrorMessage::Bool = true,
                            errorTitle::Union{Nothing,AbstractString} = nothing, error::Union{Nothing,AbstractString} = nothing,
-                           errorStyle::Symbol = :stop)
+                           errorStyle::Symbol = :stop, caseSensitive::Bool = false, sortEntries::Bool = false)
     _require_writable(ws, "add a data validation")
     xf = get_odsfile(ws)
     isnothing(type) && !isnothing(values) && (type = :list)
@@ -731,6 +744,8 @@ function addDataValidation(ws::Worksheet, rng; type::Union{Nothing,Symbol} = not
         !two && !isnothing(f2) && throw(ODSError("Operator `:$operator` takes `formula1` only, not `formula2`."))
     end
     isnothing(dropdown) || type === :list || throw(ODSError("`dropdown` applies to a `:list` validation, not a `:$type` one."))
+    sortEntries && type !== :list && throw(ODSError("`sortEntries` applies to a `:list` validation, not a `:$type` one."))
+    sortEntries && dropdown === false && throw(ODSError("`sortEntries` sorts a list's drop-down, so it needs `dropdown=true`."))
     errorStyle in DV_ERROR_STYLES ||
         throw(ODSError("Invalid `errorStyle` `:$errorStyle`. Must be one of $(join(DV_ERROR_STYLES, ", "))."))
     blocks = _dv_blocks(ws, rng)
@@ -741,7 +756,8 @@ function addDataValidation(ws::Worksheet, rng; type::Union{Nothing,Symbol} = not
     end
     str(x) = x === nothing ? nothing : String(x)
     rule = ValRule(type, type in (:list, :custom, :any) ? nothing : operator, f1, f2, allowBlank, something(dropdown, true),
-                   showInputMessage, str(promptTitle), str(prompt), showErrorMessage, str(errorTitle), str(error), errorStyle, "")
+                   showInputMessage, str(promptTitle), str(prompt), showErrorMessage, str(errorTitle), str(error), errorStyle, "",
+                   caseSensitive, sortEntries)
     r0, c0 = first(blocks[1][1]), first(blocks[1][2])
     k = findfirst(a -> a.rule == rule && a.sheet === ws && a.row == r0 && a.col == c0, xf.valedits.added)
     name = k === nothing ? _next_val_name(xf) : xf.valedits.added[k].name
@@ -799,7 +815,8 @@ end
 
 Every validation of a sheet, or of every sheet, as XLSX.jl gives them: `(sheet, range, type,
 operator, formula1, formula2, allowBlank, dropdown, showInputMessage, promptTitle, prompt,
-showErrorMessage, errorTitle, error, errorStyle)`. `range` is a `CellRange`, or a
+showErrorMessage, errorTitle, error, errorStyle)`, followed by LibreOffice's own `caseSensitive` and
+`sortEntries` (see [`addDataValidation`](@ref)). `range` is a `CellRange`, or a
 `NonContiguousRange` for several areas; formulas are in LibreOffice's notation, without `=` (a list's
 items as `"a","b"`); `operator` is `nothing` for `:list`, `:custom` and `:any`. In the file's order.
 """

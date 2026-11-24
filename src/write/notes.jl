@@ -13,7 +13,8 @@
 # src/threadedcomments.jl), MIT License, Copyright (c) 2018-2026 Felipe Noronha Tavares and other
 # contributors: names, keywords, checks and return shapes, and the text of a thread's note.
 
-const CommentInfo = NamedTuple{(:sheet, :ref, :author, :text),Tuple{String,String,String,String}}
+# XLSX.jl's fields, then the note's date, which LibreOffice shows with it (D-076).
+const CommentInfo = NamedTuple{(:sheet, :ref, :author, :text, :date),Tuple{String,String,String,String,Union{Nothing,Dates.DateTime}}}
 const ThreadedReply = NamedTuple{(:author, :text, :date),Tuple{String,String,Union{Nothing,Dates.DateTime}}}
 const ThreadedCommentInfo = NamedTuple{(:sheet, :ref, :author, :text, :date, :resolved, :replies),
     Tuple{String,String,String,String,Union{Nothing,Dates.DateTime},Bool,Vector{ThreadedReply}}}
@@ -51,6 +52,13 @@ function _parse_thread_date(s::AbstractString)
 end
 
 _note_date_now() = Dates.format(Dates.now(Dates.UTC), "yyyy-mm-ddTHH:MM:SS")
+# A date given for a note, as `dc:date` (milliseconds only when there are some).
+function _note_date(d::Union{Dates.Date,Dates.DateTime})
+    t = Dates.DateTime(d)
+    s = Dates.format(t, "yyyy-mm-ddTHH:MM:SS")
+    ms = Dates.millisecond(t)
+    return ms == 0 ? s : s * "." * lpad(ms, 3, '0')
+end
 
 # A length of `px` pixels (at 96 per inch) in cm, as an ODF length.
 _px_cm(px::Integer) = _fmt_num(round(px * 2.54 / 96; digits = 3)) * "cm"
@@ -410,7 +418,8 @@ function _all_notes(ws::Worksheet)
 end
 
 _cellname(r::Int, c::Int) = string(SheetCore.encode_column_number(c), r)
-_comment_info(ws::Worksheet, r::Int, c::Int, nd::NoteData) = CommentInfo((ws.name, _cellname(r, c), nd.author, nd.text))
+_comment_info(ws::Worksheet, r::Int, c::Int, nd::NoteData) = CommentInfo((ws.name, _cellname(r, c), nd.author, nd.text,
+                                                                              nd.date === nothing ? nothing : _parse_thread_date(nd.date)))
 function _thread_info(ws::Worksheet, r::Int, c::Int, nd::NoteData)
     t = nd.thread
     e1 = t[1]
@@ -447,7 +456,7 @@ function _set_note!(ws::Worksheet, r::Int, c::Int, nd::Union{Nothing,NoteData})
 end
 
 """
-    addComment(sheet, ref, text; author="", width=144, height=79, visible=false) -> NamedTuple
+    addComment(sheet, ref, text; author="", width=144, height=79, visible=false, date=now) -> NamedTuple
     addComment(sheet, row, col, text; kw...) -> NamedTuple
 
 Attach a note (LibreOffice's comment, an annotation) to one cell, replacing any it has (F-059,
@@ -456,17 +465,21 @@ D-073). `text` may hold line breaks (`\\n`). `author` is shown with the note; `w
 height as a minimum); `visible=true` shows it always, not only when the mouse is over the cell.
 A cell with a threaded comment is refused.
 
-Returns `(sheet, ref, author, text)`. The file must be writable.
+`date` (a `Date` or `DateTime`; the time of the call, in UTC, if not given) is LibreOffice's own
+(D-076): it shows a note's date with its author.
+
+Returns `(sheet, ref, author, text, date)`. The file must be writable.
 """
 function addComment(ws::Worksheet, ref::Union{AbstractString,CellRef}, text::AbstractString;
-                    author::AbstractString = "", width::Integer = 144, height::Integer = 79, visible::Bool = false)
+                    author::AbstractString = "", width::Integer = 144, height::Integer = 79, visible::Bool = false,
+                    date::Union{Nothing,Dates.Date,Dates.DateTime} = nothing)
     _require_writable(ws, "add a comment")
     r, c = _note_cell(ref, "A comment")
     (width > 0 && height > 0) || throw(ODSError("A comment's `width` and `height` must be positive."))
     old = _note_at(ws, r, c)
     old !== nothing && old.thread !== nothing &&
         throw(ODSError("Cell $(_cellname(r, c)) has a threaded comment. A cell can't have both: delete it first with `deleteThreadedComment`."))
-    nd = NoteData(String(author), String(text), _note_date_now(), visible, _px_cm(width), _px_cm(height), nothing, false)
+    nd = NoteData(String(author), String(text), date === nothing ? _note_date_now() : _note_date(date), visible, _px_cm(width), _px_cm(height), nothing, false)
     _set_note!(ws, r, c, nd)
     return _comment_info(ws, r, c, nd)
 end
@@ -476,7 +489,8 @@ addComment(ws::Worksheet, row::Integer, col::Integer, text::AbstractString; kw..
     getComment(sheet, ref) -> Union{Nothing, NamedTuple}
     getComment(sheet, row, col) -> Union{Nothing, NamedTuple}
 
-The note of a cell, as `(sheet, ref, author, text)`, or `nothing`. For a cell with a threaded
+The note of a cell, as `(sheet, ref, author, text, date)`, or `nothing`. `date` is LibreOffice's
+(a `DateTime`, D-076), `nothing` for a note without one. For a cell with a threaded
 comment, the note kept with it (Excel's text for versions without threads); read the thread with
 [`getThreadedComment`](@ref).
 """

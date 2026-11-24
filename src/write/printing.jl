@@ -236,14 +236,32 @@ keywords given change.
 - `fitToWidth`, `fitToHeight`: the pages to fit the sheet on, across and down (0: as many as
   needed). `scale` and fitting are alternatives: giving one turns the other off.
 
+LibreOffice's own settings, with no XLSX.jl counterpart (D-076):
+- `paperWidth`, `paperHeight`: any paper size, in `unit`s (`:cm`, the default, `:mm`, `:in` or
+  `:pt`), instead of `paperSize`. Without `orientation`, the page is landscape when it is wider
+  than high, as LibreOffice's page dialog makes it; with it, the two are swapped to suit.
+- `scaleToPages`: fit the sheet on this many pages in all (`style:scale-to-pages`), a third
+  alternative to `scale` and fitting.
+
 A sheet gets a page style of its own on its first change (`PageStyle_<sheet>`), made from the one
 it had.
 """
 function setPageSetup(ws::Worksheet; orientation::Union{Nothing,Symbol} = nothing, paperSize::Union{Nothing,Symbol,Integer} = nothing,
                       scale::Union{Nothing,Integer} = nothing, fitToWidth::Union{Nothing,Integer} = nothing,
-                      fitToHeight::Union{Nothing,Integer} = nothing)
+                      fitToHeight::Union{Nothing,Integer} = nothing, paperWidth::Union{Nothing,Real} = nothing,
+                      paperHeight::Union{Nothing,Real} = nothing, unit::Symbol = :cm, scaleToPages::Union{Nothing,Integer} = nothing)
     _require_writable(ws, "set up the page")
+    haskey(_CM_PER, unit) || throw(ODSError("Invalid unit `:$unit`: give :cm, :mm, :in or :pt."))
+    custom = paperWidth !== nothing || paperHeight !== nothing
+    custom && paperSize !== nothing && throw(ODSError("Give `paperSize` or `paperWidth`/`paperHeight`, not both."))
+    for (k, v) in (("paperWidth", paperWidth), ("paperHeight", paperHeight))
+        v === nothing || (isfinite(v) && v > 0) || throw(ODSError("`$k` must be a positive length. Found `$v`."))
+    end
     fit = fitToWidth !== nothing || fitToHeight !== nothing
+    if scaleToPages !== nothing
+        (fit || scale !== nothing) && throw(ODSError("Give one of `scale`, `fitToWidth`/`fitToHeight` and `scaleToPages`: LibreOffice uses one of them."))
+        1 <= scaleToPages <= 1000 || throw(ODSError("Invalid `scaleToPages` $scaleToPages. Must be from 1 to 1000."))
+    end
     orientation === nothing || orientation in (:portrait, :landscape) ||
         throw(ODSError("Invalid `orientation` `:$orientation`. Must be `:portrait` or `:landscape`."))
     size = nothing
@@ -262,7 +280,17 @@ function setPageSetup(ws::Worksheet; orientation::Union{Nothing,Symbol} = nothin
     end
     p = _print_state(ws)
     land = something(orientation, Symbol(_get(p.lprops, "style:print-orientation", "portrait"))) === :landscape
-    if orientation !== nothing || size !== nothing
+    if custom
+        w = paperWidth === nothing ? something(_length_cm(_get(p.lprops, "fo:page-width")), _EXCEL_PAPER[1][1]) : paperWidth * _CM_PER[unit]
+        h = paperHeight === nothing ? something(_length_cm(_get(p.lprops, "fo:page-height")), _EXCEL_PAPER[1][2]) : paperHeight * _CM_PER[unit]
+        if orientation === nothing
+            land = w > h
+        elseif land != (w > h) && w != h
+            (w, h) = (h, w)
+        end
+        _put!(p.lprops, "fo:page-width", _cm_text(w)); _put!(p.lprops, "fo:page-height", _cm_text(h))
+        _put!(p.lprops, "style:print-orientation", land ? "landscape" : "portrait")
+    elseif orientation !== nothing || size !== nothing
         w, h = something(size, Some(nothing)) === nothing ?
             (something(_length_cm(_get(p.lprops, "fo:page-width")), _EXCEL_PAPER[1][1]),
              something(_length_cm(_get(p.lprops, "fo:page-height")), _EXCEL_PAPER[1][2])) : size
@@ -279,20 +307,26 @@ function setPageSetup(ws::Worksheet; orientation::Union{Nothing,Symbol} = nothin
         _put!(p.lprops, "style:scale-to", nothing); _put!(p.lprops, "style:scale-to-pages", nothing)
         _put!(p.lprops, "style:scale-to-X", something(fitToWidth, 0) == 0 ? nothing : string(fitToWidth))
         _put!(p.lprops, "style:scale-to-Y", something(fitToHeight, 0) == 0 ? nothing : string(fitToHeight))
+    elseif scaleToPages !== nothing
+        _put!(p.lprops, "style:scale-to", nothing); _put!(p.lprops, "style:scale-to-X", nothing); _put!(p.lprops, "style:scale-to-Y", nothing)
+        _put!(p.lprops, "style:scale-to-pages", string(scaleToPages))
     end
     _page_changed!(ws)
     return nothing
 end
 
 """
-    getPageSetup(sheet) -> NamedTuple
+    getPageSetup(sheet; unit=:cm) -> NamedTuple
 
-`(orientation, paperSize, scale, fitToWidth, fitToHeight)`, each `nothing` where the page style
-doesn't say: the paper is Excel's number for the page's size, if it is one LibreOffice's import
-knows; `scale` is given only when it isn't 100% and the sheet isn't fitted to pages. Works on
-read-only files.
+`(orientation, paperSize, scale, fitToWidth, fitToHeight, paperWidth, paperHeight, scaleToPages)`,
+each `nothing` where the page style doesn't say: the paper is Excel's number for the page's size,
+if it is one LibreOffice's import knows; `scale` is given only when it isn't 100% and the sheet
+isn't fitted to pages. The last three are LibreOffice's (D-076): the page's width and height as
+it is printed (turned when landscape), in `unit`s, and the pages to fit the sheet on in all.
+Works on read-only files.
 """
-function getPageSetup(ws::Worksheet)
+function getPageSetup(ws::Worksheet; unit::Symbol = :cm)
+    haskey(_CM_PER, unit) || throw(ODSError("Invalid unit `:$unit`: give :cm, :mm, :in or :pt."))
     p = _print_state(ws)
     o = _get(p.lprops, "style:print-orientation")
     w = _length_cm(_get(p.lprops, "fo:page-width")); h = _length_cm(_get(p.lprops, "fo:page-height"))
@@ -306,12 +340,16 @@ function getPageSetup(ws::Worksheet)
         i === nothing || (paper = ns[i])
     end
     x = _get(p.lprops, "style:scale-to-X"); y = _get(p.lprops, "style:scale-to-Y")
-    fit = x !== nothing || y !== nothing || _get(p.lprops, "style:scale-to-pages") !== nothing
+    pages = _get(p.lprops, "style:scale-to-pages")
+    fit = x !== nothing || y !== nothing
     s = _get(p.lprops, "style:scale-to")
-    sc = (fit || s === nothing) ? nothing : round(Int, something(tryparse(Float64, rstrip(s, '%')), 100.0))
+    sc = (fit || pages !== nothing || s === nothing) ? nothing : round(Int, something(tryparse(Float64, rstrip(s, '%')), 100.0))
+    len(v) = v === nothing ? nothing : round(v / _CM_PER[unit]; digits = 4)
     return (orientation = o === nothing ? nothing : Symbol(o), paperSize = paper, scale = sc == 100 ? nothing : sc,
             fitToWidth = fit ? something(tryparse(Int, something(x, "0")), 0) : nothing,
-            fitToHeight = fit ? something(tryparse(Int, something(y, "0")), 0) : nothing)
+            fitToHeight = fit ? something(tryparse(Int, something(y, "0")), 0) : nothing,
+            paperWidth = len(w), paperHeight = len(h),
+            scaleToPages = pages === nothing ? nothing : tryparse(Int64, pages))
 end
 
 #
@@ -357,15 +395,24 @@ getPageMargins(ws::Worksheet) = NamedTuple{keys(_PAGE_MARGINS)}(Tuple(round.(_pr
 # Print options
 #
 
-const _PRINT_OPTIONS = (:gridLines, :headings, :horizontalCentered, :verticalCentered)
+# XLSX.jl's, then LibreOffice's own (D-076): the `style:print` tokens Excel has no option for.
+const _LO_PRINT_TOKENS = (comments = "annotations", formulas = "formulas", zeroValues = "zero-values",
+                          charts = "charts", drawings = "drawings", objects = "objects")
+const _PRINT_OPTIONS = (:gridLines, :headings, :horizontalCentered, :verticalCentered, keys(_LO_PRINT_TOKENS)...)
 const _LO_PRINT_DEFAULT = "charts drawings objects zero-values"
 
 """
-    setPrintOptions(sheet; gridLines, headings, horizontalCentered, verticalCentered)
+    setPrintOptions(sheet; gridLines, headings, horizontalCentered, verticalCentered,
+                    comments, formulas, zeroValues, charts, drawings, objects)
 
 Choose what is printed with a sheet, as LibreOffice keeps it in the page style: `gridLines` and
 `headings` (row and column headers) join `style:print`, the centring is `style:table-centering`.
 Each keyword is a `Bool`; only those given change.
+
+The rest are LibreOffice's own (its page style's *Sheet* tab; D-076), also in `style:print`:
+`comments`, `formulas` (formulas instead of their results), `zeroValues`, `charts`, `drawings`
+(drawing objects) and `objects` (pictures and other objects). LibreOffice prints charts, drawings,
+objects and zero values unless told not to.
 """
 function setPrintOptions(ws::Worksheet; kw...)
     _require_writable(ws, "set print options")
@@ -375,7 +422,7 @@ function setPrintOptions(ws::Worksheet; kw...)
     end
     p = _print_state(ws)
     toks = Set(split(_get(p.lprops, "style:print", _LO_PRINT_DEFAULT)))
-    for (k, tok) in ((:gridLines, "grid"), (:headings, "headers"))
+    for (k, tok) in ((:gridLines, "grid"), (:headings, "headers"), pairs(_LO_PRINT_TOKENS)...)
         haskey(kw, k) && (kw[k] ? push!(toks, tok) : delete!(toks, tok))
     end
     _put!(p.lprops, "style:print", join(sort!(collect(toks)), ' '))
@@ -392,14 +439,17 @@ end
 """
     getPrintOptions(sheet) -> NamedTuple
 
-`(gridLines, headings, horizontalCentered, verticalCentered)`, `Bool`s. Works on read-only files.
+`(gridLines, headings, horizontalCentered, verticalCentered, comments, formulas, zeroValues, charts,
+drawings, objects)`, `Bool`s (the last six LibreOffice's, see [`setPrintOptions`](@ref)). Works on
+read-only files.
 """
 function getPrintOptions(ws::Worksheet)
     p = _print_state(ws)
     toks = split(_get(p.lprops, "style:print", _LO_PRINT_DEFAULT))
     c = _get(p.lprops, "style:table-centering", "none")
     return (gridLines = "grid" in toks, headings = "headers" in toks,
-            horizontalCentered = c in ("horizontal", "both"), verticalCentered = c in ("vertical", "both"))
+            horizontalCentered = c in ("horizontal", "both"), verticalCentered = c in ("vertical", "both")) |>
+        x -> merge(x, NamedTuple{keys(_LO_PRINT_TOKENS)}(Tuple(t in toks for t in values(_LO_PRINT_TOKENS))))
 end
 
 #

@@ -9,6 +9,9 @@ using OpenDocumentSpreadsheets.SheetCore: CellRange, CellRef
 
 const PRINTDIR = joinpath(DATA, "printing")
 const LOPRINT = joinpath(PRINTDIR, "lo-print-xlsx-import.fods")
+# XLSX.jl's fields (LibreOffice's own: test_lo_options.jl)
+_ps5(p) = p[(:orientation, :paperSize, :scale, :fitToWidth, :fitToHeight)]
+_po4(p) = p[(:gridLines, :headings, :horizontalCentered, :verticalCentered)]
 
 # A sheet's page-layout properties in a saved flat file, read without OpenDocumentSpreadsheets.
 function layout_props(path, sheet)
@@ -25,12 +28,12 @@ end
 @testset "LibreOffice's import of XLSX.jl's printing, read (experiment 026)" begin
     xf = readods(LOPRINT)
     ps(n) = getPageSetup(xf[n])
-    @test ps("Plain") == (orientation = :portrait, paperSize = nothing, scale = nothing, fitToWidth = nothing, fitToHeight = nothing)
+    @test _ps5(ps("Plain")) == (orientation = :portrait, paperSize = nothing, scale = nothing, fitToWidth = nothing, fitToHeight = nothing)
     @test ps("Landscape").orientation === :landscape && ps("Landscape").paperSize == 1
     @test [ps(n).paperSize for n in ("A4", "Letter", "Legal", "A3", "A5", "B5", "Tabloid", "Executive", "B4", "Paper70")] ==
           [9, 1, 5, 8, 11, 13, 3, 7, 12, 70]
     @test ps("Ledger").paperSize == 4                               # tabloid turned, as the import writes it
-    @test ps("LandA4") == (orientation = :landscape, paperSize = 9, scale = nothing, fitToWidth = nothing, fitToHeight = nothing)
+    @test _ps5(ps("LandA4")) == (orientation = :landscape, paperSize = 9, scale = nothing, fitToWidth = nothing, fitToHeight = nothing)
     @test ps("Scale80").scale == 80 && ps("FitW1").fitToWidth == 1 && ps("FitW1").fitToHeight == 0
     @test ps("FitW2H3").fitToWidth == 2 && ps("FitW2H3").fitToHeight == 3 && ps("FitW2H3").scale === nothing
     m = getPageMargins(xf["Margins"])
@@ -38,7 +41,7 @@ end
     @test getPageMargins(xf["HFMargins"]) == (left = 0.7, right = 0.7, top = 1.5, bottom = 1.2, header = 0.5, footer = 0.6)
     @test getPageMargins(xf["HFCenter"]) == (left = 0.7, right = 0.7, top = 0.75, bottom = 0.75, header = 0.3, footer = 0.3)
     @test getPrintOptions(xf["Grid"]).gridLines && getPrintOptions(xf["Headings"]).headings && !getPrintOptions(xf["Plain"]).gridLines
-    @test getPrintOptions(xf["Centered"]) == (gridLines = false, headings = false, horizontalCentered = true, verticalCentered = true)
+    @test _po4(getPrintOptions(xf["Centered"])) == (gridLines = false, headings = false, horizontalCentered = true, verticalCentered = true)
     @test getPrintOptions(xf["CenterH"]).horizontalCentered && !getPrintOptions(xf["CenterH"]).verticalCentered && getPrintOptions(xf["CenterV"]).verticalCentered
     @test getPrintArea(xf["Area"]) == CellRange("B2:D8") && getPrintArea(xf["Plain"]) === nothing
     @test getPrintArea(xf["Areas"]) == OpenDocumentSpreadsheets.NonContiguousRange("Areas", Union{CellRef,CellRange}[CellRange("A1:B4"), CellRange("D6:E9")])
@@ -95,7 +98,7 @@ end
     s = xf[1]
     s["A1:F40"] = 1
     setPageSetup(s; orientation = :landscape, paperSize = :A4, fitToWidth = 1)
-    @test getPageSetup(s) == (orientation = :landscape, paperSize = 9, scale = nothing, fitToWidth = 1, fitToHeight = 0)
+    @test _ps5(getPageSetup(s)) == (orientation = :landscape, paperSize = 9, scale = nothing, fitToWidth = 1, fitToHeight = 0)
     setPageSetup(s; scale = 75)                                   # scale turns fitting off
     @test getPageSetup(s).scale == 75 && getPageSetup(s).fitToWidth === nothing
     setPageSetup(s; orientation = :portrait)
@@ -111,7 +114,7 @@ end
     @test_throws ODSError setPageMargins(s; left = -1)
     @test_throws ODSError setPageMargins(s; gutter = 1)
     setPrintOptions(s; gridLines = true, headings = true, verticalCentered = true)
-    @test getPrintOptions(s) == (gridLines = true, headings = true, horizontalCentered = false, verticalCentered = true)
+    @test _po4(getPrintOptions(s)) == (gridLines = true, headings = true, horizontalCentered = false, verticalCentered = true)
     setPrintOptions(s; gridLines = false)
     @test !getPrintOptions(s).gridLines && getPrintOptions(s).headings
     @test_throws ODSError setPrintOptions(s; bogus = true)

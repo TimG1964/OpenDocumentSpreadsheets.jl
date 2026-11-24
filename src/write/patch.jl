@@ -793,7 +793,8 @@ function _top_elements(xml::AbstractString)
 end
 
 # The namespace declarations the written XML needs, added to the root's start tag.
-function _ns_splice!(splices, src::AbstractString, rootspan, svg::Bool, loext::Bool; xlink::Bool = false, draw::Bool = false)
+function _ns_splice!(splices, src::AbstractString, rootspan, svg::Bool, loext::Bool; xlink::Bool = false, draw::Bool = false,
+                     calcext::Bool = false)
     roottext = SubString(src, first(rootspan), last(rootspan))
     tagend = first(rootspan) - 1 + _start_tag_end(roottext)
     tagend_at = src[prevind(src, tagend)] == '/' ? prevind(src, tagend) : tagend
@@ -803,6 +804,7 @@ function _ns_splice!(splices, src::AbstractString, rootspan, svg::Bool, loext::B
     loext && !occursin("xmlns:loext=", starttag) && (ns *= " xmlns:loext=\"$_LOEXT_NS\"")
     xlink && !occursin("xmlns:xlink=", starttag) && (ns *= " xmlns:xlink=\"$_XLINK_NS\"")
     draw && !occursin("xmlns:draw=", starttag) && (ns *= " xmlns:draw=\"$_DRAW_NS\"")
+    calcext && !occursin("xmlns:calcext=", starttag) && (ns *= " xmlns:calcext=\"$_CALCEXT_NS\"")
     isempty(ns) || push!(splices, (tagend_at, tagend_at - 1, ns))
     return
 end
@@ -873,7 +875,7 @@ function write_patched_content(out::_ChunkedIO, xf::ODSFile; display::Bool = tru
     splices = _Splice[]
     fx = added_faces_xml(xf.styles)
     _ns_splice!(splices, src, rootspan, !isempty(fx) || _has_notes(xf) || _has_frames(xf), _needs_loext(xf.styles) || _needs_protection_loext(xf) || _has_threads(xf);
-                xlink = _needs_xlink(xf.styles) || _has_frames(xf), draw = _has_frames(xf))
+                xlink = _needs_xlink(xf.styles) || _has_frames(xf), draw = _has_frames(xf), calcext = _has_footers(xf))
     # font faces (phase 4): in office:font-face-decls, which comes before the styles
     stylesnode = get(kids, "office:styles", nothing)
     isempty(fx) || _append_splice!(splices, src, facedecls, "office:font-face-decls", fx,
@@ -933,9 +935,24 @@ function write_patched_content(out::_ChunkedIO, xf::ODSFile; display::Bool = tru
         end
         append!(splices, _name_splices(xf.names, ed, src))
     end
-    # database ranges added by copies (phase 5), through the operations after each copy
-    if !isempty(xf.extras)
-        x = join(_rewritten(xx, xf.ops[n+1:end]) for (xx, n) in xf.extras)
+    # database ranges added by copies (phase 5), through the operations after each copy, and the tables
+    # added or changed (phase 6 step 7): the file's they replace, or that were removed, go
+    de = xf.dbedits
+    if !isempty(xf.extras) || _db_edited(xf)
+        # a file's range changed is written in its place, so the tables keep their order (D-077)
+        repl = Dict{Int,DBRange}(Int(m.order) => m for m in de.model if m.order < 1.0e6 && _db_alive(xf, m))
+        x = join(_rewritten(xx, xf.ops[n+1:end]) for (k, (xx, n)) in enumerate(xf.extras) if !(k in de.removedx)) *
+            join(_db_xml(m) for m in de.model if m.order >= 1.0e6 && _db_alive(xf, m))
+        for k in de.removed
+            sp = _file_dbranges(xf)[k][1]
+            if haskey(repl, k)
+                push!(splices, (first(sp), last(sp), _db_xml(repl[k])))
+            else
+                a = first(sp)
+                while a > 1 && (src[a-1] == ' ' || src[a-1] == '\n' || src[a-1] == '\t' || src[a-1] == '\r'); a -= 1; end
+                push!(splices, (a, last(sp), ""))
+            end
+        end
         k = findlast("</table:database-ranges>", src)
         if k !== nothing
             push!(splices, (first(k), first(k) - 1, x))

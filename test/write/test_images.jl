@@ -42,7 +42,6 @@ end
     @test O_I.getImages(ws)[1].media_name == O_I.getImages(ws)[end].media_name   # red.png
     buf = IOBuffer(read(_im("red.png"))); addImage(ws, "J1", buf); @test position(buf) == 0 && bytesavailable(buf) == 13940
     @test_throws ODSError addImage(ws, "A1", _im("red.png"); inCell = true)         # LibreOffice has none
-    @test_throws ODSError addImage(ws, "A1", _im("red.png"); alt = "x")
     @test_throws ODSError addImage(ws, "A1", IOBuffer(UInt8[1, 2, 3, 4, 5, 6, 7, 8]))
     @test_throws ODSError addImage(ws, "nocell", _im("red.png"))
     @test_throws ODSError deleteImage(ws, "B2:C3")

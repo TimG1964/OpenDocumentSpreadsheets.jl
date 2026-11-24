@@ -55,3 +55,21 @@ getDataValidation
 getDataValidations
 deleteDataValidation
 ```
+
+## Tables
+
+Tables are LibreOffice's database ranges (Data ▸ Define Range), stored as its import stores XLSX.jl's tables (F-062, F-070). LibreOffice has no table styles, and keeps no totals settings: they are read from the totals cells' formulas.
+
+```@docs
+Table
+TableStyleInfo
+tables
+table
+addtable!
+deletetable!
+settotals!
+gettotals
+removetotals!
+appendtable!
+gettablerange
+```

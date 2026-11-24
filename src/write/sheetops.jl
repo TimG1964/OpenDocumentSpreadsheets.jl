@@ -239,19 +239,20 @@ function _copy_database_ranges!(xf::ODSFile, src::String, dst::String, op::Sheet
     if !isnewfile(xf)
         s = xf.content
         rw = isempty(xf.ops) ? nothing : RefRewriter(xf.ops, s)
-        for m in eachmatch(r"<table:database-range\s[^>]*?(?:/>|>.*?</table:database-range>)"s, s)
-            x = String(m.match)
+        for (k, (_, x)) in enumerate(_file_dbranges(xf))
+            k in xf.dbedits.removed && continue           # removed or replaced (phase 6 step 7)
             if rw !== nothing
                 io = IOBuffer(); rewrite_xml(io, RefRewriter(xf.ops, x), x, 1, ncodeunits(x)); x = String(take!(io))
             end
             isempty(x) || push!(current, x)
         end
     end
-    for (x, n) in xf.extras
+    for (k, (x, n)) in enumerate(xf.extras)
+        k in xf.dbedits.removedx && continue
         io = IOBuffer(); rewrite_xml(io, RefRewriter(xf.ops[n+1:end], x), x, 1, ncodeunits(x)); x = String(take!(io))
         isempty(x) || push!(current, x)
     end
-    names = Set{String}()
+    names = Set{String}(m.name for m in xf.dbedits.model)
     for x in current
         m = match(r"table:name=\"([^\"]*)\"", x)
         m === nothing || push!(names, XML.unescape(m.captures[1]))
@@ -376,5 +377,6 @@ function copysheet!(ws::Worksheet, name::AbstractString = "")
         push!(xf.ops, op)                          # orders the settings; its text rewriting is done
         new.opstart = length(xf.ops)
     end
+    _copy_model_dbranges!(xf, ws, new)             # tables added or changed (phase 6 step 7)
     return new
 end

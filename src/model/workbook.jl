@@ -173,6 +173,8 @@ mutable struct ImageData
     height::Float64
     endx::Float64                     # its end within the last cell (table:end-x, -y), cm
     endy::Float64
+    title::String                     # its alt text (svg:title) and description (svg:desc); "" for none (D-076)
+    desc::String
 end
 
 # The frames of one cell changed: the original's pictures removed (by their order among its
@@ -218,6 +220,8 @@ struct ValRule
     error::Union{Nothing,String}
     errorStyle::Symbol
     base::String
+    caseSensitive::Bool                # LibreOffice's own options (D-076): `table:case-sensitive`,
+    sortEntries::Bool                  # and a list's `table:display-list="sort-ascending"`
 end
 
 # A rule of the file's `table:content-validations` (its `table:content-validation` element's span in the
@@ -240,6 +244,33 @@ mutable struct ValEdits
     added::Vector{AddedRule}
 end
 ValEdits() = ValEdits(nothing, AddedRule[])
+
+# Tables (phase 6 step 7, D-077): a database range added or changed, as it is now: its name, sheet, cells,
+# whether its first row holds the labels and its last the totals, its filter buttons, the file's element
+# it replaces ("" if new: its other attributes and children are kept), and its place among the ranges.
+mutable struct DBRange
+    name::String
+    sheet::Any                        # its Worksheet
+    r1::Int
+    c1::Int
+    r2::Int
+    c2::Int
+    header::Bool                      # table:contains-header
+    footer::Bool                      # calcext:contains-footer
+    buttons::Bool                     # table:display-filter-buttons
+    xml::String
+    order::Float64
+end
+
+# The file's database ranges (span, element), once read; those removed or replaced (by index), and the
+# copies' (`ODSFile.extras`) likewise; and the ranges added or changed.
+mutable struct DBEdits
+    file::Union{Nothing,Vector{Tuple{UnitRange{Int},String}}}
+    removed::Set{Int}
+    removedx::Set{Int}
+    model::Vector{DBRange}
+end
+DBEdits() = DBEdits(nothing, Set{Int}(), Set{Int}(), DBRange[])
 
 # The validation names of a sheet's original cells: `nrows` × `ncols` alike cells from (`row`, `col`).
 struct FileValRun
@@ -330,14 +361,15 @@ mutable struct ODSFile
     media::Vector{Tuple{String,String,Vector{UInt8}}}   # pictures added: (Pictures/name, media type, bytes) (phase 6 step 5)
     hasdraw::Union{Nothing,Bool}      # whether the content holds any `<draw:` element, once known (phase 6 step 5)
     valedits::ValEdits                # validation rules read and added (phase 6 step 6)
+    dbedits::DBEdits                  # database ranges (tables) read, added and changed (phase 6 step 7)
 end
 
 ODSFile(source, container, content, version, styles, sheets, names, null_date, use_cache) =
     ODSFile(source, container, content, version, styles, sheets, names, null_date, use_cache, false, nothing,
-            nothing, ReentrantLock(), Any[], Any[], Any[], Pair{String,String}[], NameEdits(), TableStyleEdits(), ViewEdits(), nothing, PageEdits(), nothing, PersonEdits(), Tuple{String,String,Vector{UInt8}}[], nothing, ValEdits())
+            nothing, ReentrantLock(), Any[], Any[], Any[], Pair{String,String}[], NameEdits(), TableStyleEdits(), ViewEdits(), nothing, PageEdits(), nothing, PersonEdits(), Tuple{String,String,Vector{UInt8}}[], nothing, ValEdits(), DBEdits())
 ODSFile(source, container, content, version, styles, sheets, names, null_date, use_cache, writable, source_io) =
     ODSFile(source, container, content, version, styles, sheets, names, null_date, use_cache, writable, source_io,
-            nothing, ReentrantLock(), Any[], Any[], Any[], Pair{String,String}[], NameEdits(), TableStyleEdits(), ViewEdits(), nothing, PageEdits(), nothing, PersonEdits(), Tuple{String,String,Vector{UInt8}}[], nothing, ValEdits())
+            nothing, ReentrantLock(), Any[], Any[], Any[], Pair{String,String}[], NameEdits(), TableStyleEdits(), ViewEdits(), nothing, PageEdits(), nothing, PersonEdits(), Tuple{String,String,Vector{UInt8}}[], nothing, ValEdits(), DBEdits())
 
 #
 # The sheet index is built as far as it is needed: `xf["Sheet1"]` or `xf[1]` finds the first

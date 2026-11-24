@@ -3,8 +3,8 @@
 #
 # Signatures and keywords follow XLSX.jl 0.13.4 (src/table.jl `eachtablerow`, `gettable`;
 # src/read.jl `readtable`, `readto`), MIT License, Copyright (c) 2018-2026 Felipe Noronha
-# Tavares and other contributors. XLSX.jl's `table_name` keyword (Excel tables) has no ODS
-# counterpart yet; ODF database ranges come in a later phase.
+# Tavares and other contributors. `table_name` reads a table: LibreOffice's database range
+# (phase 6 step 7, D-077).
 
 const TABLE_READ_KEYWORDS_DOC = """
 Use `first_row` to give the first row of the table (its header, if `header=true`). Without
@@ -64,7 +64,7 @@ function gettable(ws::Worksheet; infer_eltypes::Bool = true, kw...)
 end
 
 """
-    readtable(source, [sheet, [columns]]; [first_row], [column_labels], [header],
+    readtable(source, [sheet, [columns]]; [table_name], [first_row], [column_labels], [header],
               [infer_eltypes], [stop_in_empty_row], [stop_in_row_function],
               [keep_empty_rows], [normalizenames], [missing_strings]) -> DataTable
 
@@ -74,19 +74,40 @@ on `sheet` (a name or number; the first sheet if not given) of the file opened w
 
 $TABLE_READ_KEYWORDS_DOC
 
+`table_name` reads a table (see [`table`](@ref)) instead: its data rows, without its header and
+totals rows, as [`gettable`](@ref) reads a [`Table`](@ref), from `sheet` or, if none is given, from
+the workbook. The table's range is its own, so `columns`, `first_row`, `header`, `column_labels`,
+`stop_in_empty_row`, `stop_in_row_function` and `keep_empty_rows` don't apply (`columns` with
+`table_name` is an error).
+
 `enable_cache` is accepted for compatibility with XLSX.jl and ignored.
 """
 function readtable(source::Union{AbstractString,IO}, sheet::Union{AbstractString,Integer},
-                   cols::Union{ColumnRange,AbstractString}; enable_cache::Bool = false, kw...)
+                   cols::Union{ColumnRange,AbstractString}; enable_cache::Bool = false,
+                   table_name::Union{Nothing,AbstractString} = nothing, kw...)
+    table_name === nothing || throw(ODSError("Give `columns` or `table_name`, not both: a table's range is its own."))
     xf = _open_through(source, sheet)
     return gettable(getsheet(xf, sheet), cols; kw...)
 end
 function readtable(source::Union{AbstractString,IO}, sheet::Union{AbstractString,Integer};
-                   enable_cache::Bool = false, kw...)
+                   enable_cache::Bool = false, table_name::Union{Nothing,AbstractString} = nothing, kw...)
+    table_name === nothing || return _read_named_table(source, sheet, table_name; kw...)
     xf = _open_through(source, sheet)
     return gettable(getsheet(xf, sheet); kw...)
 end
-readtable(source::Union{AbstractString,IO}; kw...) = readtable(source, 1; kw...)
+function readtable(source::Union{AbstractString,IO}; table_name::Union{Nothing,AbstractString} = nothing, kw...)
+    table_name === nothing || return _read_named_table(source, nothing, table_name; kw...)
+    return readtable(source, 1; kw...)
+end
+
+# A table's data rows from a file: the whole content is read, as the tables follow the sheets.
+function _read_named_table(source, sheet, name::AbstractString; infer_eltypes::Bool = true, normalizenames::Bool = false,
+                           missing_strings = nothing, kw...)
+    source isa AbstractString && !isfile(source) && throw(ODSError("File $source not found."))
+    xf = _open_bytes(read(source), source isa AbstractString ? String(source) : "IO", false)
+    t = sheet === nothing ? table(xf, name) : table(getsheet(xf, sheet), name)
+    return gettable(t; infer_eltypes, normalizenames, missing_strings)
+end
 
 """
     readto(source, [sheet, [columns]], sink; kw...)

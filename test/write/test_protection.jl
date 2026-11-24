@@ -8,6 +8,7 @@ using OpenDocumentSpreadsheets: isSheetProtected, getSheetProtection, getCellPro
     getWorkbookProtection, ODSError, renamesheet!, copysheet!
 
 const PROT = joinpath(DATA, "protection")
+_lh(p) = (locked = p.locked, hidden = p.hidden)      # XLSX.jl's fields (LibreOffice's own: test_lo_options.jl)
 
 @testset "LibreOffice's protection, read (experiment 025)" begin
     own = readods(joinpath(PROT, "lo-prot-own.fods"))
@@ -18,11 +19,11 @@ const PROT = joinpath(DATA, "protection")
     @test p.selectLockedCells && p.selectUnlockedCells && !p.insertRows && !p.sort
     @test isWorkbookProtected(own) && getWorkbookProtection(own) == (password = true, structure = true, windows = false)
     c = own["Cells"]
-    @test getCellProtection(c, "A1") == (locked = true, hidden = false)            # unformatted: locked
-    @test getCellProtection(c, "B2") == (locked = false, hidden = false)
-    @test getCellProtection(c, "C3") == (locked = true, hidden = true)
-    @test getCellProtection(c, "A4") == (locked = false, hidden = true)
-    @test getCellProtection(c, "A3") == (locked = true, hidden = true)             # LibreOffice's "hide all"
+    @test _lh(getCellProtection(c, "A1")) == (locked = true, hidden = false)            # unformatted: locked
+    @test _lh(getCellProtection(c, "B2")) == (locked = false, hidden = false)
+    @test _lh(getCellProtection(c, "C3")) == (locked = true, hidden = true)
+    @test _lh(getCellProtection(c, "A4")) == (locked = false, hidden = true)
+    @test _lh(getCellProtection(c, "A3")) == (locked = true, hidden = true)             # LibreOffice's "hide all"
     # its import of XLSX.jl's file: 8 of the 15 permissions; workbook protection dropped
     im = readods(joinpath(PROT, "lo-prot-xlsx-import.fods"))
     @test !isWorkbookProtected(im) && getWorkbookProtection(im) === nothing
@@ -107,8 +108,8 @@ end
     setCellProtection(s, "B2"; locked = false)
     setCellProtection(s, "B2:C3"; hidden = true)                           # B2 stays unlocked
     setCellProtection(xf, "S.A:A"; locked = false)                         # a whole column
-    @test getCellProtection(s, "B2") == (locked = false, hidden = true) && getCellProtection(s, "C3") == (locked = true, hidden = true)
-    @test getCellProtection(s, 1000, 1) == (locked = false, hidden = false) && getCellProtection(xf, "S.D9") == (locked = true, hidden = false)
+    @test _lh(getCellProtection(s, "B2")) == (locked = false, hidden = true) && _lh(getCellProtection(s, "C3")) == (locked = true, hidden = true)
+    @test _lh(getCellProtection(s, 1000, 1)) == (locked = false, hidden = false) && _lh(getCellProtection(xf, "S.D9")) == (locked = true, hidden = false)
     @test_throws ODSError setCellProtection(s, "B2"; bogus = true)
     # a new file keeps them all
     protectSheet(s; password = "x")
@@ -116,7 +117,7 @@ end
     for ext in ("ods", "fods")
         r = readods(writeods(joinpath(mktempdir(), "p.$ext"), xf))
         @test getSheetProtection(r["S"]).password && isWorkbookProtected(r) && getWorkbookProtection(r).password
-        @test getCellProtection(r["S"], "B2") == (locked = false, hidden = true) && getCellProtection(r["S"], "A500").locked == false
+        @test _lh(getCellProtection(r["S"], "B2")) == (locked = false, hidden = true) && getCellProtection(r["S"], "A500").locked == false
     end
     # copies and renames keep it
     c = copysheet!(s, "Copy")
@@ -161,7 +162,7 @@ end
     xf = openods(src; mode = "rw")
     setCellProtection(xf["Cells"], "B2"; locked = true)
     r = readods(writeods(joinpath(dir, "e.fods"), xf))
-    @test getCellProtection(r["Cells"], "B2").locked && getCellProtection(r["Cells"], "A4") == (locked = false, hidden = true)
+    @test getCellProtection(r["Cells"], "B2").locked && _lh(getCellProtection(r["Cells"], "A4")) == (locked = false, hidden = true)
     @test read(writeods(joinpath(dir, "u.fods"), openods(src; mode = "rw")), String) == orig
 end
 
@@ -187,12 +188,12 @@ end
         lo = readods(joinpath(dir, "lo", "new.fods"))
         p = getSheetProtection(lo["A"])
         @test p.password && p.insertColumns && p.autoFilter && !p.selectLockedCells && p.selectUnlockedCells && !isSheetProtected(lo["B"])
-        @test getCellProtection(lo["A"], "B2") == (locked = false, hidden = false) && getCellProtection(lo["A"], "C3") == (locked = true, hidden = true)
+        @test _lh(getCellProtection(lo["A"], "B2")) == (locked = false, hidden = false) && _lh(getCellProtection(lo["A"], "C3")) == (locked = true, hidden = true)
         @test getWorkbookProtection(lo) == (password = true, structure = true, windows = false)
         t = read(joinpath(dir, "lo", "new.fods"), String)
         @test occursin(OpenDocumentSpreadsheets._protection_key("secret"), t) && occursin(OpenDocumentSpreadsheets._protection_key("book"), t)
         lp = readods(joinpath(dir, "lo", "patched.fods"))
         @test !isSheetProtected(lp["Secret"]) && getSheetProtection(lp["Open"]).deleteRows && !isWorkbookProtected(lp)
-        @test getCellProtection(lp["Open"], "A1") == (locked = true, hidden = true)
+        @test _lh(getCellProtection(lp["Open"], "A1")) == (locked = true, hidden = true)
     end
 end

@@ -28,6 +28,8 @@ function _write_body(io::IO, xf::ODSFile; display::Bool = true)
     foreach(ws -> write_table(io, ws; display), xf.sheets)
     isempty(xf.persons.added) || print(io, "<loext:persons>", _persons_xml(xf.persons.added), "</loext:persons>")   # threads' people (phase 6 step 4)
     isempty(xf.names) || print(io, "<table:named-expressions>", _names_xml(xf.names), "</table:named-expressions>")
+    dbx = _db_model_xml(xf)                          # tables (phase 6 step 7), after the names (F-062)
+    isempty(dbx) || print(io, "<table:database-ranges>", dbx, "</table:database-ranges>")
     print(io, "</office:spreadsheet></office:body>")
     return nothing
 end
@@ -41,7 +43,8 @@ function _faces(xf::ODSFile)
     lx = _needs_loext(xf.styles) || _needs_protection_loext(xf) || _has_threads(xf) ? " xmlns:loext=\"$_LOEXT_NS\"" : ""
     sx = !isempty(fx) || _has_notes(xf) || _has_frames(xf) ? " xmlns:svg=\"$_SVG_NS\"" : ""
     dx = _has_frames(xf) ? " xmlns:draw=\"$_DRAW_NS\"" : ""         # pictures (phase 6 step 5)
-    return (sx * lx * dx, isempty(fx) ? "" : "<office:font-face-decls>$fx</office:font-face-decls>")
+    cx = _has_footers(xf) ? " xmlns:calcext=\"$_CALCEXT_NS\"" : ""   # tables' totals rows (phase 6 step 7)
+    return (sx * lx * dx * cx, isempty(fx) ? "" : "<office:font-face-decls>$fx</office:font-face-decls>")
 end
 
 # A new file's content.xml, written to `io` as it is made (D-048). The styles come first:
