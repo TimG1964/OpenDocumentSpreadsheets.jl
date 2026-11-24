@@ -100,6 +100,7 @@ include("write/notes.jl")
 include("write/images.jl")
 include("write/validation.jl")
 include("write/dbtables.jl")
+include("write/autofilter.jl")
 include("write/save.jl")
 include("write/stream.jl")
 include("write/writetable.jl")
@@ -138,7 +139,8 @@ export
     addThreadedComment, addThreadedReply, setThreadedCommentResolved, deleteThreadedComment,
     addImage, deleteImage,
     addDataValidation, deleteDataValidation,
-    addtable!, deletetable!, settotals!, gettotals, removetotals!, appendtable!, gettablerange
+    addtable!, deletetable!, settotals!, gettotals, removetotals!, appendtable!, gettablerange,
+    setAutoFilter, removeAutoFilter
 
 @static if VERSION >= v"1.11"
     eval(Meta.parse("public getcell, getcellrange, getFormula, get_dimension, ODSError, Cell, EmptyCell, DataTable, TableRow, TableRowIterator, SheetRow, StreamWriter, StreamSheet, " *
@@ -148,7 +150,7 @@ export
                     "getPageSetup, getPageMargins, getPrintOptions, getPrintArea, getPrintTitles, getHeaderFooter, " *
                     "getDocumentProperties, getCustomProperty, getCustomProperties, " *
                     "getHyperlink, getHyperlinks, getComment, getComments, getThreadedComment, getThreadedComments, getImages, getDataValidation, getDataValidations, " *
-                    "Table, TableStyleInfo, table, tables"))
+                    "Table, TableStyleInfo, table, tables, getAutoFilter"))
 end
 
 include("precompile.jl")

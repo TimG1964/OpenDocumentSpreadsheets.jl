@@ -104,9 +104,17 @@ The formatting functions work as in XLSX.jl too, with the differences listed in
   totals cell's setting is read from its formula, written as LibreOffice saves a structured
   reference (`SUBTOTAL(109,$Sheet.$B$2:$B$5)`). As in LibreOffice, a table's name is formed as a
   defined name's but is apart from them, tables may overlap, and a table may be its header alone.
+- **AutoFilters** ([`setAutoFilter`](@ref), [`getAutoFilter`](@ref), [`removeAutoFilter`](@ref)) take
+  XLSX.jl's arguments and criteria, stored in the sheet's anonymous database range as LibreOffice
+  stores them. Rows are hidden as LibreOffice's Refresh Range hides them, not as Excel does: text
+  LibreOffice reads as a number (`"10"`, `"2026-11-23"`) is compared with numbers by value, list
+  items are compared as text (a date matches only at midnight), and rankings count text and
+  errors. LibreOffice can't store above- or below-average or relative-date filters, so they are
+  errors. `removeAutoFilter` shows every row of the range, as LibreOffice does.
 - **LibreOffice's own options** are keywords and fields of the XLSX.jl functions they belong with
   (D-076): a validation's `caseSensitive` and `sortEntries`, cell protection's `hideAll` and
   `hidePrint`, a note's `date`, a picture's `alt` and `description`, any paper size
-  (`paperWidth`, `paperHeight`), `scaleToPages`, six more print options, and a table's
-  `has_header_row` and `filterButtons`.
-- **Not yet available:** conditional formats, charts, and autofilters and sorts (phase 6).
+  (`paperWidth`, `paperHeight`), `scaleToPages`, six more print options, a table's
+  `has_header_row` and `filterButtons`, and a filter's `caseSensitive`, `noDuplicates` and regular
+  expressions.
+- **Not yet available:** conditional formats, charts, and sorts (phase 6).
