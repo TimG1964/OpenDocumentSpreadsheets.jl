@@ -4,7 +4,7 @@ CurrentModule = OpenDocumentSpreadsheets
 
 # API reference: links, notes and objects
 
-Hyperlinks, notes and threaded comments, and pictures (phase 6).
+Hyperlinks, notes and threaded comments, pictures, and data validation (phase 6).
 
 ## Hyperlinks
 
@@ -43,4 +43,15 @@ Pictures anchored in cells, resizing with them, as LibreOffice's import places X
 addImage
 getImages
 deleteImage
+```
+
+## Data validation
+
+The rules of LibreOffice's Data ▸ Validity, stored as its import stores XLSX.jl's (F-061, F-068):
+
+```@docs
+addDataValidation
+getDataValidation
+getDataValidations
+deleteDataValidation
 ```

@@ -398,6 +398,7 @@ function _rewrite_model_refs!(xf::ODSFile, op::RefOp)
         ln === nothing || (ws.localnames = [_rewrite_name(dn, op) for dn in ln])
     end
     xf.names = [_rewrite_name(dn, op) for dn in xf.names]
+    _rewrite_rule_refs!(xf, op)                        # validations added (phase 6 step 6)
     return
 end
 
@@ -482,6 +483,8 @@ function shift_lines!(ws::Worksheet, axis::Int, at::Int, n::Int)
     d1 = at; d2 = at - n - 1
     # shapes in deleted cells that reach beyond them stay, in the cell now at their place (F-060)
     rescued = n < 0 ? _rescued_frames(ws, axis, d1, d2) : nothing
+    # validations: inserted cells take those of the line before them (F-068)
+    vcopy = n > 0 && at > 1 ? _line_vals(ws, axis, at - 1) : nothing
     # formulas are rewritten where their cells are now: split the runs at the edges first
     if n < 0
         if axis == 1
@@ -545,6 +548,7 @@ function shift_lines!(ws::Worksheet, axis::Int, at::Int, n::Int)
         n > 0 ? insert_lines!(m, at, n) : delete_lines!(m, d1, d2)
     end
     _shift_frames!(ws, axis, at, n, rescued)          # pictures (phase 6 step 5): after the edits moved
+    _shift_valrects!(ws, axis, at, n, vcopy)          # validations (phase 6 step 6): likewise
     isnewfile(xf) || push!(xf.ops, op)
     return ws
 end

@@ -24,6 +24,7 @@ _meta_body(xf::ODSFile) = xf.meta === nothing ? _meta_body() : _meta_element(xf)
 
 function _write_body(io::IO, xf::ODSFile; display::Bool = true)
     print(io, "<office:body><office:spreadsheet", _wb_protection_attrs_xml(xf), ">")   # structure protection (phase 5 step 9)
+    print(io, _rules_xml(xf))                        # validations (phase 6 step 6)
     foreach(ws -> write_table(io, ws; display), xf.sheets)
     isempty(xf.persons.added) || print(io, "<loext:persons>", _persons_xml(xf.persons.added), "</loext:persons>")   # threads' people (phase 6 step 4)
     isempty(xf.names) || print(io, "<table:named-expressions>", _names_xml(xf.names), "</table:named-expressions>")

@@ -226,7 +226,7 @@ function _model_last_row(st::_PatchState)
         end
         i >= 1 && (r = max(r, _stop(f.rows[i])))
     end
-    return r
+    return max(r, _val_lastrow(st.ws))
 end
 
 # After the last original row (at src index `at`): the rows of the model beyond it (all of
@@ -485,8 +485,9 @@ end
 # (`nothing` past the row's cells).
 function _write_model_cols!(st::_PatchState, r::Int, x::Int, y::Int, celltext, rowdefault::Bool)
     ne = _cell_edits_in(st.ws, r, x, y)
-    isempty(ne) ? _write_model_cells!(st.out, st, r, x, y, celltext, rowdefault) :
-                  _write_noted_cols!(st, r, x, y, celltext, rowdefault, nothing, 0, 0, ne)
+    vs = _val_layer_in(st.ws, r, x, y)
+    isempty(ne) && isempty(vs) ? _write_model_cells!(st.out, st, r, x, y, celltext, rowdefault) :
+                                 _write_noted_cols!(st, r, x, y, celltext, rowdefault, nothing, 0, 0, ne, vs)
     return
 end
 
@@ -496,7 +497,8 @@ end
 function _write_model_cols!(st::_PatchState, r::Int, x::Int, y::Int, celltext, rowdefault::Bool,
                             ex::_CellExtras, row::Int, col::Int)
     ne = _cell_edits_in(st.ws, r, x, y)
-    isempty(ne) || return _write_noted_cols!(st, r, x, y, celltext, rowdefault, ex, row, col, ne)
+    vs = _val_layer_in(st.ws, r, x, y)
+    (isempty(ne) && isempty(vs)) || return _write_noted_cols!(st, r, x, y, celltext, rowdefault, ex, row, col, ne, vs)
     _write_with_extras!(st, r, x, y, celltext, rowdefault, ex, row, col)
     return
 end
@@ -588,7 +590,7 @@ function _write_edited_row!(st::_PatchState, ln::XML.LazyNode, text::SubString{S
     end
     # edited columns beyond the row's cells, as far as the model has cells
     lastm = max(_lastcol(_runs_of(st.store.rows, a)), st.fmt === nothing ? 0 : _lastcol(_runs_of(st.fmt.cells, a)),
-                rf === nothing ? 0 : Int(rf.ncells))
+                rf === nothing ? 0 : Int(rf.ncells), _val_lastcol(st.ws, a))
     while ci <= length(cols)
         x = max(first(cols[ci]), col); y = min(last(cols[ci]), lastm)
         if y >= x
@@ -906,6 +908,9 @@ function write_patched_content(out::_ChunkedIO, xf::ODSFile; display::Bool = tru
             push!(splices, (at, at - 1, io -> foreach(ws -> _write_sheet(io, ws, rw; display), newsheets)))
         end
     end
+    # validations (phase 6 step 6): before the tables, so first among splices at the same place
+    ft = isempty(spans) ? _spreadsheet_end(body, src) : minimum(first, values(spans))
+    prepend!(splices, _rules_splices(xf, ft))
     # the threads' people (phase 6 step 4): added to the file's loext:persons, or in a new one after the
     # tables (before the names, as LibreOffice writes them)
     if !isempty(xf.persons.added)
@@ -1055,17 +1060,33 @@ function _spreadsheet_end(body, src::String)
 end
 
 # Columns x:y of row r where some cells' notes or frames changed (D-073, D-074; `ne`: column => edit,
-# sorted): each such cell written alone, its note and frames in place of the original's (`ex`).
+# sorted) or a validation was set or removed (D-075; `vs`, from `_val_layer_in`): each noted cell
+# written alone, its note and frames in place of the original's (`ex`), and each validation segment
+# with its validation in place of the original's.
 function _write_noted_cols!(st::_PatchState, r::Int, x::Int, y::Int, celltext, rowdefault::Bool,
-                            ex::Union{Nothing,_CellExtras}, row::Int, col::Int, ne)
-    pos = x
-    seg(a, b) = ex === nothing ? _write_model_cells!(st.out, st, r, a, b, celltext, rowdefault) :
-                                 _write_with_extras!(st, r, a, b, celltext, rowdefault, ex, row, col + (a - x))
-    for (c, e) in ne
-        c > pos && seg(pos, c - 1)
-        _write_with_extras!(st, r, c, c, celltext, rowdefault, _with_edit(ex, e, st.ws), row, col + (c - x))
-        pos = c + 1
+                            ex::Union{Nothing,_CellExtras}, row::Int, col::Int, ne, vs)
+    pts = Int[x, y + 1]
+    for (c, _) in ne
+        push!(pts, c, c + 1)
     end
-    pos <= y && seg(pos, y)
+    for (a, b, _) in vs
+        push!(pts, a, b + 1)
+    end
+    sort!(unique!(pts))
+    for k in 1:length(pts)-1
+        a = pts[k]; b = pts[k+1] - 1
+        ex2 = ex
+        if a == b
+            i = findfirst(p -> first(p) == a, ne)
+            i === nothing || (ex2 = _with_edit(ex2, last(ne[i]), st.ws))
+        end
+        j = findfirst(v -> v[1] <= a <= v[2], vs)
+        j === nothing || (ex2 = _with_val(ex2, vs[j][3]))
+        if ex2 === nothing
+            _write_model_cells!(st.out, st, r, a, b, celltext, rowdefault)
+        else
+            _write_with_extras!(st, r, a, b, celltext, rowdefault, ex2, row, col + (a - x))
+        end
+    end
     return
 end

@@ -41,7 +41,7 @@ end
 # nothing.
 function _write_inserted_rows!(st::_PatchState, a::Int, b::Int)
     a > b && return
-    write_model_rows(st.out, st.store, st.fmt, st.styles, a; display = st.display, upto = b, pad = true)
+    write_model_rows(st.out, st.store, st.fmt, st.styles, a; display = st.display, upto = b, pad = true, ws = st.ws)
     return
 end
 
@@ -50,7 +50,7 @@ function _write_new_rows_mapped!(st::_PatchState, at::Function)
     st.new_rows_written && return
     st.new_rows_written = true
     _copy_to!(st, at())
-    write_model_rows(st.out, st.store, st.fmt, st.styles, st.nextrow; display = st.display)
+    write_model_rows(st.out, st.store, st.fmt, st.styles, st.nextrow; display = st.display, ws = st.ws)
     return
 end
 
@@ -338,7 +338,8 @@ function _write_row_mapped!(st::_PatchState, ln::XML.LazyNode, text::SubString{S
     end
     done && return                 # the rest, end tag included, was copied
     # beyond the original cells: the model's cells there (inserted or moved columns, edits)
-    lastm =max(_lastcol(_runs_of(st.store.rows, a)), _lastcol(_runs_of(st.fmt.cells, a)), rf === nothing ? 0 : Int(rf.ncells))
+    lastm = max(_lastcol(_runs_of(st.store.rows, a)), _lastcol(_runs_of(st.fmt.cells, a)), rf === nothing ? 0 : Int(rf.ncells),
+                _val_lastcol(st.ws, a))
     if cm !== nothing
         lastm >= cur && _write_model_cols!(st, a, cur, lastm, nothing, rowdefault)
     else

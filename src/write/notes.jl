@@ -147,20 +147,37 @@ _edit_tail(ws::Worksheet, e::CellEdit) = e.frames === nothing ? "" : _frames_xml
 
 # `write_merged_cells` for columns x:y, with the cells of `nc` (column => edit) written alone, each
 # with its note and frames (a new file's rows; rows added after a file's last).
-function _write_noted_cells(io::IO, styles::StyleIndex, vals, emps, x::Int, y::Int, rowdefault::Bool, coldefault, nc, ws::Worksheet;
+function _write_noted_cells(io::IO, styles::StyleIndex, vals, emps, x::Int, y::Int, rowdefault::Bool, coldefault, nc, vs, ws::Worksheet;
                             display::Bool = true)
     gap(o) = n -> write_cell(o, nothing, styles; repeat = n)
-    pos = x
-    for (c, e) in nc
-        c > pos && write_merged_cells(io, styles, vals, emps, pos, c - 1, rowdefault, coldefault, gap(io); display)
-        buf = IOBuffer()
-        write_merged_cells(buf, styles, vals, emps, c, c, rowdefault, coldefault, gap(buf); display)
-        frag = String(take!(buf))
-        lead = _edit_lead(e); tail = _edit_tail(ws, e)
-        print(io, isempty(lead) && isempty(tail) ? frag : _with_children(frag, lead, tail))
-        pos = c + 1
+    pts = Int[x, y + 1]                        # cells with edits alone; validation segments (D-075)
+    for (c, _) in nc
+        push!(pts, c, c + 1)
     end
-    pos <= y && write_merged_cells(io, styles, vals, emps, pos, y, rowdefault, coldefault, gap(io); display)
+    for (a, b, _) in vs
+        push!(pts, a, b + 1)
+    end
+    sort!(unique!(pts))
+    for k in 1:length(pts)-1
+        a = pts[k]; b = pts[k+1] - 1
+        i = a == b ? findfirst(p -> first(p) == a, nc) : nothing
+        j = findfirst(v -> v[1] <= a <= v[2], vs)
+        val = j === nothing ? nothing : vs[j][3]
+        if i === nothing && val === nothing
+            write_merged_cells(io, styles, vals, emps, a, b, rowdefault, coldefault, gap(io); display)
+            continue
+        end
+        buf = IOBuffer()
+        write_merged_cells(buf, styles, vals, emps, a, b, rowdefault, coldefault, gap(buf); display)
+        frag = String(take!(buf))
+        val === nothing || (frag = _with_validation(frag, _val_attr(val)))
+        if i !== nothing
+            e = last(nc[i])
+            lead = _edit_lead(e); tail = _edit_tail(ws, e)
+            (isempty(lead) && isempty(tail)) || (frag = _with_children(frag, lead, tail))
+        end
+        print(io, frag)
+    end
     return
 end
 

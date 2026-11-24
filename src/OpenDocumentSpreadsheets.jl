@@ -98,6 +98,7 @@ include("write/docprops.jl")
 include("write/hyperlinks.jl")
 include("write/notes.jl")
 include("write/images.jl")
+include("write/validation.jl")
 include("write/save.jl")
 include("write/stream.jl")
 include("write/writetable.jl")
@@ -134,7 +135,8 @@ export
     addHyperlink, deleteHyperlink,
     addComment, deleteComment,
     addThreadedComment, addThreadedReply, setThreadedCommentResolved, deleteThreadedComment,
-    addImage, deleteImage
+    addImage, deleteImage,
+    addDataValidation, deleteDataValidation
 
 @static if VERSION >= v"1.11"
     eval(Meta.parse("public getcell, getcellrange, getFormula, get_dimension, ODSError, Cell, EmptyCell, DataTable, TableRow, TableRowIterator, SheetRow, StreamWriter, StreamSheet, " *
@@ -143,7 +145,7 @@ export
                     "isSheetProtected, getSheetProtection, getCellProtection, isWorkbookProtected, getWorkbookProtection, " *
                     "getPageSetup, getPageMargins, getPrintOptions, getPrintArea, getPrintTitles, getHeaderFooter, " *
                     "getDocumentProperties, getCustomProperty, getCustomProperties, " *
-                    "getHyperlink, getHyperlinks, getComment, getComments, getThreadedComment, getThreadedComments, getImages"))
+                    "getHyperlink, getHyperlinks, getComment, getComments, getThreadedComment, getThreadedComments, getImages, getDataValidation, getDataValidations"))
 end
 
 include("precompile.jl")

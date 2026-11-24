@@ -428,7 +428,10 @@ function write_model_rows(io::IO, s::SheetStore, f::SheetFormats, styles::StyleI
     _row_bounds!(bps, s.rows, from, last)
     _row_bounds!(bps, f.cells, from, last)
     _row_bounds!(bps, f.rows, from, last)
-    ws === nothing || _edit_bounds!(bps, ws, from, last)        # a row with notes or frames is written alone (D-073, D-074)
+    if ws !== nothing
+        _edit_bounds!(bps, ws, from, last)        # a row with notes or frames is written alone (D-073, D-074)
+        _val_bounds!(bps, ws, from, last)         # validation blocks start and end segments (D-075)
+    end
     if isempty(bps)
         pad || return from
         _write_empty_rows(io, upto - from + 1)
@@ -441,23 +444,24 @@ function write_model_rows(io::IO, s::SheetStore, f::SheetFormats, styles::StyleI
         vals = _runs_of(s.rows, a)
         emps = _runs_of(f.cells, a)
         rf = _fmt_at(f.rows, a)
-        (isempty(vals) && isempty(emps) && (rf === nothing || _isblank(rf))) && continue
+        (isempty(vals) && isempty(emps) && (rf === nothing || _isblank(rf)) && (ws === nothing || !_val_row(ws, a))) && continue
         _write_empty_rows(io, a - next)
         print(io, "<table:table-row")
         rf === nothing || _write_line_attrs(io, rf, styles)
         b > a && print(io, " table:number-rows-repeated=\"", b - a + 1, "\"")
         print(io, '>')
-        lastc = max(_lastcol(vals), _lastcol(emps), rf === nothing ? 0 : Int(rf.ncells))
+        lastc = max(_lastcol(vals), _lastcol(emps), rf === nothing ? 0 : Int(rf.ncells), ws === nothing ? 0 : _val_lastcol(ws, a))
         if lastc == 0
             print(io, "<table:table-cell/>")
         else
             rowdefault = rf !== nothing && rf.default >= 0
             nc = _cell_edits_in(ws, a, 1, lastc)
-            if isempty(nc)
+            vs = ws === nothing ? _NO_VAL_SEGS : _val_layer_in(ws, a, 1, lastc)
+            if isempty(nc) && isempty(vs)
                 write_merged_cells(io, styles, vals, emps, 1, lastc, rowdefault, (p, q) -> _any_col_default(f.cols, p, q),
                                    n -> write_cell(io, nothing, styles; repeat = n); display)
             else
-                _write_noted_cells(io, styles, vals, emps, 1, lastc, rowdefault, (p, q) -> _any_col_default(f.cols, p, q), nc, ws; display)
+                _write_noted_cells(io, styles, vals, emps, 1, lastc, rowdefault, (p, q) -> _any_col_default(f.cols, p, q), nc, vs, ws; display)
             end
         end
         print(io, "</table:table-row>")
@@ -514,6 +518,11 @@ function _write_table_flat(io::IO, ws::Worksheet; display::Bool = true)
             ncols = max(ncols, _lastcol(rd.runs))
         end
         isempty(f.cols) || (ncols = max(ncols, _stop(f.cols[end])))
+        if ws.valrects !== nothing                 # columns validations reach (D-075)
+            for (rr, cc, v) in ws.valrects
+                (v === nothing || isempty(rr) || isempty(cc)) || (ncols = max(ncols, last(cc)))
+            end
+        end
         write_columns(io, f.cols, styles, 1, ncols)
         write_model_rows(io, s, f, styles, 1; display, ws) == 1 && print(io, _EMPTY_ROW)
     end

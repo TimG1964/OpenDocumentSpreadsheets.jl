@@ -201,6 +201,58 @@ struct FileFrame
     xml::String                       # the element, as written
 end
 
+# Data validation (phase 6 step 6, D-075). A rule, as XLSX.jl's `DataValidationInfo` gives its fields (but
+# its sheet and cells), and its base cell (`table:base-cell-address`, as written).
+struct ValRule
+    type::Symbol
+    operator::Union{Nothing,Symbol}
+    formula1::Union{Nothing,String}
+    formula2::Union{Nothing,String}
+    allowBlank::Bool
+    dropdown::Bool
+    showInputMessage::Bool
+    promptTitle::Union{Nothing,String}
+    prompt::Union{Nothing,String}
+    showErrorMessage::Bool
+    errorTitle::Union{Nothing,String}
+    error::Union{Nothing,String}
+    errorStyle::Symbol
+    base::String
+end
+
+# A rule of the file's `table:content-validations` (its `table:content-validation` element's span in the
+# content), and one added: its sheet and base cell (moved with inserts and deletes; the XML is written
+# when saved, with the sheet's name then).
+struct FileRule
+    name::String
+    span::UnitRange{Int}
+    rule::ValRule
+end
+mutable struct AddedRule
+    name::String
+    rule::ValRule
+    sheet::Any                        # the Worksheet
+    row::Int
+    col::Int
+end
+mutable struct ValEdits
+    file::Union{Nothing,Vector{FileRule}}   # read on first use
+    added::Vector{AddedRule}
+end
+ValEdits() = ValEdits(nothing, AddedRule[])
+
+# The validation names of a sheet's original cells: `nrows` × `ncols` alike cells from (`row`, `col`).
+struct FileValRun
+    row::Int
+    nrows::Int
+    col::Int
+    ncols::Int
+    name::String
+end
+
+# Cells given a rule (its name) or none (nothing) since, in order: the last that holds a cell is its.
+const ValRect = Tuple{UnitRange{Int},UnitRange{Int},Union{Nothing,String}}
+
 """
     Worksheet
 
@@ -232,11 +284,13 @@ mutable struct Worksheet
     mayextras::Union{Nothing,Bool}   # whether its original table may hold cell extras, once known (D-071)
     frames::Union{Nothing,Dict{Tuple{Int,Int},FrameEdit}}   # pictures added, removed or moved, by cell (phase 6 step 5)
     fileframes::Union{Nothing,Vector{FileFrame}}   # the shapes its file holds, once read
+    valrects::Union{Nothing,Vector{ValRect}}   # validations set or removed, by block of cells (phase 6 step 6)
+    filevals::Union{Nothing,Vector{FileValRun}}   # the validations of its file's cells, once read
 end
 
 Worksheet(xf, name, index, entry, visible, store, localnames, lock) =
     Worksheet(xf, name, index, entry, visible, store, localnames, lock, Dict{Int,Vector{Int}}(), nothing, nothing, nothing, 0, false,
-              NameEdits(), nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing)
+              NameEdits(), nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing)
 
 # Whether the sheet was made by OpenDocumentSpreadsheets (so it is written whole), not read from the file.
 isnewsheet(ws::Worksheet) = ws.entry === nothing
@@ -275,14 +329,15 @@ mutable struct ODSFile
     persons::PersonEdits              # the threads' people (phase 6 step 4)
     media::Vector{Tuple{String,String,Vector{UInt8}}}   # pictures added: (Pictures/name, media type, bytes) (phase 6 step 5)
     hasdraw::Union{Nothing,Bool}      # whether the content holds any `<draw:` element, once known (phase 6 step 5)
+    valedits::ValEdits                # validation rules read and added (phase 6 step 6)
 end
 
 ODSFile(source, container, content, version, styles, sheets, names, null_date, use_cache) =
     ODSFile(source, container, content, version, styles, sheets, names, null_date, use_cache, false, nothing,
-            nothing, ReentrantLock(), Any[], Any[], Any[], Pair{String,String}[], NameEdits(), TableStyleEdits(), ViewEdits(), nothing, PageEdits(), nothing, PersonEdits(), Tuple{String,String,Vector{UInt8}}[], nothing)
+            nothing, ReentrantLock(), Any[], Any[], Any[], Pair{String,String}[], NameEdits(), TableStyleEdits(), ViewEdits(), nothing, PageEdits(), nothing, PersonEdits(), Tuple{String,String,Vector{UInt8}}[], nothing, ValEdits())
 ODSFile(source, container, content, version, styles, sheets, names, null_date, use_cache, writable, source_io) =
     ODSFile(source, container, content, version, styles, sheets, names, null_date, use_cache, writable, source_io,
-            nothing, ReentrantLock(), Any[], Any[], Any[], Pair{String,String}[], NameEdits(), TableStyleEdits(), ViewEdits(), nothing, PageEdits(), nothing, PersonEdits(), Tuple{String,String,Vector{UInt8}}[], nothing)
+            nothing, ReentrantLock(), Any[], Any[], Any[], Pair{String,String}[], NameEdits(), TableStyleEdits(), ViewEdits(), nothing, PageEdits(), nothing, PersonEdits(), Tuple{String,String,Vector{UInt8}}[], nothing, ValEdits())
 
 #
 # The sheet index is built as far as it is needed: `xf["Sheet1"]` or `xf[1]` finds the first
