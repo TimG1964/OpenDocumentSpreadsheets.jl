@@ -34,7 +34,7 @@ struct _FmtSection
 end
 
 const _FMT_COLORS = ("black", "blue", "cyan", "green", "magenta", "red", "white", "yellow")
-const _FMT_CONDITION = r"^(<=|>=|<>|<|>|=)\s*(-?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)$"
+const _FMT_CONDITION = r"^(<=|>=|<>|<|>|=)\s*(-?(?:[0-9]+\.?[0-9]*|\.[0-9]+)(?:[eE][+-]?[0-9]+)?)$"   # ASCII digits: `\d` is any script's, which `parse` refuses
 const _FMT_ELAPSED = r"^(?:h+|m+|s+)$"
 
 # A format code's sections: `nothing` if it is malformed (an unclosed quote or bracket,

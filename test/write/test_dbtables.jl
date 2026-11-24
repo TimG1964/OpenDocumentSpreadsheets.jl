@@ -112,7 +112,7 @@ end
     before = _dbx(p.content)
     O_T.deletetable!(p["Tables"], "Grow")
     s = read(_tpath(p), String)
-    @test _dbx(s) == replace(before, r"\n\s*<table:database-range table:name=\"Grow\"[^>]*/>" => "")
+    @test _dbx(s) == replace(before, r"\r?\n\s*<table:database-range table:name=\"Grow\"[^>]*/>" => "")   # CRLF in a Windows checkout
     r = readods(IOBuffer(s))
     @test [t.name for t in tables(r)] == ["Fruit", "Scores", "Table1"] && r["Tables"]["I2"] == "a"
     # totals' formulas are already ranges: unchanged

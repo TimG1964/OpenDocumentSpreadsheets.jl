@@ -536,6 +536,7 @@ function shift_lines!(ws::Worksheet, axis::Int, at::Int, n::Int)
     _shift_sheet_groups!(f, axis, at, n, maxl)        # groups (phase 5 step 7, F-052)
     _shift_titles!(f, axis, at, n, maxl)              # print titles (step 10)
     _shift_notes!(ws, axis, at, n)                    # notes set or removed (phase 6 step 4)
+    _shift_sortclear!(ws, axis, at, n)                # cells a sort filled (phase 6 step 9)
     merged = _shift_merges!(s, f, axis, at, n)
     s.stale = true
     # what the patched save needs

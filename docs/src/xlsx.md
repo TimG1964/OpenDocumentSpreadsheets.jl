@@ -110,11 +110,14 @@ The formatting functions work as in XLSX.jl too, with the differences listed in
   LibreOffice reads as a number (`"10"`, `"2026-11-23"`) is compared with numbers by value, list
   items are compared as text (a date matches only at midnight), and rankings count text and
   errors. LibreOffice can't store above- or below-average or relative-date filters, so they are
-  errors. `removeAutoFilter` shows every row of the range, as LibreOffice does.
+  errors. `removeAutoFilter` shows every row of the range, as LibreOffice does. `sort` puts the
+  rows in LibreOffice's order (numbers and logicals, text, errors; blanks last), and moves formats,
+  validations, notes, links, pictures and hidden rows with them; formulas move as copied and are
+  saved without a value. Merged cells (with formats) and array formulas are refused.
 - **LibreOffice's own options** are keywords and fields of the XLSX.jl functions they belong with
   (D-076): a validation's `caseSensitive` and `sortEntries`, cell protection's `hideAll` and
   `hidePrint`, a note's `date`, a picture's `alt` and `description`, any paper size
   (`paperWidth`, `paperHeight`), `scaleToPages`, six more print options, a table's
-  `has_header_row` and `filterButtons`, and a filter's `caseSensitive`, `noDuplicates` and regular
-  expressions.
-- **Not yet available:** conditional formats, charts, and sorts (phase 6).
+  `has_header_row` and `filterButtons`, a filter's `caseSensitive`, `noDuplicates` and regular
+  expressions, and a sort's `naturalSort` and `includeFormats`.
+- **Not yet available:** conditional formats and charts.

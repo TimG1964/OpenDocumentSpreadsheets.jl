@@ -106,14 +106,16 @@ function _image_frame_xml(io::IO, ws::Worksheet, img::ImageData)
     print(io, "</draw:frame>")
 end
 
-# The frames a cell edit adds: those a delete moved here (their original XML, with the structural
-# edits replayed on it), then the pictures added.
+# A frame moved to a cell (by a delete, or a sort: F-060, F-072), its XML with the structural edits
+# made since it was taken (`m.second`: how many of the file's operations it has) replayed on it.
+_moved_now(ws::Worksheet, m::Pair{String,Int}) =
+    (xf = get_odsfile(ws); isnewfile(xf) ? m.first : _rewritten(m.first, xf.ops[m.second+1:end]))
+
+# The frames a cell edit adds: those a delete or a sort moved here, then the pictures added.
 function _frames_xml(ws::Worksheet, fe::FrameEdit)
     io = IOBuffer()
-    xf = get_odsfile(ws)
-    ops = isnewfile(xf) ? Any[] : xf.ops[ws.opstart+1:end]
-    for x in fe.moved
-        print(io, _rewritten(x, ops))
+    for m in fe.moved
+        print(io, _moved_now(ws, m))
     end
     for img in fe.added
         _image_frame_xml(io, ws, img)
@@ -262,7 +264,7 @@ function _sheet_images(ws::Worksheet)
             continue
         end
         r = _current_line(ws.rowmap, ff.row); c = _current_line(ws.colmap, ff.col)
-        (r == 0 || c == 0) && continue
+        (r == 0 || c == 0 || _sort_cleared(ws, r, c)) && continue
         fe = frames === nothing ? nothing : get(frames, (r, c), nothing)
         fe !== nothing && ff.k in fe.removed && continue
         er, ec = _frame_end(ws, ff.xml, r, c, true)
@@ -270,10 +272,11 @@ function _sheet_images(ws::Worksheet)
     end
     if frames !== nothing
         for ((r, c), fe) in frames
-            for (j, x) in enumerate(fe.moved)
+            for (j, mv) in enumerate(fe.moved)
+                x = mv.first
                 _is_picture(x) || continue
                 m = match(_HREF_RX, x)
-                er, ec = _frame_end(ws, _rewritten(x, isnewfile(get_odsfile(ws)) ? Any[] : get_odsfile(ws).ops[ws.opstart+1:end]), r, c, false)
+                er, ec = _frame_end(ws, _moved_now(ws, mv), r, c, false)
                 push!(out, (r, c, ImageInfo((ws.name, _media_name(m === nothing ? "" : XML.unescape(m.captures[1])), name(r, c), name(er, ec), _frame_alt(x)...)), :moved, j))
             end
             for (j, img) in enumerate(fe.added)
@@ -414,7 +417,7 @@ end
 # which LibreOffice keeps where they are, anchored in the cell now at their place (F-060). Returns
 # (other coordinate, XML or ImageData) for the cells at d1 after the delete.
 function _rescued_frames(ws::Worksheet, axis::Int, d1::Int, d2::Int)
-    out = Tuple{Int,Union{String,ImageData}}[]
+    out = Tuple{Int,Union{Pair{String,Int},ImageData}}[]
     inside(r, c) = d1 <= (axis == 1 ? r : c) <= d2
     beyond(er, ec) = (axis == 1 ? er : ec) > d2
     other(r, c) = axis == 1 ? c : r
@@ -423,18 +426,17 @@ function _rescued_frames(ws::Worksheet, axis::Int, d1::Int, d2::Int)
         for ff in _file_frames(ws)
             ff.row == 0 && continue
             r = _current_line(ws.rowmap, ff.row); c = _current_line(ws.colmap, ff.col)
-            (r == 0 || c == 0 || !inside(r, c)) && continue
+            (r == 0 || c == 0 || !inside(r, c) || _sort_cleared(ws, r, c)) && continue
             fe = frames === nothing ? nothing : get(frames, (r, c), nothing)
             fe !== nothing && ff.k > 0 && ff.k in fe.removed && continue
-            beyond(_frame_end(ws, ff.xml, r, c, true)...) && push!(out, (other(r, c), ff.xml))
+            beyond(_frame_end(ws, ff.xml, r, c, true)...) && push!(out, (other(r, c), ff.xml => ws.opstart))
         end
     end
     if ws.frames !== nothing
-        ops = isnewfile(get_odsfile(ws)) ? Any[] : get_odsfile(ws).ops[ws.opstart+1:end]
         for ((r, c), fe) in ws.frames
             inside(r, c) || continue
-            for x in fe.moved
-                beyond(_frame_end(ws, _rewritten(x, ops), r, c, false)...) && push!(out, (other(r, c), x))
+            for m in fe.moved
+                beyond(_frame_end(ws, _moved_now(ws, m), r, c, false)...) && push!(out, (other(r, c), m))
             end
             for img in fe.added
                 beyond(img.torow, img.tocol) && push!(out, (other(r, c), img))

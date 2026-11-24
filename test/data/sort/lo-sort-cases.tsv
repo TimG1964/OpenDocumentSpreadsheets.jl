@@ -1,0 +1,26 @@
+asc	false	false	true	1:asc	dispatch	A1:D59
+desc	false	false	true	1:desc	dispatch	A1:D59
+asc_cs	true	false	true	1:asc	dispatch	A1:D59
+desc_cs	true	false	true	1:desc	dispatch	A1:D59
+nat	false	true	true	1:asc	dispatch	A1:D59
+nat_desc	false	true	true	1:desc	dispatch	A1:D59
+nat_cs	true	true	true	1:asc	dispatch	A1:D59
+multi	false	false	true	3:asc,1:desc	dispatch	A1:D59
+multi_cs	true	false	true	3:asc,4:desc,1:asc	dispatch	A1:D59
+multi3	false	false	true	4:desc,3:desc,1:asc	dispatch	A1:D59
+punct	false	false	true	1:asc	dispatch	A1:D142
+punct_cs	true	false	true	1:asc	dispatch	A1:D142
+nat2	false	true	true	1:asc	dispatch	A1:D67
+nat2_cs	true	true	true	1:asc	dispatch	A1:D67
+nat2_desc	false	true	true	1:desc	dispatch	A1:D67
+nat2_off	false	false	true	1:asc	dispatch	A1:D67
+carry	false	false	true	2:asc	dispatch	A1:D7
+carry_noattr	false	false	false	2:asc	dispatch	A1:D7
+r_merge	false	false	true	1:asc	api	A1:B4
+r_merge_noattr	false	false	false	1:asc	api	A1:B4
+r_merge_row	false	false	true	1:asc	api	A1:B4
+r_merge_in	false	false	true	1:asc	api	A1:C4
+r_array2	false	false	true	1:asc	api	A1:B4	C2:C3|=A2:A3*2
+r_array1	false	false	true	1:asc	api	A1:C4	C2:C2|=A2*2
+r_arrayin	false	false	true	1:asc	api	A1:D4	C2:D2|=A2:B2
+r_api_ok	false	false	true	1:asc	api	A1:B4

@@ -76,7 +76,7 @@ gettablerange
 
 ## AutoFilters
 
-A sheet's AutoFilter is LibreOffice's anonymous database range of the sheet, with filter buttons (F-062). Its criteria are stored as LibreOffice stores them, and rows are hidden as LibreOffice's Refresh Range hides them (F-071), which differs from Excel in places: see [`setAutoFilter`](@ref).
+A sheet's AutoFilter is LibreOffice's anonymous database range of the sheet, with filter buttons (F-062). Its criteria are stored as LibreOffice stores them, and rows are hidden as LibreOffice's Refresh Range hides them (F-071); a sort puts the rows in LibreOffice's order and moves what LibreOffice's Data ▸ Sort moves (F-072). Both differ from Excel in places: see [`setAutoFilter`](@ref).
 
 ```@docs
 setAutoFilter

@@ -44,8 +44,9 @@ end
 # A number as LibreOffice writes one in a condition.
 _af_num(x::Real) = (y = Float64(x); isinteger(y) && abs(y) < 1e15 ? string(Int64(y)) : string(y))
 
-const _LO_NUM_RX = r"^[+-]?(?:(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$"
-const _LO_DATE_RX = r"^(\d{4})-(\d{1,2})-(\d{1,2})(?:[T ](\d{1,2}):(\d{2})(?::(\d{2}(?:\.\d+)?))?)?$"
+# ASCII digits only: Julia's `\d` matches every script's, which `parse` refuses.
+const _LO_NUM_RX = r"^[+-]?(?:(?:[0-9]{1,3}(?:,[0-9]{3})+|[0-9]+)(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+const _LO_DATE_RX = r"^([0-9]{4})-([0-9]{1,2})-([0-9]{1,2})(?:[T ]([0-9]{1,2}):([0-9]{2})(?::([0-9]{2}(?:\.[0-9]+)?))?)?$"
 
 # The number LibreOffice reads a condition's text as, or nothing (F-071): a number, with or without
 # thousands separators, an exponent or spaces around it, or in parentheses for a negative one; an ISO
@@ -302,10 +303,16 @@ struct _AFCell
     text::String
 end
 
-function _af_cells(ws::Worksheet, store::SheetStore, rows::UnitRange{Int}, c::Int, cache::_CodeCache)
+# `over`: cells seen otherwise (formulas a sort just moved, with the values they had, F-072).
+function _af_cells(ws::Worksheet, store::SheetStore, rows::UnitRange{Int}, c::Int, cache::_CodeCache,
+                   over::Union{Nothing,Dict{Tuple{Int,Int},_AFCell}} = nothing)
     null = get_odsfile(ws).null_date
     out = Vector{_AFCell}(undef, length(rows))
     for (i, r) in enumerate(rows)
+        if over !== nothing
+            x = get(over, (r, c), nothing)
+            x === nothing || (out[i] = x; continue)
+        end
         d = cell_data(store, r, c)
         out[i] = if d === nothing
             _AFCell(0x00, 0.0, "")
@@ -333,28 +340,7 @@ function _af_cmp(a::Float64, b::Float64, op::String)
     return a <= b || _af_approx(a, b)
 end
 
-# Text compared as LibreOffice's collator compares it, near enough: spaces, then punctuation and
-# symbols, then figures, then letters, ignoring case and accents; with `cs`, lower case before upper
-# case where they are otherwise equal.
-function _af_class(ch::Char)
-    isspace(ch) && return 0
-    isdigit(ch) && return 2
-    isletter(ch) && return 3
-    return 1
-end
-_af_fold(ch::Char) = (s = Unicode.normalize(string(ch); stripmark = true, casefold = true); isempty(s) ? ch : first(s))
-function _af_collate(a::AbstractString, b::AbstractString, cs::Bool)
-    ka = [(_af_class(ch), _af_fold(ch)) for ch in a]
-    kb = [(_af_class(ch), _af_fold(ch)) for ch in b]
-    ka == kb || return ka < kb ? -1 : 1
-    cs || return 0
-    for (x, y) in zip(a, b)
-        x == y && continue
-        islowercase(x) && isuppercase(y) && return -1
-        isuppercase(x) && islowercase(y) && return 1
-    end
-    return 0
-end
+# (Text is compared as LibreOffice's collator compares it: `_lo_collate`, src/write/collate.jl.)
 function _af_order(r::Int, op::String)
     op == ">" && return r > 0
     op == ">=" && return r >= 0
@@ -426,7 +412,7 @@ function _af_holds(c::_AFCell, p::_AFPrep, cs::Bool)
     if op in (">", ">=", "<", "<=")
         c.kind == 0x00 && return false
         c.kind == 0x01 && return p.q !== nothing && _af_cmp(c.num, p.q, op)
-        return _af_order(_af_collate(c.text, v, cs), op)
+        return _af_order(_lo_collate(c.text, v, cs), op)
     end
     if op == "match" || op == "!match"
         r = (c.kind == 0x01 && p.q !== nothing) ? _af_approx(c.num, p.q) : occursin(p.rx, c.text)
@@ -444,7 +430,8 @@ end
 
 # Which data rows of (r1:r2, c1:c2) the criteria show; with `nodup`, a row showing the same texts as
 # one above it is hidden, as LibreOffice compares them (case matters, F-071).
-function _af_shows(ws::Worksheet, r1::Int, c1::Int, r2::Int, c2::Int, crits::Vector{_AFCrit}, cs::Bool, nodup::Bool)
+function _af_shows(ws::Worksheet, r1::Int, c1::Int, r2::Int, c2::Int, crits::Vector{_AFCrit}, cs::Bool, nodup::Bool,
+                   over::Union{Nothing,Dict{Tuple{Int,Int},_AFCell}} = nothing)
     rows = r1+1:r2
     shows = trues(length(rows))
     isempty(rows) && return rows, shows
@@ -452,7 +439,7 @@ function _af_shows(ws::Worksheet, r1::Int, c1::Int, r2::Int, c2::Int, crits::Vec
     cache = _CodeCache()
     null = get_odsfile(ws).null_date
     cols = Dict{Int,Vector{_AFCell}}()
-    cellsof(f) = get!(() -> _af_cells(ws, store, rows, c1 + f, cache), cols, f)
+    cellsof(f) = get!(() -> _af_cells(ws, store, rows, c1 + f, cache, over), cols, f)
     for c in crits
         preps = [_af_prep(k, cellsof(k.field), null, cs) for k in c.conds]
         for i in eachindex(rows)
@@ -524,7 +511,8 @@ function _af_cells_of(ws::Worksheet, rng)
 end
 
 """
-    setAutoFilter(sheet, rng; filters=nothing, caseSensitive=false, noDuplicates=false)
+    setAutoFilter(sheet, rng; filters=nothing, sort=nothing, caseSensitive=false, noDuplicates=false,
+                  naturalSort=false, includeFormats=true)
     setAutoFilter(xf, "Sheet1.A1:D20"; kw...)
 
 Add filter buttons to the first row of `rng`, as LibreOffice's Data ▸ AutoFilter does, stored as
@@ -533,8 +521,8 @@ is a range of cells (`"A1:D20"`), a defined name, or `:` for the sheet's used ra
 is the header row.
 
 A sheet has one AutoFilter, so this replaces any the sheet has. It may not overlap a table (see
-[`addtable!`](@ref)). Setting the filter again on the same range keeps its criteria, unless new ones
-are given.
+[`addtable!`](@ref)). Setting the filter again on the same range keeps its criteria and sort, unless
+new ones are given. With both, the rows are sorted first and then filtered, as LibreOffice does.
 
 # Filtering
 
@@ -571,10 +559,31 @@ LibreOffice has no above- or below-average or relative-date filters (`:aboveAver
 
 LibreOffice's own options (D-076): `caseSensitive=true` compares text in its case, and
 `noDuplicates=true` hides rows that show the same as a row above them (always comparing case), as
-LibreOffice's *No duplications*. Both apply to the criteria given, so they need `filters`, and
-LibreOffice applies `noDuplicates` only with at least one criterion.
+LibreOffice's *No duplications*. `noDuplicates` applies to the criteria given, so it needs `filters`,
+and LibreOffice applies it only with at least one criterion.
 
 `filters=[]` removes the criteria and shows every row of the range.
+
+# Sorting
+
+`sort` gives a column, `column => :ascending` or `column => :descending`, or a vector of these, the
+first sorting first. The rows below the header are put in that order, as LibreOffice's Data ▸ Sort
+puts them (F-072, D-079), and the sort is stored with the range:
+- ascending: numbers and dates, with `FALSE` and `TRUE` as 0 and 1; then text, in LibreOffice's
+  alphabetical order (ignoring case, and accents but where they alone differ); then errors. Descending
+  reverses this. Empty cells are last either way, and rows that compare equal keep their order.
+- each row's cells in the range move with their formats, validations, notes, links and pictures, and
+  its hidden state goes with it; a formula moves as if copied, so `=B5*2` in row 5 becomes `=B2*2` in
+  row 2, and is saved without a value (LibreOffice computes it on loading). Cells outside the
+  range's columns, row heights, and formulas and names that refer to the sorted cells stay as they
+  are, as in LibreOffice.
+- a range with merged cells is refused (LibreOffice sorts it only without formats), and so is one with
+  an array formula.
+
+LibreOffice's own options (D-076): `caseSensitive=true` (shared with the criteria) puts lower case
+before upper case where text is otherwise equal; `naturalSort=true` compares the numbers within text
+by value (`"a2"` before `"a10"`); `includeFormats=false` leaves the formats and validations where they
+are and moves only the values, notes, links and pictures (which allows merged cells).
 
 The file must be writable.
 
@@ -584,7 +593,8 @@ julia> setAutoFilter(sheet, "A1:F200")
 
 julia> setAutoFilter(sheet, :)
 
-julia> setAutoFilter(sheet, "A1:D50"; filters = ["Colour" => ["Red", "Blue"], "Amount" => (">" => 100)])
+julia> setAutoFilter(sheet, "A1:D50"; filters = ["Colour" => ["Red", "Blue"], "Amount" => (">" => 100)],
+                     sort = "Amount" => :descending)
 ```
 
 See also [`getAutoFilter`](@ref) and [`removeAutoFilter`](@ref).
@@ -592,8 +602,9 @@ See also [`getAutoFilter`](@ref) and [`removeAutoFilter`](@ref).
 function setAutoFilter end
 setAutoFilter(xf::ODSFile, ref::AbstractString; kw...) = setAutoFilter(_dv_sheet_ref(xf, ref)...; kw...)
 setAutoFilter(ws::Worksheet, ::Colon; kw...) = setAutoFilter(ws, get_dimension(ws); kw...)
-function setAutoFilter(ws::Worksheet, rng; filters = nothing, caseSensitive::Union{Nothing,Bool} = nothing,
-                       noDuplicates::Union{Nothing,Bool} = nothing)
+function setAutoFilter(ws::Worksheet, rng; filters = nothing, sort = nothing, caseSensitive::Union{Nothing,Bool} = nothing,
+                       noDuplicates::Union{Nothing,Bool} = nothing, naturalSort::Union{Nothing,Bool} = nothing,
+                       includeFormats::Union{Nothing,Bool} = nothing)
     _require_writable(ws, "set an AutoFilter")
     xf = get_odsfile(ws)
     r1, c1, r2, c2 = _af_cells_of(ws, rng)
@@ -602,8 +613,12 @@ function setAutoFilter(ws::Worksheet, rng; filters = nothing, caseSensitive::Uni
         (row_number(a) <= r2 && r1 <= row_number(b) && column_number(a) <= c2 && c1 <= column_number(b)) &&
             throw(ODSError("AutoFilter range `$(_db_cell(r1, c1)):$(_db_cell(r2, c2))` overlaps table `$(t.name)` (`$(t.ref)`), which has a filter of its own."))
     end
-    filters === nothing && (caseSensitive !== nothing || noDuplicates !== nothing) &&
-        throw(ODSError("`caseSensitive` and `noDuplicates` apply to the criteria: give them with `filters` (`filters=[]` for none)."))
+    filters === nothing && sort === nothing && caseSensitive !== nothing &&
+        throw(ODSError("`caseSensitive` applies to the criteria and the sort: give it with `filters` or `sort`."))
+    filters === nothing && noDuplicates !== nothing &&
+        throw(ODSError("`noDuplicates` applies to the criteria: give it with `filters` (`filters=[]` for none)."))
+    sort === nothing && (naturalSort !== nothing || includeFormats !== nothing) &&
+        throw(ODSError("`naturalSort` and `includeFormats` apply to the sort: give them with `sort`."))
     cs = something(caseSensitive, false)
     nodup = something(noDuplicates, false)
     nodup && isempty(_af_pairs(filters)) &&
@@ -614,11 +629,16 @@ function setAutoFilter(ws::Worksheet, rng; filters = nothing, caseSensitive::Uni
             push!(crits, _af_criterion(crit, _af_column(ws, r1, c1, c2, col), xf))
         end
     end
+    keys = sort === nothing ? nothing : _sort_keys(ws, r1, c1, c2, sort)
+    nat = something(naturalSort, false)
+    formats = something(includeFormats, true)
     fx = filters === nothing ? nothing : _af_filter_xml(crits, cs, nodup)
+    over = keys === nothing ? nothing : _sort_rows!(ws, r1, c1, r2, c2, keys, cs, nat, formats)   # LibreOffice sorts, then filters
     if filters !== nothing
-        rows, shows = _af_shows(ws, r1, c1, r2, c2, crits, cs, nodup)
+        rows, shows = _af_shows(ws, r1, c1, r2, c2, crits, cs, nodup, over)
         _af_apply_rows!(ws, rows, shows)
     end
+    sx = keys === nothing ? nothing : _sort_xml(keys, cs, nat, formats)
 
     old = _af_range(ws)
     same = old !== nothing && (old.r1, old.c1, old.r2, old.c2) == (r1, c1, r2, c2)
@@ -633,10 +653,12 @@ function setAutoFilter(ws::Worksheet, rng; filters = nothing, caseSensitive::Uni
         elseif filters !== nothing
             m.xml = _af_with_filter(m.xml, fx)
         end
+        sx === nothing || (m.xml = _db_with_sort(m.xml, sx))
     else
         name = _af_new_name(xf, ws)
-        push!(xf.dbedits.model, DBRange(name, ws, r1, c1, r2, c2, true, false, true,
-                                        fx === nothing ? "" : _af_with_filter("", fx), 1.0e9 + length(xf.dbedits.model) + 1))
+        x = fx === nothing ? "" : _af_with_filter("", fx)
+        sx === nothing || (x = _db_with_sort(x, sx))
+        push!(xf.dbedits.model, DBRange(name, ws, r1, c1, r2, c2, true, false, true, x, 1.0e9 + length(xf.dbedits.model) + 1))
     end
     return nothing
 end

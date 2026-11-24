@@ -351,6 +351,29 @@ end
 
 _set(e::RefEnd, axis::Int, v::Int) = axis == 1 ? _with(e; row = v) : _with(e; col = v)
 
+# A formula moved `d` rows as if copied, as LibreOffice's sort moves the formulas it sorts (F-072): its
+# relative rows move with it, its absolute ones stay; a row moved off the sheet is #REF!. Not logged
+# with the structural operations: nothing else changes.
+struct RowMove <: RefOp
+    d::Int
+end
+
+function _apply(op::RowMove, ends::Vector{RefEnd}, ctx::RefContext)
+    any(e -> e.err, ends) && return nothing
+    changed = false
+    new = RefEnd[]
+    for e in ends
+        if e.row == 0 || e.row_abs
+            push!(new, e)
+        else
+            v = e.row + op.d
+            1 <= v <= SheetCore.MAX_ROWS || return ctx.marked ? _REFERR : nothing
+            push!(new, _set(e, 1, v)); changed = true
+        end
+    end
+    return changed ? new : nothing
+end
+
 function _apply(op::SheetRename, ends::Vector{RefEnd}, ctx::RefContext)
     changed = false
     new = map(ends) do e

@@ -113,7 +113,8 @@ end
 ViewEdits() = ViewEdits(IdDict{Any,ViewItems}(), ViewItems())
 
 # The URL fields of a sheet's original cells (phase 6 step 3, D-072), read on first use: `nrows` × `ncols`
-# alike original cells from (`row`, `col`), their links as (href, text), unescaped, and the cell's text.
+# alike original cells from (`row`, `col`), their links as (href, text), unescaped, the cell's text,
+# and its paragraphs as written (which a sort moves, F-072).
 struct FileLinkRun
     row::Int
     nrows::Int
@@ -121,6 +122,7 @@ struct FileLinkRun
     ncols::Int
     links::Vector{Tuple{String,String}}
     text::String
+    paras::String
 end
 
 # Annotations and threaded comments (phase 6 step 4, D-073). One comment of a thread: the first, or a reply.
@@ -178,13 +180,14 @@ mutable struct ImageData
 end
 
 # The frames of one cell changed: the original's pictures removed (by their order among its
-# pictures), frames moved here by a delete (their original XML, F-060), pictures added.
+# pictures), frames moved here by a delete or a sort (their XML, F-060, F-072, with how many of the
+# file's structural operations it has), pictures added.
 mutable struct FrameEdit
     removed::Set{Int}
-    moved::Vector{String}
+    moved::Vector{Pair{String,Int}}
     added::Vector{ImageData}
 end
-FrameEdit() = FrameEdit(Set{Int}(), String[], ImageData[])
+FrameEdit() = FrameEdit(Set{Int}(), Pair{String,Int}[], ImageData[])
 
 # What a cell's writer adds or changes besides its value: its note (missing: unchanged; nothing:
 # removed), and its frames (D-073, D-074).
@@ -317,11 +320,12 @@ mutable struct Worksheet
     fileframes::Union{Nothing,Vector{FileFrame}}   # the shapes its file holds, once read
     valrects::Union{Nothing,Vector{ValRect}}   # validations set or removed, by block of cells (phase 6 step 6)
     filevals::Union{Nothing,Vector{FileValRun}}   # the validations of its file's cells, once read
+    sortclear::Union{Nothing,Set{Tuple{Int,Int}}}   # cells a sort filled from others: the paragraphs and shapes of their original are not theirs (phase 6 step 9)
 end
 
 Worksheet(xf, name, index, entry, visible, store, localnames, lock) =
     Worksheet(xf, name, index, entry, visible, store, localnames, lock, Dict{Int,Vector{Int}}(), nothing, nothing, nothing, 0, false,
-              NameEdits(), nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing)
+              NameEdits(), nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing)
 
 # Whether the sheet was made by OpenDocumentSpreadsheets (so it is written whole), not read from the file.
 isnewsheet(ws::Worksheet) = ws.entry === nothing

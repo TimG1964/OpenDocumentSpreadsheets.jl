@@ -496,6 +496,9 @@ end
 # here costs a dynamic call on every cell of a restyled block.
 function _write_model_cols!(st::_PatchState, r::Int, x::Int, y::Int, celltext, rowdefault::Bool,
                             ex::_CellExtras, row::Int, col::Int)
+    if x == y && _sort_cleared(st.ws, r, x)       # a sort filled the cell from another (F-072)
+        ex = _CellExtras(ex.validation, ex.lead, Union{String,SubString{String}}[], nothing, nothing, ex.single)
+    end
     ne = _cell_edits_in(st.ws, r, x, y)
     vs = _val_layer_in(st.ws, r, x, y)
     (isempty(ne) && isempty(vs)) || return _write_noted_cols!(st, r, x, y, celltext, rowdefault, ex, row, col, ne, vs)

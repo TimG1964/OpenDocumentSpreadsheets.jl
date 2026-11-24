@@ -278,7 +278,7 @@ function _file_links(ws::Worksheet)
                             sp = XML.sourcespan(cl)
                             if occursin("text:a", SubString(src, first(sp), last(sp)))
                                 links, text = _cell_fields(cl)
-                                isempty(links) || push!(runs, FileLinkRun(r0, nrows, col + 1, k, links, text))
+                                isempty(links) || push!(runs, FileLinkRun(r0, nrows, col + 1, k, links, text, _cell_paras(src, cl)))
                             end
                             col += k
                         end
@@ -306,9 +306,27 @@ function _original_line(m::Union{Nothing,IndexMap}, cur::Int)
 end
 _current_line(m::Union{Nothing,IndexMap}, o::Int) = m === nothing ? o : current_line(m, o)
 
-# The run of original fields at current cell (r, c), or nothing.
+# An original cell's paragraphs, first to last, as written.
+function _cell_paras(src::String, cell::XML.LazyNode)
+    a = 0; b = 0
+    c = XML.Cursor(cell)
+    XML.next!(c)
+    XML.for_each_child!(c) do ch
+        XML.nodetype(ch) === XML.Element || return
+        if XML.tag(ch) in ("text:p", "text:h")
+            sp = XML.sourcespan(XML.LazyNode(ch))
+            a == 0 && (a = first(sp))
+            b = last(sp)
+        end
+        XML.skip_element!(ch)
+    end
+    return a == 0 ? "" : String(SubString(src, a, b))
+end
+
+# The run of original fields at current cell (r, c), or nothing (a cell a sort filled from another
+# has none of its original's, F-072).
 function _file_link_at(ws::Worksheet, r::Int, c::Int)
-    ws.entry === nothing && return nothing
+    (ws.entry === nothing || _sort_cleared(ws, r, c)) && return nothing
     o = _original_line(ws.rowmap, r)
     p = _original_line(ws.colmap, c)
     (o == 0 || p == 0) && return nothing
