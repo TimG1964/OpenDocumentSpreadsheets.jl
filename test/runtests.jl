@@ -8,6 +8,16 @@ const DATA = joinpath(@__DIR__, "data")
 # Windows, file:///tmp/… elsewhere.
 lo_profile_url(path) = "file://" * (startswith(path, "/") ? "" : "/") * replace(path, "\\" => "/")
 
+# The major version of a LibreOffice (`soffice --version`: "LibreOffice 24.2.7.2 …"), or 0 if unknown.
+# Features newer than a distribution's LibreOffice (threaded comments in notes) are checked only
+# with the version the fixtures were made with (`data/lo-version.txt`) or later.
+const _LO_MAJOR = Dict{String,Int}()
+lo_major(soffice) = get!(_LO_MAJOR, soffice) do
+    m = match(r"LibreOffice\s+(\d+)\.", try read(`$soffice --version`, String) catch; "" end)
+    m === nothing ? 0 : parse(Int, m.captures[1])
+end
+const LO_FIXTURE_MAJOR = parse(Int, match(r"LibreOffice\s+(\d+)\.", read(joinpath(DATA, "lo-version.txt"), String)).captures[1])
+
 @testset "OpenDocumentSpreadsheets" begin
     @testset "SheetCore" begin
         @testset "references" begin

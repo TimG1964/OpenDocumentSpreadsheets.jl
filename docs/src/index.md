@@ -57,7 +57,10 @@ writetable("out.ods", dt; sheetname = "Costs")   # write it back
   following), renaming, copying, moving and deleting sheets, defined names, hidden lines and
   sheets, tab colours, groups, panes and the view, protection, printing settings, headers and
   footers, and document properties, with XLSX.jl's functions, stored as LibreOffice stores them.
+- **Links, notes, pictures and tables:** hyperlinks, notes and threaded comments, pictures, data
+  validation, tables (LibreOffice's database ranges) with totals, and AutoFilters that filter and
+  sort as LibreOffice does, with XLSX.jl's functions. They stay with their cells through edits,
+  inserted and deleted lines, sorts and sheet copies.
 - **Speed:** comparable with XLSX.jl on XLSX.jl's own benchmarks.
 
-Conditional formats, Excel-style tables and rich objects (comments, images, charts) are
-planned.
+Conditional formats and charts are planned.

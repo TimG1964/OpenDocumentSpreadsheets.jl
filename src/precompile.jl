@@ -4,7 +4,8 @@
 # every read path. Compile cost grows with the number of distinct methods and types run,
 # not with the number of cells, so the data stays tiny. Paths are exercised with a file
 # name (`String`) as well as an `IOBuffer`: the entry points specialize on each. Niche
-# features are left out: they cost precompile time paid by every user.
+# features are left out: they cost precompile time paid by every user (D-044, D-065); a feature
+# whose first call passes 0.5 s comes in (D-080).
 # Users can turn this off with the PrecompileTools preference `precompile_workload = false`.
 PCT.@setup_workload begin
     let
@@ -87,6 +88,18 @@ PCT.@setup_workload begin
                 end
                 readdata(path, 1, "A1:C3")
                 readdata(path, "A.A1:B2")
+
+                # Links, notes, validation, filters and sorts (D-080): their first calls took 1.8 s a
+                # session (setAutoFilter 0.65 s, addComment 0.55 s), for 5 s more precompilation
+                xf = openods(path; mode = "rw")
+                sh = xf["A"]
+                addHyperlink(sh, "C2"; url = "https://example.org/")
+                addComment(sh, "C3", "note"; author = "A")
+                addDataValidation(sh, "A2:A4"; type = :whole, operator = :between, formula1 = 1, formula2 = 9)
+                setAutoFilter(sh, "A1:G4"; filters = ["i" => (">" => 1), "s" => ["a", "b"]], sort = "f" => :descending)
+                writeods(IOBuffer(), xf)
+                xf = readods(seekstart(io))
+                getHyperlinks(xf["A"]); getComments(xf["A"]); getDataValidations(xf["A"]); getAutoFilter(xf["A"])
             end
         finally
             rm(dir; recursive = true, force = true)

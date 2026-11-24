@@ -137,6 +137,24 @@ end
 [Sheets, names and settings](guide/sheets.md) covers these and the rest: defined names,
 hiding, groups, the view, protection, printing and document properties.
 
+## Links, notes, tables and filters
+
+```julia
+openods("budget.ods"; mode = "rw") do xf
+    s = xf["Costs"]
+    addHyperlink(s, "A1"; url = "https://example.org/budget", display = "Budget")
+    addComment(s, "B7", "Agreed with finance"; author = "Ann")
+    addDataValidation(s, "C2:C40"; type = :list, values = ["Open", "Paid"])
+    t = addtable!(s, "A2:C40"; name = "Costs")
+    settotals!(t, "Amount" => :sum)
+    setAutoFilter(xf["Income"], "A1:D80"; filters = ["Month" => ["Jan", "Feb"]],
+                  sort = "Amount" => :descending)
+end
+```
+
+[Links, notes, pictures and tables](guide/objects.md) covers these, pictures, and how filters and
+sorts follow LibreOffice.
+
 ## Streaming a large file
 
 [`streamods`](@ref) writes rows as they are produced, in bounded memory:

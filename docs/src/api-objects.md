@@ -4,7 +4,7 @@ CurrentModule = OpenDocumentSpreadsheets
 
 # API reference: links, notes and objects
 
-Hyperlinks, notes and threaded comments, pictures, and data validation (phase 6).
+Hyperlinks, notes and threaded comments, pictures, data validation, tables, AutoFilters and sorting (phase 6). [Links, notes, pictures and tables](guide/objects.md) introduces them.
 
 ## Hyperlinks
 
