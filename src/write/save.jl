@@ -43,7 +43,7 @@ function _faces(xf::ODSFile)
     lx = _needs_loext(xf.styles) || _needs_protection_loext(xf) || _has_threads(xf) ? " xmlns:loext=\"$_LOEXT_NS\"" : ""
     sx = !isempty(fx) || _has_notes(xf) || _has_frames(xf) ? " xmlns:svg=\"$_SVG_NS\"" : ""
     dx = _has_frames(xf) ? " xmlns:draw=\"$_DRAW_NS\"" : ""         # pictures (phase 6 step 5)
-    cx = _has_footers(xf) || _has_cfs(xf) ? " xmlns:calcext=\"$_CALCEXT_NS\"" : ""   # tables' totals rows (phase 6 step 7), rules (phase 7)
+    cx = _has_footers(xf) || _has_cfs(xf) || _has_sparks(xf) ? " xmlns:calcext=\"$_CALCEXT_NS\"" : ""   # tables' totals rows (phase 6 step 7), rules (phase 7)
     return (sx * lx * dx * cx, isempty(fx) ? "" : "<office:font-face-decls>$fx</office:font-face-decls>")
 end
 
@@ -177,7 +177,15 @@ function _patched_part_data(xf::ODSFile, name::String, content)
         return codeunits(s) == b ? b : s
     end
     name == "meta.xml" && _meta_edited(xf) && return _patched_meta(xf, read_part_text(cont, name))   # phase 5 step 11
-!isempty(xf.ops) && endswith(name, "/content.xml") && return _rewritten_part(xf, read_bytes(cont, name))
+    if endswith(name, "/content.xml")
+        o = name[1:end-ncodeunits("/content.xml")]
+        haskey(xf.chartobjs, o) && return _chart_text_now(xf, o)      # a file's chart, edited (phase 8)
+        isempty(xf.ops) || return _rewritten_part(xf, read_bytes(cont, name))
+    end
+    if endswith(name, "/styles.xml")             # a file's chart, edited: its dashes (phase 8 step 6)
+        o = get(xf.chartobjs, name[1:end-ncodeunits("/styles.xml")], nothing)
+        o === nothing || isempty(o.styles) || return o.styles
+    end
     return read_bytes(cont, name)
 end
 
@@ -185,42 +193,62 @@ end
 function _patched_parts(xf::ODSFile; display::Bool = true)
     cont = xf.container
     mts = Dict(e.path => e.mediatype for e in cont.manifest)
-    content = io -> write_patched_content(io, xf; display)     # written into the zip as it is made (D-048)
+    # Embedded objects (charts) whose frames may be gone, with their sheet, cells or copy (F-083):
+    # content.xml is written first, and the objects its frames still embed are noted as it goes, so
+    # that only those objects are written and listed (phase 8 step 2). Without structural
+    # operations every frame stays, and nothing changes.
+    objs = _object_dirs(cont)
+    gating = (!isempty(xf.ops) && (!isempty(objs) || !isempty(xf.objcopies))) || !isempty(xf.chartobjs) || _charts_removed(xf)
+    seen = Set{String}()
+    content = gating ? (io -> _write_chunked(o -> write_patched_content(o, xf; display), _HrefScan(io, seen))) :
+                       (io -> write_patched_content(io, xf; display))     # written into the zip as it is made (D-048)
+    objof(name) = (i = findfirst('/', name); top = i === nothing ? "" : name[1:i-1];
+                   top == "ObjectReplacements" ? name[i+1:end] : top in objs ? top : nothing)
+    keepif(o) = gating && o !== nothing ? (() -> o in seen) : nothing
+    # a part's media type as the manifest lists it (an object's picture: ""), else guessed
+    mediatype(name) = haskey(mts, name) && (!isempty(mts[name]) || startswith(name, "ObjectReplacements/")) ? mts[name] : guess_mediatype(name)
     parts = PackagePart[]
     for name in partnames(cont)
         name in _RESERVED_PARTS && continue
         if endswith(name, "/")                   # a directory entry: kept, as an empty folder
-            push!(parts, PackagePart(name, UInt8[]; mediatype = get(mts, name, ""), compress = false))
+            push!(parts, PackagePart(name, UInt8[]; mediatype = get(mts, name, ""), compress = false,
+                                     keep = keepif(objof(name[1:prevind(name, end)] * "/x"))))
             continue
         end
         data = _patched_part_data(xf, name, content)
-        mt = get(mts, name, guess_mediatype(name))
-        push!(parts, PackagePart(name, data; mediatype = isempty(mt) ? guess_mediatype(name) : mt))
+        push!(parts, PackagePart(name, data; mediatype = mediatype(name), keep = keepif(objof(name))))
     end
+    # content.xml first when it decides which objects are written
+    gating && (parts = vcat(filter(p -> p.name == "content.xml", parts), filter(p -> p.name != "content.xml", parts)))
     # directories the manifest lists with a media type but the zip has no entry for: an embedded
     # chart's `Object 1/` (without it LibreOffice loads the chart without its data)
     names = Set(partnames(cont))
     for e in cont.manifest
         (endswith(e.path, "/") && e.path != "/" && !isempty(e.mediatype) && !(e.path in names)) || continue
-        push!(parts, manifest_entry(e.path, e.mediatype))
+        o = e.path[1:prevind(e.path, end)]
+        push!(parts, manifest_entry(e.path, e.mediatype; keep = keepif(o in objs ? o : nothing)))
     end
-    # embedded objects that sheet copies duplicated (phase 5): their parts under the new name
-    for (old, new) in xf.objcopies
+    # embedded objects that sheet copies duplicated (phase 5): their parts under the new name, made
+    # from the file's own object (a copy of a copy, from the first one's source)
+    for (_, new) in xf.objcopies
+        old = _object_source(xf, new)
         for name in partnames(cont)
             newname = startswith(name, old * "/") ? new * name[ncodeunits(old)+1:end] :
                       name == "ObjectReplacements/" * old ? "ObjectReplacements/" * new : nothing
             newname === nothing && continue
             endswith(name, "/") && continue
-            mt = get(mts, name, guess_mediatype(name))
-            push!(parts, PackagePart(newname, _patched_part_data(xf, name, content); mediatype = isempty(mt) ? guess_mediatype(name) : mt))
+            push!(parts, PackagePart(newname, _patched_part_data(xf, name, content); mediatype = mediatype(name),
+                                     keep = keepif(new)))
         end
         mt = get(mts, old * "/", "")
-        isempty(mt) || push!(parts, manifest_entry(new * "/", mt))
+        isempty(mt) || push!(parts, manifest_entry(new * "/", mt; keep = keepif(new)))
     end
     # pictures added (phase 6 step 5), once each
     for (name, mt, b) in _used_media(xf)
         name in names || push!(parts, PackagePart(name, b; mediatype = mt, compress = false))
     end
+    # charts added (phase 8)
+    append!(parts, _chart_parts(xf, o -> keepif(o)))
     # a package without settings.xml gets one when views were set (phase 5 step 8)
     _views_edited(xf) && !("settings.xml" in partnames(cont)) &&
         push!(parts, PackagePart("settings.xml", _settings_views(xf, _new_settings_xml(xf.version in WRITABLE_ODF_VERSIONS ? xf.version : DEFAULT_ODF_VERSION))))
@@ -263,13 +291,18 @@ function writeods(dest::Union{AbstractString,IO}, xf::ODSFile; overwrite::Bool =
         if fmt === :fods
             write_flat(dest, io -> write_new_flat(io, xf, version, mt; display))
         else
-            parts = [PackagePart("content.xml", io -> write_new_content(io, xf, version; display)),
+            # charts (phase 8): content.xml is written first, and notes the objects its frames embed
+            seen = Set{String}()
+            content = isempty(xf.chartobjs) ? (io -> write_new_content(io, xf, version; display)) :
+                      (io -> _write_chunked(o -> write_new_content(o, xf, version; display), _HrefScan(io, seen)))
+            parts = [PackagePart("content.xml", content),
                      PackagePart("styles.xml", _new_styles(xf, version)),
                      PackagePart("meta.xml", new_meta_xml(xf, version))]
             _views_edited(xf) && push!(parts, PackagePart("settings.xml", _settings_views(xf, _new_settings_xml(version))))
             for (name, mt, b) in _used_media(xf)        # pictures (phase 6 step 5)
                 push!(parts, PackagePart(name, b; mediatype = mt, compress = false))
             end
+            append!(parts, _chart_parts(xf, o -> (() -> o in seen)))
             write_package(dest, parts; mediatype = mt, version)
         end
     else
@@ -277,7 +310,7 @@ function writeods(dest::Union{AbstractString,IO}, xf::ODSFile; overwrite::Bool =
         wasflat == (fmt === :fods) ||
             throw(ODSError("Can't write a file read as $(wasflat ? "flat XML (.fods)" : "a zipped package") as $(wasflat ? "a zipped package" : "flat XML (.fods)") yet."))
         if fmt === :fods
-            write_flat(dest, io -> write_patched_content(io, xf; display))
+            write_flat(dest, io -> _write_flat_patched(io, xf; display))
         else
             v = xf.version in WRITABLE_ODF_VERSIONS ? xf.version : DEFAULT_ODF_VERSION
             write_package(dest, _patched_parts(xf; display); mediatype = mt, version = v)

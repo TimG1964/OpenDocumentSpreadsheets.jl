@@ -133,4 +133,22 @@ The formatting functions work as in XLSX.jl too, with the differences listed in
     LibreOffice.
   - **LibreOffice's own options:** this, last and next year, its smiley icon sets, and a bar's
     `minLength` and `maxLength`.
-- **Not yet available:** charts.
+- **Charts** (`XLSX.Charts`'s functions, in `OpenDocumentSpreadsheets.Charts`) are LibreOffice's
+  chart objects. See [Charts and sparklines](guide/charts.md).
+  - **Look:** new charts take LibreOffice's own.
+  - **Data:** values are read from their cells.
+  - **References:** a chart's references follow edits and sheet operations as LibreOffice moves
+    them (clipped, never `#REF!`; a copy's stay on the source).
+  - **LibreOffice's model:** categories are the x axis'; smoothing is the chart's; a line series
+    has one colour; theme colours are resolved against the document's theme; legend corners are
+    custom positions; a minor unit divides the major one.
+  - **Errors:** what LibreOffice can't store (titles from cells, compound lines, joins, marker
+    borders, bubble-size labels, text caps, kerning and outlines; the chartex kinds but the
+    histogram).
+  - **Chart sheets** are ordinary sheets holding a page-anchored chart.
+  - **LibreOffice's own options:** 3-D, stock charts, subtitles, data tables, stepped and B-spline
+    lines, empty and hidden cells, the chart wizard's `data`, gradients and hatches, trendlines and
+    error bars, explosion, and axis label arrangement.
+- **Sparklines** ([`addSparklines`](@ref), [`getSparklines`](@ref), [`deleteSparklines`](@ref)) are
+  LibreOffice's sparkline groups. `dateRange` is an error, since LibreOffice keeps none. A sparkline
+  goes with its cell through inserts and deletes, and its data moves as a chart's does.

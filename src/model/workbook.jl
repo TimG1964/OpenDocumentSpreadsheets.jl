@@ -177,7 +177,10 @@ mutable struct ImageData
     endy::Float64
     title::String                     # its alt text (svg:title) and description (svg:desc); "" for none (D-076)
     desc::String
+    object::String                    # a chart's frame (phase 8): its object's name ("Object 1"); "" for a picture
 end
+ImageData(pic, mime, torow, tocol, width, height, endx, endy, title, desc) =
+    ImageData(pic, mime, torow, tocol, width, height, endx, endy, title, desc, "")
 
 # The frames of one cell changed: the original's pictures removed (by their order among its
 # pictures), frames moved here by a delete or a sort (their XML, F-060, F-072, with how many of the
@@ -186,8 +189,23 @@ mutable struct FrameEdit
     removed::Set{Int}
     moved::Vector{Pair{String,Int}}
     added::Vector{ImageData}
+    objremoved::Set{String}          # the original's charts deleted, by object name (phase 8)
 end
-FrameEdit() = FrameEdit(Set{Int}(), Pair{String,Int}[], ImageData[])
+FrameEdit() = FrameEdit(Set{Int}(), Pair{String,Int}[], ImageData[], Set{String}())
+
+# A chart added or edited (phase 8): its object's content.xml, with how many of the file's structural
+# operations it already has, its styles.xml (its line dashes; "" when it has none of its own), and
+# for a flat file's own chart, its inline object as it was when it was first changed and the operations
+# then (the save finds it by them, and puts the chart in its place: phase 8 step 9; "" for others).
+mutable struct ChartObj
+    text::String
+    nops::Int
+    styles::String
+    flatorig::String
+    flatops::Int
+end
+ChartObj(text::String, nops::Int) = ChartObj(text, nops, "", "", 0)
+ChartObj(text::String, nops::Int, styles::String) = ChartObj(text, nops, styles, "", 0)
 
 # What a cell's writer adds or changes besides its value: its note (missing: unchanged; nothing:
 # removed), and its frames (D-073, D-074).
@@ -298,6 +316,16 @@ mutable struct CfState
     at::Int
 end
 
+# A sheet's sparkline groups (phase 8 step 8), as its conditional formats are kept: each
+# `calcext:sparkline-group` element as it is now, whether they changed, the file's element's span, and
+# where a new element goes when there is none.
+mutable struct SparkState
+    list::Vector{String}
+    edited::Bool
+    span::UnitRange{Int}
+    at::Int
+end
+
 """
     Worksheet
 
@@ -333,11 +361,13 @@ mutable struct Worksheet
     filevals::Union{Nothing,Vector{FileValRun}}   # the validations of its file's cells, once read
     sortclear::Union{Nothing,Set{Tuple{Int,Int}}}   # cells a sort filled from others: the paragraphs and shapes of their original are not theirs (phase 6 step 9)
     cfs::Union{Nothing,CfState}       # its conditional formats, once read (phase 7)
+    pagecharts::Union{Nothing,Vector{ImageData}}   # charts added anchored to the page: a chart sheet's (phase 8 step 7)
+    sparks::Union{Nothing,SparkState}   # its sparkline groups, once read (phase 8 step 8)
 end
 
 Worksheet(xf, name, index, entry, visible, store, localnames, lock) =
     Worksheet(xf, name, index, entry, visible, store, localnames, lock, Dict{Int,Vector{Int}}(), nothing, nothing, nothing, 0, false,
-              NameEdits(), nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing)
+              NameEdits(), nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing)
 
 # Whether the sheet was made by OpenDocumentSpreadsheets (so it is written whole), not read from the file.
 isnewsheet(ws::Worksheet) = ws.entry === nothing
@@ -378,14 +408,15 @@ mutable struct ODSFile
     hasdraw::Union{Nothing,Bool}      # whether the content holds any `<draw:` element, once known (phase 6 step 5)
     valedits::ValEdits                # validation rules read and added (phase 6 step 6)
     dbedits::DBEdits                  # database ranges (tables) read, added and changed (phase 6 step 7)
+    chartobjs::Dict{String,ChartObj}  # charts added or edited, by object name (phase 8)
 end
 
 ODSFile(source, container, content, version, styles, sheets, names, null_date, use_cache) =
     ODSFile(source, container, content, version, styles, sheets, names, null_date, use_cache, false, nothing,
-            nothing, ReentrantLock(), Any[], Any[], Any[], Pair{String,String}[], NameEdits(), TableStyleEdits(), ViewEdits(), nothing, PageEdits(), nothing, PersonEdits(), Tuple{String,String,Vector{UInt8}}[], nothing, ValEdits(), DBEdits())
+            nothing, ReentrantLock(), Any[], Any[], Any[], Pair{String,String}[], NameEdits(), TableStyleEdits(), ViewEdits(), nothing, PageEdits(), nothing, PersonEdits(), Tuple{String,String,Vector{UInt8}}[], nothing, ValEdits(), DBEdits(), Dict{String,ChartObj}())
 ODSFile(source, container, content, version, styles, sheets, names, null_date, use_cache, writable, source_io) =
     ODSFile(source, container, content, version, styles, sheets, names, null_date, use_cache, writable, source_io,
-            nothing, ReentrantLock(), Any[], Any[], Any[], Pair{String,String}[], NameEdits(), TableStyleEdits(), ViewEdits(), nothing, PageEdits(), nothing, PersonEdits(), Tuple{String,String,Vector{UInt8}}[], nothing, ValEdits(), DBEdits())
+            nothing, ReentrantLock(), Any[], Any[], Any[], Pair{String,String}[], NameEdits(), TableStyleEdits(), ViewEdits(), nothing, PageEdits(), nothing, PersonEdits(), Tuple{String,String,Vector{UInt8}}[], nothing, ValEdits(), DBEdits(), Dict{String,ChartObj}())
 
 #
 # The sheet index is built as far as it is needed: `xf["Sheet1"]` or `xf[1]` finds the first

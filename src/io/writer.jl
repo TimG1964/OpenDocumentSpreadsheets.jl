@@ -82,18 +82,25 @@ struct PackagePart
     data::Union{String,Vector{UInt8},Function,Nothing}   # nothing: listed in the manifest only
     mediatype::String
     compress::Bool
+    # asked when the part's turn comes (after the parts before it are written): whether it is
+    # written and listed; nothing: always (an embedded object whose frame may be gone, phase 8)
+    keep::Union{Nothing,Function}
 end
+PackagePart(name::String, data, mediatype::String, compress::Bool) = PackagePart(name, data, mediatype, compress, nothing)
 
 # A directory that the manifest lists with a media type but the zip holds no entry for, such as an
 # embedded chart's `Object 1/` (LibreOffice writes it so, and needs it to load the chart).
-manifest_entry(name::AbstractString, mediatype::AbstractString) = PackagePart(String(name), nothing, String(mediatype), false)
+manifest_entry(name::AbstractString, mediatype::AbstractString; keep::Union{Nothing,Function} = nothing) =
+    PackagePart(String(name), nothing, String(mediatype), false, keep)
 
 function PackagePart(name::AbstractString, data::Union{AbstractString,AbstractVector{UInt8},Function};
                      mediatype::AbstractString = guess_mediatype(name),
-                     compress::Bool = !_already_compressed(name))
+                     compress::Bool = !_already_compressed(name), keep::Union{Nothing,Function} = nothing)
     PackagePart(String(name), data isa Function ? data : data isa AbstractString ? String(data) : Vector{UInt8}(data),
-                String(mediatype), compress)
+                String(mediatype), compress, keep)
 end
+
+_kept(p::PackagePart) = p.keep === nothing || p.keep()::Bool
 
 const _MEDIATYPES = Dict(
     ".xml" => "text/xml",
@@ -190,8 +197,13 @@ function _write_mimetype_zip(io::IO, mediatype::AbstractString)
     nothing
 end
 
-function _append_parts!(w::ZipArchives.ZipWriter, parts, manifest::String)
+# `manifest`: its text, or a function of the parts written that makes it (when some parts may not
+# be: `keep`).
+function _append_parts!(w::ZipArchives.ZipWriter, parts, manifest::Union{String,Function})
+    written = PackagePart[]
     for p in parts
+        _kept(p) || continue
+        push!(written, p)
         p.data === nothing && continue       # in the manifest only
         if endswith(p.name, "/")             # a directory entry, such as Configurations2/
             ZipArchives.zip_mkdir(w, p.name)
@@ -202,7 +214,7 @@ function _append_parts!(w::ZipArchives.ZipWriter, parts, manifest::String)
         ZipArchives.zip_commitfile(w)
     end
     ZipArchives.zip_newfile(w, "META-INF/manifest.xml"; compress = true)
-    write(w, manifest)
+    write(w, manifest isa Function ? manifest(written) : manifest)
     ZipArchives.zip_commitfile(w)
 end
 
@@ -224,7 +236,7 @@ function write_package(path::AbstractString, parts; mediatype::AbstractString = 
     _check_version(version)
     _check_parts(parts)
     mediatype in SPREADSHEET_MEDIATYPES || throw(ArgumentError("unsupported media type $(repr(mediatype))"))
-    manifest = manifest_xml(parts, mediatype, version)
+    manifest = written -> manifest_xml(written, mediatype, version)
     open(io -> _write_mimetype_zip(io, mediatype), path, "w")
     ZipArchives.zip_append_archive(w -> _append_parts!(w, parts, manifest), path)
     path
@@ -246,7 +258,7 @@ function package_bytes(parts; mediatype::AbstractString = MEDIATYPE_ODS,
     _check_version(version)
     _check_parts(parts)
     mediatype in SPREADSHEET_MEDIATYPES || throw(ArgumentError("unsupported media type $(repr(mediatype))"))
-    manifest = manifest_xml(parts, mediatype, version)
+    manifest = written -> manifest_xml(written, mediatype, version)
     buf = IOBuffer()
     _write_mimetype_zip(buf, mediatype)
     ZipArchives.zip_append_archive(w -> _append_parts!(w, parts, manifest), buf)

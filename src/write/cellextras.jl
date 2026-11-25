@@ -193,9 +193,12 @@ function _with_edit(ex::Union{Nothing,_CellExtras}, e::CellEdit, ws::Worksheet)
         end
         k = 0
         for s in ex.tail
-            if startswith(s, "<draw:frame") && occursin("<draw:image", s)
+            if _is_picture(s)
                 k += 1
                 e.frames !== nothing && k in e.frames.removed && continue
+            elseif e.frames !== nothing && !isempty(e.frames.objremoved) && startswith(s, "<draw:frame")
+                o = _object_hrefs(s)                   # a chart deleted (phase 8)
+                !isempty(o) && o[1] in e.frames.objremoved && continue
             end
             push!(tail, s)
         end

@@ -84,6 +84,7 @@ include("write/lines.jl")
 include("write/xmlout.jl")
 include("write/rewrite.jl")
 include("write/cellextras.jl")
+include("write/objects.jl")
 include("write/patch.jl")
 include("write/patchmap.jl")
 include("write/settings.jl")
@@ -101,6 +102,7 @@ include("write/images.jl")
 include("write/validation.jl")
 include("write/dbtables.jl")
 include("write/conditional.jl")
+include("write/sparklines.jl")
 include("write/cfrules.jl")
 include("write/collate.jl")
 include("write/autofilter.jl")
@@ -108,6 +110,11 @@ include("write/sort.jl")
 include("write/save.jl")
 include("write/stream.jl")
 include("write/writetable.jl")
+
+# Charts (phase 8): a submodule, as in XLSX.jl, with the same few names bound here
+include("charts/Charts.jl")
+using .Charts: Charts, AbstractChart, Chart, ChartEx, ChartRef, ChartSeries, getChartSchema, getChartType, getCharts,
+    getChart, getChartData, getChartRanges, addSparklines, getSparklines, deleteSparklines
 
 export
     # files and worksheets
@@ -145,7 +152,9 @@ export
     addDataValidation, deleteDataValidation,
     addtable!, deletetable!, settotals!, gettotals, removetotals!, appendtable!, gettablerange,
     setAutoFilter, removeAutoFilter,
-    setConditionalFormat
+    setConditionalFormat,
+    # sparklines (phase 8 step 8), as XLSX.jl's at its top level
+    addSparklines, getSparklines, deleteSparklines
 
 @static if VERSION >= v"1.11"
     eval(Meta.parse("public getcell, getcellrange, getFormula, get_dimension, ODSError, Cell, EmptyCell, DataTable, TableRow, TableRowIterator, SheetRow, StreamWriter, StreamSheet, " *
@@ -155,7 +164,8 @@ export
                     "getPageSetup, getPageMargins, getPrintOptions, getPrintArea, getPrintTitles, getHeaderFooter, " *
                     "getDocumentProperties, getCustomProperty, getCustomProperties, " *
                     "getHyperlink, getHyperlinks, getComment, getComments, getThreadedComment, getThreadedComments, getImages, getDataValidation, getDataValidations, " *
-                    "Table, TableStyleInfo, table, tables, getAutoFilter, getConditionalFormats, clearConditionalFormats, setColoredDataBars"))
+                    "Table, TableStyleInfo, table, tables, getAutoFilter, getConditionalFormats, clearConditionalFormats, setColoredDataBars, " *
+                    "Charts, AbstractChart, Chart, ChartEx, ChartRef, ChartSeries, getChartSchema, getChartType, getCharts, getChart, getChartData, getChartRanges"))
 end
 
 include("precompile.jl")

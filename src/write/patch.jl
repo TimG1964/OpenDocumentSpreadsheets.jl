@@ -647,7 +647,7 @@ function write_patched_table(out::_ChunkedIO, ws::Worksheet; display::Bool = tru
     end
     # the rest of the table, verbatim, with its names' edits (they follow the rows; phase 5) and its
     # conditional formats' (phase 7: after the names)
-    for (a, b, rep) in vcat(_name_splices(ws.localnames, _names_at!(ws), src), _cf_splices(ws, src))
+    for (a, b, rep) in vcat(_name_splices(ws.localnames, _names_at!(ws), src), _cf_splices(ws, src), _spark_splices(ws, src))
         _copy_to!(st, a)
         print(out, rep)
         b >= a && (st.pos = max(st.pos, nextind(src, b)))
@@ -753,6 +753,7 @@ function _write_sheet_now(out::_ChunkedIO, ws::Worksheet, rw::Union{Nothing,RefR
     pos = e + 1
     splices = _name_splices(ws.localnames, _names_at!(ws), src)          # its names' edits (phase 5)
     append!(splices, _cf_splices(ws, src))                               # its conditional formats (phase 7)
+    append!(splices, _spark_splices(ws, src))                            # its sparklines (phase 8 step 8)
     ps = _protection_splice(ws, e)                                       # its protection options (step 9)
     ps === nothing || pushfirst!(splices, (first(ps[1]), last(ps[1]), ps[2]))
     for (x, y, rep) in splices
@@ -880,7 +881,7 @@ function write_patched_content(out::_ChunkedIO, xf::ODSFile; display::Bool = tru
     splices = _Splice[]
     fx = added_faces_xml(xf.styles)
     _ns_splice!(splices, src, rootspan, !isempty(fx) || _has_notes(xf) || _has_frames(xf), _needs_loext(xf.styles) || _needs_protection_loext(xf) || _has_threads(xf);
-                xlink = _needs_xlink(xf.styles) || _has_frames(xf), draw = _has_frames(xf), calcext = _has_footers(xf) || _has_cfs(xf))
+                xlink = _needs_xlink(xf.styles) || _has_frames(xf), draw = _has_frames(xf), calcext = _has_footers(xf) || _has_cfs(xf) || _has_sparks(xf))
     # font faces (phase 4): in office:font-face-decls, which comes before the styles
     stylesnode = get(kids, "office:styles", nothing)
     isempty(fx) || _append_splice!(splices, src, facedecls, "office:font-face-decls", fx,
@@ -905,7 +906,7 @@ function write_patched_content(out::_ChunkedIO, xf::ODSFile; display::Bool = tru
         # edited sheets (and, after structural edits, every other sheet: its references are rewritten)
         for ws in orig
             sp = spans[ws]
-            (_has_edits(ws) || rw !== nothing || _start_tag_changed(ws) || _names_edited(ws) || _cf_edited(ws)) &&
+            (_has_edits(ws) || rw !== nothing || _start_tag_changed(ws) || _names_edited(ws) || _cf_edited(ws) || _spark_edited(ws)) &&
                 push!(splices, (first(sp), last(sp), io -> _write_sheet(io, ws, rw; display)))
         end
         # new sheets (and copies), after the last one

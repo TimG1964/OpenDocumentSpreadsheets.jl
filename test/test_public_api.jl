@@ -16,7 +16,10 @@ const DOCUMENTED_NOT_MARKED = (
 )
 # Imported only to be re-exported (declared `public` in OpenDocumentSpreadsheets on Julia 1.11+; on 1.10
 # nothing marks them as used):
-const REEXPORTED = (:DataTable, :TableRow, :TableRowIterator)
+const REEXPORTED = (:DataTable, :TableRow, :TableRowIterator,
+    # the chart names XLSX.jl also binds at its top level (phase 8)
+    :AbstractChart, :Chart, :ChartEx, :ChartRef, :ChartSeries, :getChart, :getChartData, :getChartRanges, :getChartSchema,
+    :getChartType, :getCharts, :addSparklines, :getSparklines, :deleteSparklines)
 
 @testset "explicit imports" begin
     @test EI.check_no_implicit_imports(OpenDocumentSpreadsheets) === nothing

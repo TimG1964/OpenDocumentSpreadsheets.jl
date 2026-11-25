@@ -502,6 +502,7 @@ function _write_table_flat(io::IO, ws::Worksheet; display::Bool = true)
     end
     print(io, '>')
     pr === nothing || print(io, _protection_xml(pr))
+    _page_charts_xml(io, ws)                      # a chart sheet's chart (phase 8 step 7)
     dim = store_dimension(s)
     ncols = dim === nothing ? 1 : column_number(dim.stop)
     if f === nothing
@@ -528,6 +529,7 @@ function _write_table_flat(io::IO, ws::Worksheet; display::Bool = true)
     end
     ln = ws.localnames                             # its names (phase 5)
     (ln === nothing || isempty(ln)) || print(io, "<table:named-expressions>", _names_xml(ln), "</table:named-expressions>")
-    ws.cfs === nothing || print(io, _cf_element(ws.cfs))   # its conditional formats (phase 7), last
+    ws.cfs === nothing || print(io, _cf_element(ws.cfs))   # its conditional formats (phase 7)
+    ws.sparks === nothing || print(io, _spark_element(ws.sparks))   # its sparklines (phase 8 step 8), last
     print(io, "</table:table>")
 end

@@ -12,8 +12,9 @@ const _REF_ATTRS = Set(["table:formula", "table:expression", "table:condition", 
     "table:base-cell-address", "table:target-range-address", "table:print-ranges", "table:end-cell-address",
     "table:source-cell-range-address", "table:cell-address", "table:target-cell-address",
     "draw:notify-on-update-of-ranges", "chart:values-cell-range-address", "chart:label-cell-address",
-    "chart:cell-range-address", "calcext:value", "calcext:base-cell-address", "calcext:target-range-address",
-    "style:condition", "style:base-cell-address"])
+    "chart:cell-range-address", "chart:error-upper-range", "chart:error-lower-range", "calcext:value", "calcext:base-cell-address", "calcext:target-range-address",
+    "style:condition", "style:base-cell-address",
+    "calcext:cell-address", "calcext:data-range"])
 
 """
     RefRewriter(ops, src)
@@ -29,9 +30,14 @@ struct RefRewriter
     cf::Dict{Tuple{String,String},Tuple{String,String}}
     src::String
     hits::Vector{Int}
+    # the operations for a chart's references: those but sheet copies, which leave a copied chart
+    # pointing at its source (F-083)
+    chartops::Vector{Any}
 end
+RefRewriter(ops::Vector{Any}, cf::Dict{Tuple{String,String},Tuple{String,String}}, src::String, hits::Vector{Int}) =
+    RefRewriter(ops, cf, src, hits, Any[op for op in ops if !(op isa SheetCopy)])
 
-const _REF_RX = r"(?:formula|expression|condition|range-address|cell-address|print-ranges|calcext:value|notify-on-update-of-ranges)="
+const _REF_RX = r"(?:formula|expression|condition|range-address|cell-address|print-ranges|calcext:value|notify-on-update-of-ranges|error-upper-range|error-lower-range|data-range)="
 
 # The start tags in s[a:b] holding a registered attribute (sorted).
 function _ref_hits(s::String, a::Int = 1, b::Int = ncodeunits(s))
@@ -134,9 +140,21 @@ function _new_attr_values(rw::RefRewriter, tag::AbstractString, attrs::Vector{Pa
             set_("style:condition", v, _replay(_rf, v, rw.ops, bs, 0, 0))
             isempty(b) || set_("style:base-cell-address", b, _replay(_rl, b, rw.ops, bs, 0, 0; marked = false))
         end
+    elseif tag == "calcext:sparkline"
+        # a sparkline goes with its cell; its data moves as LibreOffice moves a chart's (Q-029, D-086):
+        # clipped, never #REF!, re-pointed when its sheet goes, left on its sheet by a copy
+        c = get_("calcext:cell-address"); d = get_("calcext:data-range")
+        if c !== nothing
+            nc = _replay(_rl, c, rw.ops, sheet, 0, 0)
+            occursin("#REF!", nc) && return :drop
+            set_("calcext:cell-address", c, nc)
+        end
+        d === nothing || set_("calcext:data-range", d, _replay(_rl, d, rw.chartops, sheet, 0, 0; marked = false))
     else
         unmarked = startswith(tag, "chart:") || tag == "draw:object" || tag == "draw:frame" ||
                    tag == "table:content-validation"
+        # a chart's references (its object's, and its frame's notify list) don't follow a sheet copy
+        chart = startswith(tag, "chart:") || tag == "draw:object"
         base = get_("table:base-cell-address")
         bs = _ctx_sheet(base, sheet)
         # elements LibreOffice drops (F-043, F-047): a validation based on a deleted sheet, and a
@@ -163,11 +181,13 @@ function _new_attr_values(rw::RefRewriter, tag::AbstractString, attrs::Vector{Pa
             elseif k == "calcext:target-range-address"
                 set_(k, v, _replay(_rl, v, rw.ops, sheet, 0, 0; expand = true))
             elseif k == "table:end-cell-address" || k == "draw:notify-on-update-of-ranges"
-                set_(k, v, _replay(_rl, v, rw.ops, sheet, 0, 0; marked = false))
+                set_(k, v, _replay(_rl, v, chart ? rw.chartops : rw.ops, sheet, 0, 0; marked = false))
+            elseif k == "chart:error-upper-range" || k == "chart:error-lower-range"     # in a series' style (F-083)
+                set_(k, v, _replay(_rl, v, rw.chartops, sheet, 0, 0; marked = false))
             elseif k == "style:condition" || k == "style:base-cell-address" || k == "calcext:base-cell-address"
                 continue                     # handled with their elements above
             else
-                set_(k, v, _replay(_rl, v, rw.ops, sheet, 0, 0; marked = !unmarked))
+                set_(k, v, _replay(_rl, v, chart ? rw.chartops : rw.ops, sheet, 0, 0; marked = !unmarked))
             end
         end
     end
@@ -302,6 +322,26 @@ function rewrite_xml(out::IO, rw::RefRewriter, s::String, a::Int, b::Int; sheet:
     return
 end
 
+# The last sheet's `<table:table ` before byte `i`: in a flat file a chart is inline, and its local
+# table (`table:name="local-table"`, F-079) is no sheet.
+function _sheet_table_before(s::String, i::Int)
+    while (tt = findprev("<table:table ", s, i)) !== nothing
+        o = findprev("<draw:object", s, first(tt))
+        if o !== nothing
+            oe = first(o) - 1 + _start_tag_end(SubString(s, first(o)))
+            if s[prevind(s, oe)] != '/'                  # an inline object, not a zipped file's reference
+                c = findnext("</draw:object>", s, oe)
+                if c !== nothing && first(c) > first(tt)
+                    i = first(o) - 1
+                    continue
+                end
+            end
+        end
+        return tt
+    end
+    return nothing
+end
+
 """
     cf_rewrites(rw, content) -> Dict
 
@@ -313,7 +353,7 @@ function cf_rewrites!(rw::RefRewriter, s::String)
     sheet = ""
     while (r = findnext("<calcext:conditional-format ", s, i)) !== nothing
         ct = first(r)
-        tt = findprev("<table:table ", s, ct)
+        tt = _sheet_table_before(s, ct)
         if tt !== nothing
             ta = _tag_attrs(s, first(tt), first(tt) - 1 + _start_tag_end(SubString(s, first(tt))))
             k = findfirst(x -> x[1] == "table:name", ta)

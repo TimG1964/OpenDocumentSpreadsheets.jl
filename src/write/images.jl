@@ -90,6 +90,7 @@ end
 
 function _image_frame_xml(io::IO, ws::Worksheet, img::ImageData)
     xf = get_odsfile(ws)
+    isempty(img.object) || return _chart_frame_xml(io, ws, img)
     print(io, "<draw:frame table:end-cell-address=\"")
     _escape_attr(io, SheetCore.quoteit(ws.name) * "." * string(SheetCore.encode_column_number(img.tocol), img.torow))
     print(io, "\" table:end-x=\"", _cm(img.endx), "\" table:end-y=\"", _cm(img.endy), "\" svg:width=\"", _cm(img.width),
@@ -124,7 +125,7 @@ function _frames_xml(ws::Worksheet, fe::FrameEdit)
 end
 
 # Whether a workbook's new XML has frames (for the namespaces it declares).
-_has_frames(xf::ODSFile) = any(ws -> ws.frames !== nothing && !isempty(ws.frames), _sheets(xf))
+_has_frames(xf::ODSFile) = any(ws -> (ws.frames !== nothing && !isempty(ws.frames)) || (ws.pagecharts !== nothing && !isempty(ws.pagecharts)), _sheets(xf))
 
 # The pictures added that some frame still uses: (Pictures/name, media type, bytes).
 function _used_media(xf::ODSFile)
@@ -132,7 +133,7 @@ function _used_media(xf::ODSFile)
     for ws in _sheets(xf)
         ws.frames === nothing && continue
         for fe in values(ws.frames), img in fe.added
-            push!(used, img.pic)
+            isempty(img.object) && push!(used, img.pic)
         end
     end
     return [m for m in xf.media if m[1] in used]
@@ -146,7 +147,9 @@ const _HREF_RX = r"\bxlink:href=\"([^\"]*)\""
 _attr_cm(xml::AbstractString, name::AbstractString) =
     (v = _attr_in(SubString(xml, 1, something(findfirst('>', xml), ncodeunits(xml))), name); v === nothing ? nothing : _length_cm(v))
 
-_is_picture(xml::AbstractString) = startswith(xml, "<draw:frame") && occursin("<draw:image", xml)
+# A frame holding a picture. A chart's frame also holds a `draw:image`, its replacement picture, after
+# its `draw:object` (F-079): it is no picture.
+_is_picture(xml::AbstractString) = startswith(xml, "<draw:frame") && occursin("<draw:image", xml) && !occursin("<draw:object", xml)
 
 function _file_frames(ws::Worksheet)
     ws.fileframes === nothing || return ws.fileframes
@@ -280,6 +283,7 @@ function _sheet_images(ws::Worksheet)
                 push!(out, (r, c, ImageInfo((ws.name, _media_name(m === nothing ? "" : XML.unescape(m.captures[1])), name(r, c), name(er, ec), _frame_alt(x)...)), :moved, j))
             end
             for (j, img) in enumerate(fe.added)
+                isempty(img.object) || continue                 # a chart's frame (phase 8)
                 push!(out, (r, c, ImageInfo((ws.name, _media_name(img.pic), name(r, c), name(img.torow, img.tocol), img.title, img.desc)), :added, j))
             end
         end

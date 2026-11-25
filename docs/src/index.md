@@ -62,6 +62,8 @@ writetable("out.ods", dt; sheetname = "Costs")   # write it back
   validation, tables (LibreOffice's database ranges) with totals, and AutoFilters that filter and
   sort as LibreOffice does, with XLSX.jl's functions. They stay with their cells through edits,
   inserted and deleted lines, sorts and sheet copies.
+- **Charts and sparklines:** XLSX.jl's chart API in a `Charts` submodule (making, reading and
+  formatting charts, histograms and chart sheets) and its sparklines, stored as LibreOffice's chart
+  objects and sparkline groups, in LibreOffice's look.
 - **Speed:** comparable with XLSX.jl on XLSX.jl's own benchmarks.
 
-Charts are planned.

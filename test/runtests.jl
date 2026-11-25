@@ -82,6 +82,15 @@ const LO_FIXTURE_MAJOR = parse(Int, match(r"LibreOffice\s+(\d+)\.", read(joinpat
         include("write/test_sort.jl")
         include("write/test_conditional.jl")
         include("write/test_cfrules.jl")
+        include("write/test_chartobjects.jl")
+    end
+    @testset "charts" begin
+        include("charts/test_reading.jl")
+        include("charts/test_format.jl")
+        include("charts/test_create.jl")
+        include("charts/test_setters.jl")
+        include("charts/test_chartex.jl")
+        include("charts/test_sparklines.jl")
     end
     @testset "styles" begin
         include("styles/test_stylesheet.jl")

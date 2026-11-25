@@ -163,6 +163,22 @@ end
 [Links, notes, pictures and tables](guide/objects.md) covers these, pictures, and how filters and
 sorts follow LibreOffice.
 
+## Charts and sparklines
+
+```julia
+using OpenDocumentSpreadsheets.Charts
+
+openods("budget.ods"; mode = "rw") do xf
+    s = xf["Costs"]
+    c = addChart(s, :column; anchor = "F2:M18", title = "Costs by month")
+    addSeries(c, "B2:B13"; categories = "A2:A13", name_ref = "B1")
+    setLegendPos(c, :b)
+    addSparklines(s, "D2:D13", "B2:C13")
+end
+```
+
+[Charts and sparklines](guide/charts.md) covers charts, histograms, chart sheets and sparklines.
+
 ## Streaming a large file
 
 [`streamods`](@ref) writes rows as they are produced, in bounded memory:

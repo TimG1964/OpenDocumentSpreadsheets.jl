@@ -209,16 +209,20 @@ end
 
 # The objects (`./Object 1`) a copy's text embeds get new names, and their parts are copied at
 # save (zipped files; a flat file holds them inline).
+# LibreOffice names a copy's objects `Object N`, the first free numbers (F-083), whatever the
+# originals are called (a chart made through its API is named after the chart: F-079).
 function _copy_objects!(xf::ODSFile, t::String)
     (xf.container === nothing || xf.container.zip === nothing) && return t
-    names = unique([m.captures[1] for m in eachmatch(r"xlink:href=\"\./(Object [^\"/]+)\"", t)])
+    names = _object_hrefs(t)
     isempty(names) && return t
     taken = Set{String}()
     for n in partnames(xf.container)
-        m = match(r"^(Object [^/]+)/", n)
-        m === nothing || push!(taken, m.captures[1])
+        i = findfirst('/', n)
+        i === nothing || push!(taken, n[1:i-1])
     end
+    foreach(e -> push!(taken, rstrip(e.path, '/')), xf.container.manifest)
     foreach(p -> push!(taken, p.second), xf.objcopies)
+    union!(taken, keys(xf.chartobjs))
     for old in names
         k = 1
         while "Object $k" in taken
@@ -226,8 +230,13 @@ function _copy_objects!(xf::ODSFile, t::String)
         end
         new = "Object $k"
         push!(taken, new)
-        push!(xf.objcopies, old => new)
-        t = replace(t, "\"./$old\"" => "\"./$new\"", "\"./ObjectReplacements/$old\"" => "\"./ObjectReplacements/$new\"")
+        if haskey(xf.chartobjs, old)                   # a chart added or edited here: its text copied (phase 8)
+            xf.chartobjs[new] = ChartObj(_chart_text_now(xf, old), length(xf.ops), xf.chartobjs[old].styles)
+        else
+            push!(xf.objcopies, old => new)
+        end
+        eo = _xml_attr_escape(old)
+        t = replace(t, "\"./$eo\"" => "\"./$new\"", "\"./ObjectReplacements/$eo\"" => "\"./ObjectReplacements/$new\"")
     end
     return t
 end
@@ -323,8 +332,11 @@ function copysheet!(ws::Worksheet, name::AbstractString = "")
         new.print = deepcopy(ws.print)                 # page style and print area (phase 5 step 10)
         new.notes = deepcopy(ws.notes)                 # notes (phase 6 step 4; a file sheet's copy has them in its text)
         new.frames = deepcopy(ws.frames)               # pictures (phase 6 step 5; likewise)
+        new.pagecharts = deepcopy(ws.pagecharts)       # a chart sheet's chart (phase 8 step 7)
+        _copy_chart_frames!(xf, new)                   # charts: each gets its own object (phase 8)
         new.valrects = deepcopy(ws.valrects)           # validations (phase 6 step 6; likewise)
         _copy_cfs!(new, ws, op)                        # conditional formats (phase 7; likewise)
+        _copy_sparks!(new, ws, op)                     # sparklines (phase 8 step 8; likewise)
         for rd in new.store.rows, (j, r) in enumerate(rd.runs)
             r.data.formula === nothing && continue
             d = r.data

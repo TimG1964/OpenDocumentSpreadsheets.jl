@@ -401,6 +401,8 @@ function _rewrite_model_refs!(xf::ODSFile, op::RefOp)
     _rewrite_rule_refs!(xf, op)                        # validations added (phase 6 step 6)
     _rewrite_db_refs!(xf, op)                          # tables added or changed (phase 6 step 7)
     _rewrite_cf_refs!(xf, op)                          # conditional formats read or set (phase 7)
+    _rewrite_spark_refs!(xf, op)                       # sparklines read or set (phase 8 step 8)
+    _rewrite_chart_refs!(xf, op)                       # charts added or edited (phase 8)
     return
 end
 
