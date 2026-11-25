@@ -400,6 +400,7 @@ function _rewrite_model_refs!(xf::ODSFile, op::RefOp)
     xf.names = [_rewrite_name(dn, op) for dn in xf.names]
     _rewrite_rule_refs!(xf, op)                        # validations added (phase 6 step 6)
     _rewrite_db_refs!(xf, op)                          # tables added or changed (phase 6 step 7)
+    _rewrite_cf_refs!(xf, op)                          # conditional formats read or set (phase 7)
     return
 end
 

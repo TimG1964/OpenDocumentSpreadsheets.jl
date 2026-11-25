@@ -287,6 +287,17 @@ end
 # Cells given a rule (its name) or none (nothing) since, in order: the last that holds a cell is its.
 const ValRect = Tuple{UnitRange{Int},UnitRange{Int},Union{Nothing,String}}
 
+# A sheet's conditional formats (phase 7, D-081): `list`, each `calcext:conditional-format` element as
+# it is now (references current); `edited`, whether they changed since the file was read; `span`, the
+# file's `calcext:conditional-formats` element in the sheet's text (empty if none); `at`, where a new
+# element goes when there is none (0: before the table's end tag, found when needed).
+mutable struct CfState
+    list::Vector{String}
+    edited::Bool
+    span::UnitRange{Int}
+    at::Int
+end
+
 """
     Worksheet
 
@@ -294,7 +305,7 @@ A sheet of an [`ODSFile`](@ref). Index it like a matrix of values (`sheet["A1"]`
 `sheet["A1:B3"]`, `sheet[2, 1]`, `sheet[:]`); see [`getdata`](@ref).
 """
 mutable struct Worksheet
-    package::Any                      # the ODSFile (typed in accessors; circular)
+    package::Any                     # the ODSFile (typed in accessors; circular)
     name::String
     index::Int
     entry::Union{Nothing,SheetEntry{String}}   # nothing: a sheet made by OpenDocumentSpreadsheets
@@ -321,11 +332,12 @@ mutable struct Worksheet
     valrects::Union{Nothing,Vector{ValRect}}   # validations set or removed, by block of cells (phase 6 step 6)
     filevals::Union{Nothing,Vector{FileValRun}}   # the validations of its file's cells, once read
     sortclear::Union{Nothing,Set{Tuple{Int,Int}}}   # cells a sort filled from others: the paragraphs and shapes of their original are not theirs (phase 6 step 9)
+    cfs::Union{Nothing,CfState}       # its conditional formats, once read (phase 7)
 end
 
 Worksheet(xf, name, index, entry, visible, store, localnames, lock) =
     Worksheet(xf, name, index, entry, visible, store, localnames, lock, Dict{Int,Vector{Int}}(), nothing, nothing, nothing, 0, false,
-              NameEdits(), nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing)
+              NameEdits(), nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing)
 
 # Whether the sheet was made by OpenDocumentSpreadsheets (so it is written whole), not read from the file.
 isnewsheet(ws::Worksheet) = ws.entry === nothing

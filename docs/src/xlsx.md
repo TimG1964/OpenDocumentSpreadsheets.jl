@@ -120,4 +120,17 @@ The formatting functions work as in XLSX.jl too, with the differences listed in
   (`paperWidth`, `paperHeight`), `scaleToPages`, six more print options, a table's
   `has_header_row` and `filterButtons`, a filter's `caseSensitive`, `noDuplicates` and regular
   expressions, and a sort's `naturalSort` and `includeFormats`.
-- **Not yet available:** conditional formats and charts.
+- **Conditional formats** ([`setConditionalFormat`](@ref), `getConditionalFormats`,
+  `clearConditionalFormats`, `setColoredDataBars`) take XLSX.jl's types, keywords and presets,
+  and are stored as LibreOffice's rules:
+  - **Formats:** each rule's format is a named cell style (`ConditionalStyle_N`), as LibreOffice's
+    import makes them; `style` applies any named style instead.
+  - **Order:** rules on one range are applied in the order they were set, the first that holds
+    winning.
+  - **Errors:** what LibreOffice doesn't support (`stopIfTrue`, standard deviations, data bar
+    borders, right-to-left bars, custom and reversed icon sets).
+  - **Fixed:** `greaterEqual` and `lessEqual` work; XLSX.jl's own files lose them in
+    LibreOffice.
+  - **LibreOffice's own options:** this, last and next year, its smiley icon sets, and a bar's
+    `minLength` and `maxLength`.
+- **Not yet available:** charts.

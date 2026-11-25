@@ -528,5 +528,6 @@ function _write_table_flat(io::IO, ws::Worksheet; display::Bool = true)
     end
     ln = ws.localnames                             # its names (phase 5)
     (ln === nothing || isempty(ln)) || print(io, "<table:named-expressions>", _names_xml(ln), "</table:named-expressions>")
+    ws.cfs === nothing || print(io, _cf_element(ws.cfs))   # its conditional formats (phase 7), last
     print(io, "</table:table>")
 end

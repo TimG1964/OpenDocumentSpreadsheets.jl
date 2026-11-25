@@ -100,6 +100,19 @@ PCT.@setup_workload begin
                 writeods(IOBuffer(), xf)
                 xf = readods(seekstart(io))
                 getHyperlinks(xf["A"]); getComments(xf["A"]); getDataValidations(xf["A"]); getAutoFilter(xf["A"])
+
+                # Conditional formats (D-083): a rule with a format of its own, the kinds without, and
+                # the bands; their first calls took 2.6 s a session
+                xf = openods(path; mode = "rw")
+                sh = xf["A"]
+                setConditionalFormat(sh, "A2:A4", :cellIs; operator = "greaterThan", value = "1", dxStyle = "greenfilltext")
+                setConditionalFormat(sh, "A2:A4", :expression; formula = "A2>B2", font = ["bold" => "true"])
+                setConditionalFormat(sh, "B2:B4", :dataBar)
+                setConditionalFormat(sh, "B2:B4", :colorScale; colorscale = "greenyellow")
+                setConditionalFormat(sh, "B2:B4", :iconSet)
+                setColoredDataBars(sh, "A2:A4"; bands = 2)
+                getConditionalFormats(sh); clearConditionalFormats(sh, "B:B")
+                writeods(IOBuffer(), xf)
             end
         finally
             rm(dir; recursive = true, force = true)

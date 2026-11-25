@@ -1,0 +1,143 @@
+Own	0	Own.B1:K1,Own.B26:K31	0	condition	op=0	f1=4	f2=0	style=Bad
+Own	1	Own.B2:K2	0	condition	op=1	f1=4	f2=0	style=Bad
+Own	2	Own.B3:K3	0	condition	op=2	f1=4	f2=0	style=Bad
+Own	3	Own.B4:K4	0	condition	op=3	f1=4	f2=0	style=Bad
+Own	4	Own.B5:K5	0	condition	op=4	f1=4	f2=0	style=Bad
+Own	5	Own.B6:K6	0	condition	op=5	f1=4	f2=0	style=Bad
+Own	6	Own.B7:K7	0	condition	op=6	f1=4	f2=6	style=Bad
+Own	7	Own.B8:K8	0	condition	op=7	f1=4	f2=6	style=Bad
+Own	8	Own.B9:K9	0	condition	op=8	f1=0	f2=0	style=Bad
+Own	9	Own.B10:K10	0	condition	op=9	f1=0	f2=0	style=Bad
+Own	10	Own.B11:K11	0	condition	op=10	f1=4	f2=0	style=Bad
+Own	11	Own.B12:K12	0	condition	op=11	f1=4	f2=0	style=Bad
+Own	12	Own.B13:K13	0	condition	op=12	f1=4	f2=0	style=Bad
+Own	13	Own.B14:K14	0	condition	op=13	f1=4	f2=0	style=Bad
+Own	14	Own.B15:K15	0	condition	op=14	f1=0	f2=0	style=Bad
+Own	15	Own.B16:K16	0	condition	op=15	f1=0	f2=0	style=Bad
+Own	16	Own.B17:K17	0	condition	op=16	f1=0	f2=0	style=Bad
+Own	17	Own.B18:K18	0	condition	op=17	f1=0	f2=0	style=Bad
+Own	18	Own.B19:K19	0	condition	op=18	f1=0	f2=0	style=Bad
+Own	19	Own.B20:K20	0	condition	op=19	f1=0	f2=0	style=Bad
+Own	20	Own.B21:K21	0	condition	op=20	f1=4	f2=0	style=Bad
+Own	21	Own.B22:K22	0	condition	op=21	f1=4	f2=0	style=Bad
+Own	22	Own.B23:K23	0	condition	op=22	f1=4	f2=0	style=Bad
+Own	23	Own.B24:K24	0	condition	op=23	f1=4	f2=0	style=Bad
+Own	24	Own.B25:K25	0	condition	op=24	f1=4	f2=0	style=Bad
+Own	25	Own.B32:K32	0	condition	op=0	f1="th"	f2=0	style=Good
+Own	26	Own.B33:K33	0	condition	op=0	f1=B33>$M$1	f2=0	style=My Rule
+Own	27	Own.B34:K34	0	condition	op=2	f1=$M$1	f2=0	style=Accent
+Own	28	Own.B35:K35	0	condition	op=2	f1=M35	f2=0	style=Accent
+Own	29	Own.B36:K36	0	condition	op=6	f1=$M$2	f2=$M$1*2	style=Neutral
+Own	30	Own.B37:K37	0	condition	op=0	f1=2.5	f2=0	style=Bad
+Own	31	Own.B38:K38	0	date	date=0	style=
+Own	32	Own.B39:K39	0	date	date=0	style=
+Own	33	Own.B40:K40	0	date	date=0	style=
+Own	34	Own.B41:K41	0	date	date=0	style=
+Own	35	Own.B42:K42	0	date	date=0	style=
+Own	36	Own.B43:K43	0	date	date=0	style=
+Own	37	Own.B44:K44	0	date	date=0	style=
+Own	38	Own.B45:K45	0	date	date=0	style=
+Own	39	Own.B46:K46	0	date	date=0	style=
+Own	40	Own.B47:K47	0	date	date=0	style=
+Own	41	Own.B48:K48	0	date	date=0	style=
+Own	42	Own.B49:K49	0	date	date=0	style=
+Own	43	Own.B50:K50	0	date	date=0	style=
+Own	44	Own.B51:K51	0	date	date=0	style=
+Own	45	Own.B52:K52	0	date	date=0	style=
+Own	46	Own.B53:K53	0	date	date=0	style=
+Own	47	Own.B54:K54	0	colorscale	t=1
+Own	48	Own.B55:K55	0	colorscale	t=1
+Own	49	Own.B56:K56	0	colorscale	t=1
+Own	50	Own.B57:K57	0	colorscale	t=1
+Own	51	Own.B58:K58	0	colorscale	t=1
+Own	52	Own.B59:K59	0	colorscale	t=1
+Own	53	Own.B60:K60	0	colorscale	t=1
+Own	54	Own.B61:K61	0	colorscale	t=1
+Own	55	Own.B62:K62	0	colorscale	t=1
+Own	56	Own.B63:K63	0	colorscale	t=1
+Own	57	Own.B64:K64	0	colorscale	t=1
+Own	58	Own.B65:K65	0	colorscale	t=1
+Own	59	Own.B66:K66	0	colorscale	t=1
+Own	60	Own.B67:K67	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=4|0
+Own	61	Own.B68:K68	0	databar	show=True	axis=2	gradient=True	color=ff7f50	axiscolor=ff00ff	useneg=True	neg=00ffff	minlen=	maxlen=	e0=4|0	e1=4|0
+Own	62	Own.B69:K69	0	databar	show=True	axis=2	gradient=False	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=4|0
+Own	63	Own.B70:K70	0	databar	show=False	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=4|0
+Own	64	Own.B71:K71	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=False	neg=000000	minlen=	maxlen=	e0=4|0	e1=4|0
+Own	65	Own.B72:K72	0	databar	show=True	axis=0	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=4|0
+Own	66	Own.B73:K73	0	databar	show=True	axis=1	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=4|0
+Own	67	Own.B74:K74	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=4|0
+Own	68	Own.B75:K75	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=4|0
+Own	69	Own.B76:K76	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=4|0
+Own	70	Own.B77:K77	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=1|0	e1=4|0
+Own	71	Own.B78:K78	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=2|1	e1=4|0
+Own	72	Own.B79:K79	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=3|1	e1=4|0
+Own	73	Own.B80:K80	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|1	e1=4|0
+Own	74	Own.B81:K81	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=5|1	e1=4|0
+Own	75	Own.B82:K82	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=6|	e1=4|0
+Own	76	Own.B83:K83	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=4|0
+Own	77	Own.B84:K84	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=4|0
+Own	78	Own.B85:K85	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=4|0
+Own	79	Own.B86:K86	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=1|0
+Own	80	Own.B87:K87	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=2|8
+Own	81	Own.B88:K88	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=3|8
+Own	82	Own.B89:K89	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=4|8
+Own	83	Own.B90:K90	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=5|8
+Own	84	Own.B91:K91	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=6|
+Own	85	Own.B92:K92	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=4|0
+Own	86	Own.B93:K93	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=4|0
+Own	87	Own.B94:K94	0	iconset	icons=0	reverse=False	show=True
+Own	88	Own.B95:K95	0	iconset	icons=1	reverse=False	show=True
+Own	89	Own.B96:K96	0	iconset	icons=2	reverse=False	show=True
+Own	90	Own.B97:K97	0	iconset	icons=3	reverse=False	show=True
+Own	91	Own.B98:K98	0	iconset	icons=4	reverse=False	show=True
+Own	92	Own.B99:K99	0	iconset	icons=5	reverse=False	show=True
+Own	93	Own.B100:K100	0	iconset	icons=6	reverse=False	show=True
+Own	94	Own.B101:K101	0	iconset	icons=7	reverse=False	show=True
+Own	95	Own.B102:K102	0	iconset	icons=8	reverse=False	show=True
+Own	96	Own.B103:K103	0	iconset	icons=9	reverse=False	show=True
+Own	97	Own.B104:K104	0	iconset	icons=10	reverse=False	show=True
+Own	98	Own.B105:K105	0	iconset	icons=11	reverse=False	show=True
+Own	99	Own.B106:K106	0	iconset	icons=12	reverse=False	show=True
+Own	100	Own.B107:K107	0	iconset	icons=13	reverse=False	show=True
+Own	101	Own.B108:K108	0	iconset	icons=14	reverse=False	show=True
+Own	102	Own.B109:K109	0	iconset	icons=15	reverse=False	show=True
+Own	103	Own.B110:K110	0	iconset	icons=0	reverse=False	show=True
+Own	104	Own.B111:K111	0	iconset	icons=17	reverse=False	show=True
+Own	105	Own.B112:K112	0	iconset	icons=18	reverse=False	show=True
+Own	106	Own.B113:K113	0	iconset	icons=0	reverse=False	show=True
+Own	107	Own.B114:K114	0	iconset	icons=0	reverse=False	show=True
+Own	108	Own.B115:K115	0	iconset	icons=0	reverse=False	show=True
+Own	109	Own.B116:K116	0	iconset	icons=0	reverse=False	show=True
+Own	110	Own.B117:K117	0	iconset	icons=0	reverse=False	show=True
+Own	111	Own.B118:K118	0	iconset	icons=0	reverse=False	show=True
+Own	112	Own.B119:K119	0	iconset	icons=0	reverse=False	show=True
+Own	113	Own.B120:K120	0	iconset	icons=0	reverse=False	show=True
+Own	114	Own.B121:K121	0	iconset	icons=0	reverse=False	show=True
+Own	115	Own.B122:K122	0	iconset	icons=0	reverse=False	show=True
+Own	116	Own.B123:K123	0	iconset	icons=0	reverse=False	show=True
+Own	117	Own.B124:K124	0	iconset	icons=0	reverse=False	show=True
+Own	118	Own.B125:K125	0	iconset	icons=0	reverse=False	show=True
+Own	119	Own.B126:K126	0	iconset	icons=0	reverse=False	show=True
+Own	120	Own.B127:K127	0	iconset	icons=0	reverse=False	show=True
+Own	121	Own.B128:K128	0	iconset	icons=0	reverse=False	show=True
+Own	122	Own.B129:K129	0	iconset	icons=0	reverse=False	show=True
+Own	123	Own.B130:K130	0	iconset	icons=0	reverse=False	show=True
+Own	124	Own.B131:K131	0	iconset	icons=0	reverse=False	show=True
+Own	125	Own.B132:K132	0	iconset	icons=0	reverse=False	show=True
+Own	126	Own.B133:K133	0	condition	op=1	f1=0	f2=0	style=Good
+Own	126	Own.B133:K133	1	condition	op=2	f1=3	f2=0	style=Neutral
+Own	126	Own.B133:K133	2	colorscale	t=1
+Own	126	Own.B133:K133	3	condition	op=0	f1=0	f2=0	style=
+Own	127	Own.B134:K134	0	condition	op=2	f1=6	f2=0	style=Bad
+Own	128	Own.B134:K134	0	condition	op=2	f1=3	f2=0	style=Good
+Own	129	Own.B135:F135	0	condition	op=2	f1=2	f2=0	style=Bad
+Own	130	Own.D135:K135	0	condition	op=1	f1=8	f2=0	style=Good
+Own	131	Own.B136:C136,Own.F136:G136,Own.J136	0	condition	op=2	f1=2	f2=0	style=Bad
+Own	132	Own.B137:K137	0	condition	op=2	f1=5	f2=0	style=Bad
+Second	0	Second.B1:K1	0	condition	op=2	f1=$Own.$M$1	f2=0	style=Good
+Second	1	Second.B2:K2	0	condition	op=0	f1=B2>$Own.$M$2	f2=0	style=Bad
+style	Bad	display=Bad	parent=Status	color=cc0000	weight=100	posture=0	underline=0	strike=0	font=Liberation Sans	size=10	back=ffcccc	top=32767|0|000000	left=32767|0|000000	format=General
+style	Good	display=Good	parent=Status	color=006600	weight=100	posture=0	underline=0	strike=0	font=Liberation Sans	size=10	back=ccffcc	top=32767|0|000000	left=32767|0|000000	format=General
+style	My Rule	display=My Rule	parent=Default	color=7030a0	weight=150	posture=0	underline=0	strike=0	font=Liberation Sans	size=10	back=ffeb9c	top=32767|0|000000	left=32767|0|000000	format=General
+style	Accent	display=Accent	parent=Default	color=ffffff	weight=150	posture=0	underline=0	strike=0	font=Liberation Sans	size=10	back=none	top=32767|0|000000	left=32767|0|000000	format=General
+style	Neutral	display=Neutral	parent=Status	color=996600	weight=100	posture=0	underline=0	strike=0	font=Liberation Sans	size=10	back=ffffcc	top=32767|0|000000	left=32767|0|000000	format=General

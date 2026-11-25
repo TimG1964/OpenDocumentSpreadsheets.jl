@@ -60,3 +60,17 @@ function parse_odf_color(s::AbstractString)::Union{String,Nothing}
     occursin(r"^#[0-9a-fA-F]{6}$", s) || return nothing
     return "FF" * uppercase(s[2:7])
 end
+
+"""
+    color_ramp(c1, c2, n) -> Vector{String}
+
+`n` colours from `c1` to `c2` (`"AARRGGBB"`), interpolated in LCHab and clamped to sRGB, as XLSX.jl
+dev's `_band_colors` (src/conditional-format-helpers.jl) interpolates its coloured data bars' bands.
+"""
+function color_ramp(c1::AbstractString, c2::AbstractString, n::Int)
+    a, b = (convert(Colors.LCHab, parse(Colors.Colorant, "#" * c[3:end])) for c in (c1, c2))
+    return [begin
+                r = convert(Colors.RGB{Float64}, c)
+                "FF" * Colors.hex(Colors.RGB{Float64}(clamp(r.r, 0, 1), clamp(r.g, 0, 1), clamp(r.b, 0, 1)), :RRGGBB)
+            end for c in range(a, b; length = n)]
+end

@@ -52,7 +52,8 @@ writetable("out.ods", dt; sheetname = "Costs")   # write it back
   or 1.3.
 - **Formatting:** fonts, fills, borders, alignment, number formats (shown as LibreOffice
   shows them), named cell styles, merged cells, column widths, row heights and autofit,
-  with XLSX.jl's functions.
+  with XLSX.jl's functions, and conditional formats (rules, data bars, colour scales and
+  icon sets, stored as LibreOffice's).
 - **Sheets and settings:** inserting and deleting rows and columns (with references
   following), renaming, copying, moving and deleting sheets, defined names, hidden lines and
   sheets, tab colours, groups, panes and the view, protection, printing settings, headers and
@@ -63,4 +64,4 @@ writetable("out.ods", dt; sheetname = "Costs")   # write it back
   inserted and deleted lines, sorts and sheet copies.
 - **Speed:** comparable with XLSX.jl on XLSX.jl's own benchmarks.
 
-Conditional formats and charts are planned.
+Charts are planned.

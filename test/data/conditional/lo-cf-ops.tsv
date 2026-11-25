@@ -1,0 +1,58 @@
+base	S	0	S.B1:B10	0	condition	op=2	f1=5	f2=0	style=Bad
+base	S	1	S.C1:C10	0	condition	op=24	f1=B1>A1	f2=0	style=Good
+base	S	2	S.E1:E1048576	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=4|0
+base	S	3	S.A2:A3	0	condition	op=0	f1=2	f2=0	style=Neutral
+base	S	4	S.A5:C5	0	condition	op=24	f1=$A$1>0	f2=0	style=Accent
+copy	S	0	S.B1:B10	0	condition	op=2	f1=5	f2=0	style=Bad
+copy	S	1	S.C1:C10	0	condition	op=24	f1=B1>A1	f2=0	style=Good
+copy	S	2	S.E1:E1048576	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=4|0
+copy	S	3	S.A2:A3	0	condition	op=0	f1=2	f2=0	style=Neutral
+copy	S	4	S.A5:C5	0	condition	op=24	f1=$A$1>0	f2=0	style=Accent
+copy	S2	0	'S2'.B1:B10	0	condition	op=2	f1=5	f2=0	style=Bad
+copy	S2	1	'S2'.C1:C10	0	condition	op=24	f1=B1>A1	f2=0	style=Good
+copy	S2	2	'S2'.E1:E1048576	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=4|0
+copy	S2	3	'S2'.A2:A3	0	condition	op=0	f1=2	f2=0	style=Neutral
+copy	S2	4	'S2'.A5:C5	0	condition	op=24	f1=$A$1>0	f2=0	style=Accent
+del-colB	S	0	S.B1:B10	0	condition	op=24	f1=#REF!>A1	f2=0	style=Good
+del-colB	S	1	S.D1:D1048576	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=4|0
+del-colB	S	2	S.A2:A3	0	condition	op=0	f1=2	f2=0	style=Neutral
+del-colB	S	3	S.A5:B5	0	condition	op=24	f1=$A$1>0	f2=0	style=Accent
+del-row1	S	0	S.B1:B9	0	condition	op=2	f1=5	f2=0	style=Bad
+del-row1	S	1	S.C1:C9	0	condition	op=24	f1=#REF!>#REF!	f2=0	style=Good
+del-row1	S	2	S.E1:E1048576	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=4|0
+del-row1	S	3	S.A1:A2	0	condition	op=0	f1=2	f2=0	style=Neutral
+del-row1	S	4	S.A4:C4	0	condition	op=24	f1=#REF!>0	f2=0	style=Accent
+del-rows2-3	S	0	S.B1:B8	0	condition	op=2	f1=5	f2=0	style=Bad
+del-rows2-3	S	1	S.C1:C8	0	condition	op=24	f1=B1>A1	f2=0	style=Good
+del-rows2-3	S	2	S.E1:E1048576	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=4|0
+del-rows2-3	S	3	S.A3:C3	0	condition	op=24	f1=$A$1>0	f2=0	style=Accent
+edit-cell	S	0	S.B1:B10	0	condition	op=2	f1=5	f2=0	style=Bad
+edit-cell	S	1	S.C1:C10	0	condition	op=24	f1=B1>A1	f2=0	style=Good
+edit-cell	S	2	S.E1:E1048576	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=4|0
+edit-cell	S	3	S.A2:A3	0	condition	op=0	f1=2	f2=0	style=Neutral
+edit-cell	S	4	S.A5:C5	0	condition	op=24	f1=$A$1>0	f2=0	style=Accent
+ins-colB	S	0	S.C1:C10	0	condition	op=2	f1=5	f2=0	style=Bad
+ins-colB	S	1	S.D1:D10	0	condition	op=24	f1=C1>A1	f2=0	style=Good
+ins-colB	S	2	S.F1:F1048576	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=4|0
+ins-colB	S	3	S.A2:B3	0	condition	op=0	f1=2	f2=0	style=Neutral
+ins-colB	S	4	S.A5:D5	0	condition	op=24	f1=$A$1>0	f2=0	style=Accent
+ins-row11	S	0	S.B1:B11	0	condition	op=2	f1=5	f2=0	style=Bad
+ins-row11	S	1	S.C1:C11	0	condition	op=24	f1=B1>A1	f2=0	style=Good
+ins-row11	S	2	S.E1:E1048576	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=4|0
+ins-row11	S	3	S.A2:A3	0	condition	op=0	f1=2	f2=0	style=Neutral
+ins-row11	S	4	S.A5:C5	0	condition	op=24	f1=$A$1>0	f2=0	style=Accent
+ins-row5	S	0	S.B1:B11	0	condition	op=2	f1=5	f2=0	style=Bad
+ins-row5	S	1	S.C1:C11	0	condition	op=24	f1=B1>A1	f2=0	style=Good
+ins-row5	S	2	S.E1:E1048576	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=4|0
+ins-row5	S	3	S.A2:A3	0	condition	op=0	f1=2	f2=0	style=Neutral
+ins-row5	S	4	S.A6:C6	0	condition	op=24	f1=$A$1>0	f2=0	style=Accent
+sort-formats	S	0	S.B1:B10	0	condition	op=2	f1=5	f2=0	style=Bad
+sort-formats	S	1	S.C1:C10	0	condition	op=24	f1=B1>A1	f2=0	style=Good
+sort-formats	S	2	S.E1:E1048576	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=4|0
+sort-formats	S	3	S.A2:A3	0	condition	op=0	f1=2	f2=0	style=Neutral
+sort-formats	S	4	S.A5:C5	0	condition	op=24	f1=$A$1>0	f2=0	style=Accent
+sort-noformats	S	0	S.B1:B10	0	condition	op=2	f1=5	f2=0	style=Bad
+sort-noformats	S	1	S.C1:C10	0	condition	op=24	f1=B1>A1	f2=0	style=Good
+sort-noformats	S	2	S.E1:E1048576	0	databar	show=True	axis=2	gradient=True	color=000000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=4|0
+sort-noformats	S	3	S.A2:A3	0	condition	op=0	f1=2	f2=0	style=Neutral
+sort-noformats	S	4	S.A5:C5	0	condition	op=24	f1=$A$1>0	f2=0	style=Accent

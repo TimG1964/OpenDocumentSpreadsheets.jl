@@ -71,3 +71,12 @@ isMergedCell
 getMergedBaseCell
 ```
 
+
+Conditional formats, as LibreOffice stores them:
+
+```@docs
+setConditionalFormat
+setColoredDataBars
+getConditionalFormats
+clearConditionalFormats
+```

@@ -43,7 +43,7 @@ function _faces(xf::ODSFile)
     lx = _needs_loext(xf.styles) || _needs_protection_loext(xf) || _has_threads(xf) ? " xmlns:loext=\"$_LOEXT_NS\"" : ""
     sx = !isempty(fx) || _has_notes(xf) || _has_frames(xf) ? " xmlns:svg=\"$_SVG_NS\"" : ""
     dx = _has_frames(xf) ? " xmlns:draw=\"$_DRAW_NS\"" : ""         # pictures (phase 6 step 5)
-    cx = _has_footers(xf) ? " xmlns:calcext=\"$_CALCEXT_NS\"" : ""   # tables' totals rows (phase 6 step 7)
+    cx = _has_footers(xf) || _has_cfs(xf) ? " xmlns:calcext=\"$_CALCEXT_NS\"" : ""   # tables' totals rows (phase 6 step 7), rules (phase 7)
     return (sx * lx * dx * cx, isempty(fx) ? "" : "<office:font-face-decls>$fx</office:font-face-decls>")
 end
 

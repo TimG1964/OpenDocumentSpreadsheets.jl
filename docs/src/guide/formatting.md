@@ -81,6 +81,60 @@ OpenDocumentSpreadsheets.getCellStyle(s, "A1")         # "Heading 1"
 - **Names** are the ones LibreOffice shows. In the file, a name such as "My Style" is stored
   as `My_20_Style`; either form is accepted.
 
+## Conditional formats
+
+[`setConditionalFormat`](@ref) takes XLSX.jl's types and keywords, and stores each rule as one of
+LibreOffice's conditional formats, the ones its Format ▸ Conditional menu makes:
+
+```julia
+xf = newods("Sales")
+s = xf["Sales"]
+for i in 1:10
+    s[i, 1] = i * 3 - 7
+    s[i, 2] = isodd(i) ? "north" : "south"
+end
+setConditionalFormat(s, "A1:A10", :cellIs; operator = "greaterThan", value = "10",
+                     dxStyle = "greenfilltext")
+setConditionalFormat(s, "A1:A10", :cellIs; operator = "lessThan", value = "0",
+                     font = ["color" => "red", "bold" => "true"])
+setConditionalFormat(s, "B1:B10", :containsText; value = "north", style = "Good")
+setConditionalFormat(s, "C:C", :dataBar; databar = "green")
+setConditionalFormat(s, "D1:D10", :colorScale; colorscale = "redwhitegreen")
+setConditionalFormat(s, "E1:E10", :iconSet; iconset = "3Arrows")
+OpenDocumentSpreadsheets.getConditionalFormats(s)    # range => (type = "cellIs", priority = 1), …
+OpenDocumentSpreadsheets.clearConditionalFormats(s, "E:E")   # 1 rule removed
+```
+
+- **Every XLSX.jl type** is there:
+  - comparisons, top and bottom ranks, above and below average;
+  - the four text rules and the date periods;
+  - blanks, errors, unique and duplicate values;
+  - formulas (`:expression`);
+  - data bars, colour scales and icon sets, with XLSX.jl's presets.
+  
+  [`setColoredDataBars`](@ref OpenDocumentSpreadsheets.setColoredDataBars) is there too.
+- **A rule's format is a named cell style.** As LibreOffice's import of an xlsx file does,
+  each rule given a `dxStyle` or a custom `font`, `fill`, `border` or `format` gets its own
+  style, `ConditionalStyle_1`, `ConditionalStyle_2`, and so on. You'll see these in
+  LibreOffice's Styles deck. The keyword `style` applies a style you already have, or one of
+  LibreOffice's built-in styles (`style = "Good"`). Cells keep their own styles.
+- **Order is priority.** Rules set on the same range become one format's conditions, in the order
+  they were set, and LibreOffice applies the first that holds.
+- **LibreOffice's own options:**
+  - the periods `thisYear`, `lastYear` and `nextYear`;
+  - the icon sets `3Smilies` and `3ColorSmilies`;
+  - a data bar's `minLength` and `maxLength`;
+  - a font's `name` and `size`.
+- **What LibreOffice doesn't support is an error:**
+  - `stopIfTrue`, an option LibreOffice doesn't have;
+  - the standard-deviation forms of `:aboveAverage` (use an `:expression`);
+  - data bar borders;
+  - right-to-left data bars;
+  - custom icon sets (`iconset = "Custom"`, `icon_list`) and reversed ones (`reverse = "true"`),
+    which LibreOffice doesn't read back from a file.
+- **Rules move with their cells.** Inserted and deleted rows and columns, sheet copies and
+  renames rewrite them as LibreOffice does. A sort moves none.
+
 ## How it differs from XLSX.jl
 
 - **Empty cells are formatted**, as in LibreOffice. Whole columns and rows are formatted to
@@ -95,5 +149,8 @@ OpenDocumentSpreadsheets.getCellStyle(s, "A1")         # "Heading 1"
   same code. [`getText`](@ref OpenDocumentSpreadsheets.getText) shows a value as LibreOffice shows it, which differs from Excel
   in places (General shows up to 15 significant digits, for example).
 - **Merged cells** are an anchor cell and covered cells, as LibreOffice writes them.
+- **Conditional formats** are LibreOffice's rules, with named styles instead of Excel's
+  differential formats. Whole columns and rows keep their full extent, and empty cells can
+  have rules. XLSX.jl's options that LibreOffice doesn't support are errors (see above).
 
 The full list is in the workspace's `records/api-divergence.md`.

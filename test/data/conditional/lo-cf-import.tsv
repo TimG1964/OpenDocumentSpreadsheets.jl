@@ -1,0 +1,256 @@
+CF	0	CF.B1:K1	0	condition	op=2	f1=4	f2=0	style=ConditionalStyle_1
+CF	1	CF.B3:K3	0	condition	op=1	f1=4	f2=0	style=ConditionalStyle_3
+CF	2	CF.B5:K5	0	condition	op=0	f1=4	f2=0	style=ConditionalStyle_5
+CF	3	CF.B6:K6	0	condition	op=5	f1=4	f2=0	style=ConditionalStyle_6
+CF	4	CF.B7:K7	0	condition	op=6	f1=2	f2=6	style=ConditionalStyle_7
+CF	5	CF.B8:K8	0	condition	op=7	f1=2	f2=6	style=ConditionalStyle_8
+CF	6	CF.B9:K9	0	condition	op=2	f1=4.2	f2=0	style=ConditionalStyle_9
+CF	7	CF.B10:K10	0	condition	op=2	f1=$M$1	f2=0	style=ConditionalStyle_10
+CF	8	CF.B11:K11	0	condition	op=1	f1=A1	f2=0	style=ConditionalStyle_11
+CF	9	CF.B13:K13	0	condition	op=0	f1=2.5	f2=0	style=ConditionalStyle_12
+CF	10	CF.B15:K15	0	condition	op=10	f1=3	f2=0	style=ConditionalStyle_13
+CF	11	CF.B16:K16	0	condition	op=11	f1=2	f2=0	style=ConditionalStyle_14
+CF	12	CF.B17:K17	0	condition	op=12	f1=20	f2=0	style=ConditionalStyle_15
+CF	13	CF.B18:K18	0	condition	op=13	f1=10	f2=0	style=ConditionalStyle_16
+CF	14	CF.B19:K19	0	condition	op=10	f1=10	f2=0	style=ConditionalStyle_17
+CF	15	CF.B20:K20	0	condition	op=14	f1=0	f2=0	style=ConditionalStyle_18
+CF	16	CF.B21:K21	0	condition	op=16	f1=0	f2=0	style=ConditionalStyle_19
+CF	17	CF.B22:K22	0	condition	op=15	f1=0	f2=0	style=ConditionalStyle_20
+CF	18	CF.B23:K23	0	condition	op=17	f1=0	f2=0	style=ConditionalStyle_21
+CF	19	CF.B24:K24	0	condition	op=14	f1=0	f2=0	style=ConditionalStyle_22
+CF	20	CF.B25:K25	0	condition	op=14	f1=0	f2=0	style=ConditionalStyle_23
+CF	21	CF.B26:K26	0	condition	op=14	f1=0	f2=0	style=ConditionalStyle_24
+CF	22	CF.B27:K27	0	condition	op=15	f1=0	f2=0	style=ConditionalStyle_25
+CF	23	CF.B28:K28	0	condition	op=15	f1=0	f2=0	style=ConditionalStyle_26
+CF	24	CF.B29:K29	0	condition	op=15	f1=0	f2=0	style=ConditionalStyle_27
+CF	25	CF.B30:K30	0	condition	op=14	f1=0	f2=0	style=ConditionalStyle_28
+CF	26	CF.B31:K31	0	condition	op=22	f1="th"	f2=0	style=ConditionalStyle_29
+CF	27	CF.B32:K32	0	condition	op=23	f1="i"	f2=0	style=ConditionalStyle_30
+CF	28	CF.B33:K33	0	condition	op=20	f1="On"	f2=0	style=ConditionalStyle_31
+CF	29	CF.B34:K34	0	condition	op=21	f1="ica"	f2=0	style=ConditionalStyle_32
+CF	30	CF.B35:K35	0	condition	op=22	f1=""q""	f2=0	style=ConditionalStyle_33
+CF	31	CF.B36:K36	0	condition	op=22	f1=""	f2=0	style=ConditionalStyle_34
+CF	32	CF.B37:K37	0	date	date=0	style=ConditionalStyle_35
+CF	33	CF.B38:K38	0	date	date=0	style=ConditionalStyle_36
+CF	34	CF.B39:K39	0	date	date=0	style=ConditionalStyle_37
+CF	35	CF.B40:K40	0	date	date=0	style=ConditionalStyle_38
+CF	36	CF.B41:K41	0	date	date=0	style=ConditionalStyle_39
+CF	37	CF.B42:K42	0	date	date=0	style=ConditionalStyle_40
+CF	38	CF.B43:K43	0	date	date=0	style=ConditionalStyle_41
+CF	39	CF.B44:K44	0	date	date=0	style=ConditionalStyle_42
+CF	40	CF.B45:K45	0	date	date=0	style=ConditionalStyle_43
+CF	41	CF.B46:K46	0	date	date=0	style=ConditionalStyle_44
+CF	42	CF.B47:K47	0	date	date=0	style=ConditionalStyle_45
+CF	43	CF.B48:K48	0	condition	op=24	f1=LEN(TRIM(B48))=0	f2=0	style=ConditionalStyle_46
+CF	44	CF.B49:K49	0	condition	op=24	f1=LEN(TRIM(B49))>0	f2=0	style=ConditionalStyle_47
+CF	45	CF.B50:K50	0	condition	op=18	f1=0	f2=0	style=ConditionalStyle_48
+CF	46	CF.B51:K51	0	condition	op=19	f1=0	f2=0	style=ConditionalStyle_49
+CF	47	CF.B52:K52	0	condition	op=9	f1=0	f2=0	style=ConditionalStyle_50
+CF	48	CF.B53:K53	0	condition	op=8	f1=0	f2=0	style=ConditionalStyle_51
+CF	49	CF.B54:K54	0	condition	op=24	f1=(B54 > 4)	f2=0	style=ConditionalStyle_52
+CF	50	CF.B55:K55	0	condition	op=24	f1=($B$1 > 0)	f2=0	style=ConditionalStyle_53
+CF	51	CF.B56:K56	0	condition	op=24	f1=(AND(B$56>0, $C56<8))	f2=0	style=ConditionalStyle_54
+CF	52	CF.B57:K57	0	condition	op=24	f1=(AVERAGE(B57:K57) > 2)	f2=0	style=ConditionalStyle_55
+CF	53	CF.B58:K58	0	condition	op=24	f1=(B58 > $Other.$A$1)	f2=0	style=ConditionalStyle_56
+CF	54	CF.B59:K59	0	condition	op=2	f1=5	f2=0	style=ConditionalStyle_57
+CF	55	CF.B60:K60	0	condition	op=2	f1=5	f2=0	style=ConditionalStyle_58
+CF	56	CF.B61:K61	0	condition	op=2	f1=5	f2=0	style=ConditionalStyle_59
+CF	57	CF.B62:K62	0	condition	op=2	f1=5	f2=0	style=ConditionalStyle_60
+CF	58	CF.B63:K63	0	condition	op=2	f1=5	f2=0	style=ConditionalStyle_61
+CF	59	CF.B64:K64	0	condition	op=2	f1=5	f2=0	style=ConditionalStyle_62
+CF	60	CF.B65:K65	0	condition	op=6	f1=2	f2=3	style=ConditionalStyle_63
+CF	61	CF.B66:K66	0	condition	op=2	f1=4	f2=0	style=ConditionalStyle_64
+CF	62	CF.B67:K67	0	condition	op=1	f1=2	f2=0	style=ConditionalStyle_65
+CF	63	CF.B68:K68	0	condition	op=1	f1=3	f2=0	style=ConditionalStyle_66
+CF	64	CF.B69:K69	0	condition	op=1	f1=3	f2=0	style=ConditionalStyle_67
+CF	65	CF.B70:K70	0	condition	op=1	f1=3	f2=0	style=ConditionalStyle_68
+CF	66	CF.B71:K71	0	condition	op=1	f1=3	f2=0	style=ConditionalStyle_69
+CF	67	CF.B72:K72	0	condition	op=1	f1=3	f2=0	style=ConditionalStyle_70
+CF	68	CF.B73:K73	0	condition	op=1	f1=3	f2=0	style=ConditionalStyle_71
+CF	69	CF.B74:K74	0	condition	op=2	f1=1	f2=0	style=ConditionalStyle_72
+CF	70	CF.B75:K75	0	condition	op=2	f1=8	f2=0	style=ConditionalStyle_73
+CF	71	CF.B76:K76	0	condition	op=2	f1=0	f2=0	style=ConditionalStyle_74
+CF	72	CF.B77:K77	0	condition	op=2	f1=0	f2=0	style=ConditionalStyle_75
+CF	73	CF.B78:K78	0	condition	op=2	f1=3	f2=0	style=ConditionalStyle_76
+CF	74	CF.B79:K79	0	condition	op=2	f1=6	f2=0	style=ConditionalStyle_77
+CF	74	CF.B79:K79	1	condition	op=2	f1=3	f2=0	style=ConditionalStyle_78
+CF	74	CF.B79:K79	2	condition	op=2	f1=0	f2=0	style=ConditionalStyle_79
+CF	75	CF.B80:F80	0	condition	op=2	f1=2	f2=0	style=ConditionalStyle_80
+CF	76	CF.D80:K80	0	condition	op=1	f1=8	f2=0	style=ConditionalStyle_81
+CF	77	CF.B81:K81	0	condition	op=2	f1=5	f2=0	style=ConditionalStyle_82
+CF	77	CF.B81:K81	1	databar	show=True	axis=2	gradient=True	color=638ec6	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=1|0	e1=1|0
+CF	77	CF.B81:K81	2	colorscale	t=5	e0=0|0|f8696b	e1=1|0|ffeb84
+CF	78	CF.B82:C82,CF.F82:G82	0	condition	op=2	f1=5	f2=0	style=ConditionalStyle_83
+CF	79	CF.D83	0	condition	op=2	f1=5	f2=0	style=ConditionalStyle_84
+CF	80	CF.B84:K84	0	databar	show=True	axis=2	gradient=True	color=638ec6	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=1|0	e1=1|0
+CF	81	CF.B85:K85	0	databar	show=True	axis=2	gradient=True	color=63c384	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=1|0	e1=1|0
+CF	82	CF.B86:K86	0	databar	show=True	axis=2	gradient=True	color=ff555a	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=1|0	e1=1|0
+CF	83	CF.B87:K87	0	databar	show=True	axis=2	gradient=True	color=ffb628	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=1|0	e1=1|0
+CF	84	CF.B88:K88	0	databar	show=True	axis=2	gradient=True	color=008aef	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=1|0	e1=1|0
+CF	85	CF.B89:K89	0	databar	show=True	axis=2	gradient=True	color=d6007b	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=1|0	e1=1|0
+CF	86	CF.B90:K90	0	databar	show=True	axis=2	gradient=False	color=638ec6	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=1|0	e1=1|0
+CF	87	CF.B91:K91	0	databar	show=True	axis=2	gradient=False	color=63c384	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=1|0	e1=1|0
+CF	88	CF.B92:K92	0	databar	show=True	axis=2	gradient=False	color=ff555a	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=1|0	e1=1|0
+CF	89	CF.B93:K93	0	databar	show=True	axis=2	gradient=False	color=ffb628	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=1|0	e1=1|0
+CF	90	CF.B94:K94	0	databar	show=True	axis=2	gradient=False	color=008aef	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=1|0	e1=1|0
+CF	91	CF.B95:K95	0	databar	show=True	axis=2	gradient=False	color=d6007b	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=1|0	e1=1|0
+CF	92	CF.B96:K96	0	databar	show=True	axis=2	gradient=True	color=638ec6	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=1|0	e1=1|0
+CF	93	CF.B97:K97	0	databar	show=False	axis=2	gradient=True	color=638ec6	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=1|0	e1=1|0
+CF	94	CF.B98:K98	0	databar	show=True	axis=2	gradient=False	color=638ec6	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=1|0	e1=1|0
+CF	95	CF.B99:K99	0	databar	show=True	axis=2	gradient=True	color=638ec6	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=1|0	e1=1|0
+CF	96	CF.B100:K100	0	databar	show=True	axis=2	gradient=False	color=638ec6	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=1|0	e1=1|0
+CF	97	CF.B101:K101	0	databar	show=True	axis=2	gradient=True	color=ff7f50	axiscolor=000000	useneg=True	neg=00ffff	minlen=	maxlen=	e0=1|0	e1=1|0
+CF	98	CF.B102:K102	0	databar	show=True	axis=2	gradient=True	color=638ec6	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=1|0	e1=1|0
+CF	99	CF.B103:K103	0	databar	show=True	axis=2	gradient=True	color=638ec6	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=1|0	e1=1|0
+CF	100	CF.B104:K104	0	databar	show=True	axis=0	gradient=True	color=638ec6	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=1|0	e1=1|0
+CF	101	CF.B105:K105	0	databar	show=True	axis=1	gradient=True	color=638ec6	axiscolor=ff00ff	useneg=True	neg=ff0000	minlen=	maxlen=	e0=1|0	e1=1|0
+CF	102	CF.B106:K106	0	databar	show=True	axis=2	gradient=True	color=638ec6	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=1|0	e1=1|0
+CF	103	CF.B108:K108	0	databar	show=True	axis=2	gradient=True	color=638ec6	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|-1	e1=4|6
+CF	104	CF.B109:K109	0	databar	show=True	axis=2	gradient=True	color=638ec6	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=5|20	e1=5|60
+CF	105	CF.B110:K110	0	databar	show=True	axis=2	gradient=True	color=638ec6	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=3|20	e1=3|80
+CF	106	CF.B111:K111	0	databar	show=True	axis=2	gradient=True	color=638ec6	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=6|
+CF	107	CF.B112:K112	0	databar	show=True	axis=2	gradient=True	color=638ec6	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=1|0	e1=2|0
+CF	108	CF.B113	0	databar	show=True	axis=2	gradient=False	color=008000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|-3	e1=4|9
+CF	109	CF.C113	0	databar	show=True	axis=2	gradient=False	color=5b7d00	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|-3	e1=4|9
+CF	110	CF.D113:F113	0	databar	show=True	axis=2	gradient=False	color=957200	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|-3	e1=4|9
+CF	111	CF.G113:H113	0	databar	show=True	axis=2	gradient=False	color=cd5800	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|-3	e1=4|9
+CF	112	CF.I113:K113	0	databar	show=True	axis=2	gradient=False	color=ff0000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|-3	e1=4|9
+CF	113	CF.B114	0	databar	show=True	axis=2	gradient=False	color=008000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=4|10
+CF	114	CF.C114:F114	0	databar	show=True	axis=2	gradient=False	color=ffa500	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=4|10
+CF	115	CF.G114:K114	0	databar	show=True	axis=2	gradient=False	color=ff0000	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=4|0	e1=4|10
+CF	116	CF.B115:K115	0	colorscale	t=6	e0=0|0|63be7b	e1=2|50|ffeb84	e2=1|0|f8696b
+CF	117	CF.B116:K116	0	colorscale	t=6	e0=0|0|f8696b	e1=2|50|ffeb84	e2=1|0|63be7b
+CF	118	CF.B117:K117	0	colorscale	t=6	e0=0|0|63be7b	e1=2|50|fcfcff	e2=1|0|f8696b
+CF	119	CF.B118:K118	0	colorscale	t=6	e0=0|0|f8696b	e1=2|50|fcfcff	e2=1|0|63be7b
+CF	120	CF.B119:K119	0	colorscale	t=6	e0=0|0|5a8ac6	e1=2|50|fcfcff	e2=1|0|f8696b
+CF	121	CF.B120:K120	0	colorscale	t=6	e0=0|0|f8696b	e1=2|50|fcfcff	e2=1|0|5a8ac6
+CF	122	CF.B121:K121	0	colorscale	t=5	e0=0|0|fcfcff	e1=1|0|f8696b
+CF	123	CF.B122:K122	0	colorscale	t=5	e0=0|0|f8696b	e1=1|0|fcfcff
+CF	124	CF.B123:K123	0	colorscale	t=5	e0=0|0|63be7b	e1=1|0|fcfcff
+CF	125	CF.B124:K124	0	colorscale	t=5	e0=0|0|fcfcff	e1=1|0|63be7b
+CF	126	CF.B125:K125	0	colorscale	t=5	e0=0|0|63be7b	e1=1|0|ffef9c
+CF	127	CF.B126:K126	0	colorscale	t=5	e0=0|0|ffef9c	e1=1|0|63be7b
+CF	128	CF.B127:K127	0	colorscale	t=5	e0=0|0|f8696b	e1=1|0|ffeb84
+CF	129	CF.B128:K128	0	colorscale	t=5	e0=3|2|ff6347	e1=3|8|5f9ea0
+CF	130	CF.B129:K129	0	colorscale	t=6	e0=3|2|ff6347	e1=3|6|7cfc00	e2=3|10|5f9ea0
+CF	131	CF.B130:K130	0	colorscale	t=5	e0=0|0|ff0000	e1=1|0|00ff00
+CF	132	CF.B131:K131	0	colorscale	t=6	e0=4|10|f8696b	e1=4|50|fcfcff	e2=4|90|ffeb84
+CF	133	CF.B132:K132	0	colorscale	t=6	e0=2|10|f8696b	e1=2|50|fcfcff	e2=2|90|ffeb84
+CF	134	CF.B133:K133	0	colorscale	t=5	e0=5||f8696b	e1=5||ffeb84
+CF	135	CF.B134:K134	0	iconset	icons=0	reverse=False	show=True	e0=0|0	e1=3|33	e2=3|67
+CF	136	CF.B135:K135	0	iconset	icons=10	reverse=False	show=True	e0=0|0	e1=3|25	e2=3|50	e3=3|75
+CF	137	CF.B136:K136	0	iconset	icons=15	reverse=False	show=True	e0=0|0	e1=3|20	e2=3|40	e3=3|60	e4=3|80
+CF	138	CF.B137:K137	0	iconset	icons=1	reverse=False	show=True	e0=0|0	e1=3|33	e2=3|67
+CF	139	CF.B138:K138	0	iconset	icons=11	reverse=False	show=True	e0=0|0	e1=3|25	e2=3|50	e3=3|75
+CF	140	CF.B139:K139	0	iconset	icons=11	reverse=False	show=True	e0=0|0	e1=3|20	e2=3|40	e3=3|60	e4=3|80
+CF	141	CF.B140:K140	0	iconset	icons=3	reverse=False	show=True	e0=0|0	e1=3|33	e2=3|67
+CF	142	CF.B141:K141	0	iconset	icons=4	reverse=False	show=True	e0=0|0	e1=3|33	e2=3|67
+CF	143	CF.B142:K142	0	iconset	icons=3	reverse=False	show=True	e0=0|0	e1=3|25	e2=3|50	e3=3|75
+CF	144	CF.B143:K143	0	iconset	icons=5	reverse=False	show=True	e0=0|0	e1=3|33	e2=3|67
+CF	145	CF.B144:K144	0	iconset	icons=12	reverse=False	show=True	e0=0|0	e1=3|25	e2=3|50	e3=3|75
+CF	146	CF.B145:K145	0	iconset	icons=6	reverse=False	show=True	e0=0|0	e1=3|33	e2=3|67
+CF	147	CF.B146:K146	0	iconset	icons=7	reverse=False	show=True	e0=0|0	e1=3|33	e2=3|67
+CF	148	CF.B147:K147	0	iconset	icons=2	reverse=False	show=True	e0=0|0	e1=3|33	e2=3|67
+CF	149	CF.B148:K148	0	iconset	icons=18	reverse=False	show=True	e0=0|0	e1=3|20	e2=3|40	e3=3|60	e4=3|80
+CF	150	CF.B149:K149	0	iconset	icons=13	reverse=False	show=True	e0=0|0	e1=3|25	e2=3|50	e3=3|75
+CF	151	CF.B150:K150	0	iconset	icons=17	reverse=False	show=True	e0=0|0	e1=3|20	e2=3|40	e3=3|60	e4=3|80
+CF	152	CF.B154:K154	0	iconset	icons=3	reverse=False	show=True	e0=0|0	e1=3|33	e2=3|67
+CF	153	CF.B155:K155	0	iconset	icons=0	reverse=False	show=True	e0=0|0	e1=3|33	e2=3|67
+CF	154	CF.B156:K156	0	iconset	icons=0	reverse=False	show=True	e0=0|0	e1=3|33	e2=3|67
+CF	155	CF.B158:K158	0	iconset	icons=10	reverse=False	show=True	e0=0|0	e1=2|2	e2=4|	e3=3|70
+CF	156	CF.B162:F162	0	condition	op=2	f1=1	f2=0	style=ConditionalStyle_85
+CF	157	CF.O1:O162	0	databar	show=True	axis=2	gradient=False	color=63c384	axiscolor=000000	useneg=True	neg=ff0000	minlen=	maxlen=	e0=1|0	e1=1|0
+CF	158	CF.B151:K151	0	iconset	icons=	reverse=False	show=True	e0=0|0	e1=3|33	e2=3|67
+CF	159	CF.B152:K152	0	iconset	icons=	reverse=False	show=True	e0=0|0	e1=3|33	e2=3|67
+CF	160	CF.B153:K153	0	iconset	icons=	reverse=False	show=True	e0=0|0	e1=3|20	e2=3|40	e3=3|60	e4=3|80
+CF	161	CF.B157:K157	0	iconset	icons=	reverse=False	show=True	e0=0|0	e1=2|3	e2=1|45	e3=1|65	e4=2|8
+CF	162	CF.B159:K159	0	iconset	icons=0	reverse=False	show=True	e0=0|0	e1=2|3	e2=2|7
+CF	163	CF.B161:K161	0	iconset	icons=18	reverse=False	show=True	e0=0|0	e1=2|1	e2=2|3	e3=2|5	e4=2|7
+Other	0	Other.A2:A6	0	condition	op=24	f1=(A2>$CF.$M$2)	f2=0	style=ConditionalStyle_86
+Other	0	Other.A2:A6	1	condition	op=1	f1=$A$1	f2=0	style=ConditionalStyle_87
+Other	0	Other.A2:A6	2	iconset	icons=2	reverse=False	show=True	e0=0|0	e1=3|33	e2=3|67
+style	ConditionalStyle_1	display=ConditionalStyle_1	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_3	display=ConditionalStyle_3	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_5	display=ConditionalStyle_5	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_6	display=ConditionalStyle_6	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_7	display=ConditionalStyle_7	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_8	display=ConditionalStyle_8	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_9	display=ConditionalStyle_9	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_10	display=ConditionalStyle_10	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_11	display=ConditionalStyle_11	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_12	display=ConditionalStyle_12	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_13	display=ConditionalStyle_13	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_14	display=ConditionalStyle_14	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_15	display=ConditionalStyle_15	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_16	display=ConditionalStyle_16	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_17	display=ConditionalStyle_17	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_18	display=ConditionalStyle_18	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_19	display=ConditionalStyle_19	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_20	display=ConditionalStyle_20	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_21	display=ConditionalStyle_21	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_22	display=ConditionalStyle_22	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_23	display=ConditionalStyle_23	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_24	display=ConditionalStyle_24	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_25	display=ConditionalStyle_25	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_26	display=ConditionalStyle_26	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_27	display=ConditionalStyle_27	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_28	display=ConditionalStyle_28	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_29	display=ConditionalStyle_29	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_30	display=ConditionalStyle_30	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_31	display=ConditionalStyle_31	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_32	display=ConditionalStyle_32	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_33	display=ConditionalStyle_33	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_34	display=ConditionalStyle_34	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_35	display=ConditionalStyle_35	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_36	display=ConditionalStyle_36	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_37	display=ConditionalStyle_37	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_38	display=ConditionalStyle_38	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_39	display=ConditionalStyle_39	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_40	display=ConditionalStyle_40	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_41	display=ConditionalStyle_41	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_42	display=ConditionalStyle_42	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_43	display=ConditionalStyle_43	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_44	display=ConditionalStyle_44	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_45	display=ConditionalStyle_45	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_46	display=ConditionalStyle_46	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_47	display=ConditionalStyle_47	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_48	display=ConditionalStyle_48	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_49	display=ConditionalStyle_49	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_50	display=ConditionalStyle_50	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_51	display=ConditionalStyle_51	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_52	display=ConditionalStyle_52	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_53	display=ConditionalStyle_53	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_54	display=ConditionalStyle_54	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_55	display=ConditionalStyle_55	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_56	display=ConditionalStyle_56	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_57	display=ConditionalStyle_57	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_58	display=ConditionalStyle_58	parent=Default	color=9c5700	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffeb9c	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_59	display=ConditionalStyle_59	parent=Default	color=006100	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=c6efce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_60	display=ConditionalStyle_60	parent=Default	color=000000	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_61	display=ConditionalStyle_61	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=none	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_62	display=ConditionalStyle_62	parent=Default	color=000000	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=none	top=0|26|9c0006	left=0|26|9c0006	format=General
+style	ConditionalStyle_63	display=ConditionalStyle_63	parent=Default	color=0000ff	weight=150	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=0.00%
+style	ConditionalStyle_64	display=ConditionalStyle_64	parent=Default	color=ff0000	weight=100	posture=2	underline=0	strike=0	font=Calibri	size=12	back=008000	top=32767|0|000000	left=32767|0|000000	format=0.0
+style	ConditionalStyle_65	display=ConditionalStyle_65	parent=Default	color=008000	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffff00	top=0|88|ff7f50	left=0|88|ff7f50	format=0.0
+style	ConditionalStyle_66	display=ConditionalStyle_66	parent=Default	color=000000	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=00ffff	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_67	display=ConditionalStyle_67	parent=Default	color=000000	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=0000ff	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_68	display=ConditionalStyle_68	parent=Default	color=000000	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ff8000	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_69	display=ConditionalStyle_69	parent=Default	color=000000	weight=100	posture=0	underline=1	strike=1	font=Calibri	size=12	back=none	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_70	display=ConditionalStyle_70	parent=Default	color=000000	weight=100	posture=0	underline=2	strike=0	font=Calibri	size=12	back=none	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_71	display=ConditionalStyle_71	parent=Default	color=000000	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=none	top=14|26|0000ff	left=14|26|0000ff	format=General
+style	ConditionalStyle_72	display=ConditionalStyle_72	parent=Default	color=7030a0	weight=150	posture=0	underline=0	strike=0	font=Calibri	size=12	back=none	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_73	display=ConditionalStyle_73	parent=Default	color=7030a0	weight=150	posture=0	underline=0	strike=0	font=Calibri	size=12	back=none	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_74	display=ConditionalStyle_74	parent=Default	color=000000	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=none	top=32767|0|000000	left=32767|0|000000	format=#,##0.000
+style	ConditionalStyle_75	display=ConditionalStyle_75	parent=Default	color=006100	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=c6efce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_76	display=ConditionalStyle_76	parent=Default	color=006100	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=c6efce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_77	display=ConditionalStyle_77	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_78	display=ConditionalStyle_78	parent=Default	color=9c5700	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffeb9c	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_79	display=ConditionalStyle_79	parent=Default	color=006100	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=c6efce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_80	display=ConditionalStyle_80	parent=Default	color=000000	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_81	display=ConditionalStyle_81	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=none	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_82	display=ConditionalStyle_82	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_83	display=ConditionalStyle_83	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_84	display=ConditionalStyle_84	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_85	display=ConditionalStyle_85	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_86	display=ConditionalStyle_86	parent=Default	color=9c0006	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=none	top=32767|0|000000	left=32767|0|000000	format=General
+style	ConditionalStyle_87	display=ConditionalStyle_87	parent=Default	color=000000	weight=100	posture=0	underline=0	strike=0	font=Calibri	size=12	back=ffc7ce	top=32767|0|000000	left=32767|0|000000	format=General

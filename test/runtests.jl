@@ -80,6 +80,8 @@ const LO_FIXTURE_MAJOR = parse(Int, match(r"LibreOffice\s+(\d+)\.", read(joinpat
         include("write/test_dbtables.jl")
         include("write/test_autofilter.jl")
         include("write/test_sort.jl")
+        include("write/test_conditional.jl")
+        include("write/test_cfrules.jl")
     end
     @testset "styles" begin
         include("styles/test_stylesheet.jl")

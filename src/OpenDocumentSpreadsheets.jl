@@ -100,6 +100,8 @@ include("write/notes.jl")
 include("write/images.jl")
 include("write/validation.jl")
 include("write/dbtables.jl")
+include("write/conditional.jl")
+include("write/cfrules.jl")
 include("write/collate.jl")
 include("write/autofilter.jl")
 include("write/sort.jl")
@@ -142,7 +144,8 @@ export
     addImage, deleteImage,
     addDataValidation, deleteDataValidation,
     addtable!, deletetable!, settotals!, gettotals, removetotals!, appendtable!, gettablerange,
-    setAutoFilter, removeAutoFilter
+    setAutoFilter, removeAutoFilter,
+    setConditionalFormat
 
 @static if VERSION >= v"1.11"
     eval(Meta.parse("public getcell, getcellrange, getFormula, get_dimension, ODSError, Cell, EmptyCell, DataTable, TableRow, TableRowIterator, SheetRow, StreamWriter, StreamSheet, " *
@@ -152,7 +155,7 @@ export
                     "getPageSetup, getPageMargins, getPrintOptions, getPrintArea, getPrintTitles, getHeaderFooter, " *
                     "getDocumentProperties, getCustomProperty, getCustomProperties, " *
                     "getHyperlink, getHyperlinks, getComment, getComments, getThreadedComment, getThreadedComments, getImages, getDataValidation, getDataValidations, " *
-                    "Table, TableStyleInfo, table, tables, getAutoFilter"))
+                    "Table, TableStyleInfo, table, tables, getAutoFilter, getConditionalFormats, clearConditionalFormats, setColoredDataBars"))
 end
 
 include("precompile.jl")

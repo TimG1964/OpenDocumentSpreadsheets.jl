@@ -101,6 +101,14 @@ mergeCells(sh, "A6:B6")
 setCellStyle(sh, "A4", "Accent 1")
 ```
 
+Conditional formats highlight cells by their values, as in LibreOffice's Format ▸ Conditional menu:
+
+```julia
+setConditionalFormat(sh, "B2:B4", :cellIs; operator = "greaterThan", value = "2",
+                     dxStyle = "greenfilltext")
+setConditionalFormat(sh, "B2:B4", :dataBar)
+```
+
 See [Formatting](guide/formatting.md) for the rest.
 
 ## Editing a file
