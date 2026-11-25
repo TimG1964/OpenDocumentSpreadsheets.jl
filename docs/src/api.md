@@ -38,6 +38,9 @@ EmptyCell
 iserror
 geterror
 getFormula
+getRichTextString
+RichTextString
+RichTextRun
 SheetRow
 Base.eachrow(::Worksheet)
 row_number

@@ -363,11 +363,12 @@ mutable struct Worksheet
     cfs::Union{Nothing,CfState}       # its conditional formats, once read (phase 7)
     pagecharts::Union{Nothing,Vector{ImageData}}   # charts added anchored to the page: a chart sheet's (phase 8 step 7)
     sparks::Union{Nothing,SparkState}   # its sparkline groups, once read (phase 8 step 8)
+    filerich::Union{Nothing,Vector{Tuple{Int,Int,Int,Int,String,String}}}   # the cells of its file with rich text, once read (D-088)
 end
 
 Worksheet(xf, name, index, entry, visible, store, localnames, lock) =
     Worksheet(xf, name, index, entry, visible, store, localnames, lock, Dict{Int,Vector{Int}}(), nothing, nothing, nothing, 0, false,
-              NameEdits(), nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing)
+              NameEdits(), nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing)
 
 # Whether the sheet was made by OpenDocumentSpreadsheets (so it is written whole), not read from the file.
 isnewsheet(ws::Worksheet) = ws.entry === nothing

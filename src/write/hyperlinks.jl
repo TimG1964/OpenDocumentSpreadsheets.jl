@@ -86,7 +86,7 @@ _link_info(ws::Worksheet, r::Int, c::Int, href::AbstractString, display) =
 # written (F-065). Its links are all OpenDocumentSpreadsheets's: its URL fields and added styles.
 function _set_link_base!(st::StyleIndex, flat::Bool)
     st.linkflat[1] == flat && return
-    conv(h) = !_relative_url(h) ? h : flat ? (startswith(h, "../") ? String(SubString(h, 4)) : h) : "../" * h
+    conv(h) = isempty(h) || !_relative_url(h) ? h : flat ? (startswith(h, "../") ? String(SubString(h, 4)) : h) : "../" * h
     rx = r"xlink:href=\"([^\"]*)\""
     swap(s) = replace(s, rx => m -> (h = XML.unescape(match(rx, m).captures[1]); "xlink:href=\"" * sprint(_escape_attr, conv(h)) * "\""))
     for i in eachindex(st.rich)
@@ -351,7 +351,7 @@ function _cell_links(ws::Worksheet, r::Int, c::Int)
     d = cell_data(_cached_store(ws), r, c)
     if d !== nothing && (d.flags & F_RICH) != 0
         href, text = st.richinfo[d.bits]
-        push!(out, _link_info(ws, r, c, href, text))
+        isempty(href) || push!(out, _link_info(ws, r, c, href, text))        # rich text: no link (D-088)
     else
         run = _file_link_at(ws, r, c)
         if run !== nothing && _fields_kept(d, run)

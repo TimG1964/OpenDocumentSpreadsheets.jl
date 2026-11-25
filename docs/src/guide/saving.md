@@ -43,7 +43,7 @@ value, so it can be left out:
 ```julia
 writetable("big.ods", df; display_text = false)
 writeods("out.ods", xf; display_text = false)
-streamods(f, "big.ods"; display_text = false)
+streamods(f, "rows.ods"; display_text = false)
 ```
 
 For numeric data the files are then about half the size and faster to write. Tools that read

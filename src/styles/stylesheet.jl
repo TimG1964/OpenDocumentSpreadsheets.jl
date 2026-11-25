@@ -336,7 +336,7 @@ the added cell, column and row styles the sheets refer to are written, with the 
 styles those need (D-046): styles left behind by successive setters are dropped.
 """
 function added_styles_xml(styles::StyleIndex, used::Union{Nothing,UsedStyles} = nothing)
-    typed = typed_styles_xml(styles)
+    typed = typed_styles_xml(styles) * text_styles_xml(styles)        # with rich text's text styles (D-088)
     sh = styles.sheet[1]
     (sh === nothing || (isempty(sh.added) && isempty(sh.added_data) && all(ls -> isempty(ls.added), sh.lines))) && return typed
     cells = used === nothing ? sh.added : filter(id -> id in used.ids, sh.added)

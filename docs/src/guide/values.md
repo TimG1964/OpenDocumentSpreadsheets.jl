@@ -31,9 +31,11 @@ geterror(sh, "C1")     # "#DIV/0!", or LibreOffice's own codes such as "Err:502"
 ## Cells
 
 [`getcell`](@ref) gives the whole cell: its value type, value, formula, style name,
-currency, error text and merge spans.
+currency, error text and merge spans. It is public but not exported, as in XLSX.jl:
 
 ```julia
+using OpenDocumentSpreadsheets: getcell
+
 c = getcell(sh, "B2")
 c.datatype     # :float, :percentage, :currency, :date, :time, :boolean, :string, :error, :empty
 c.value
@@ -51,3 +53,26 @@ Writing takes numbers, strings, `Bool`, `Date`, `DateTime`, `Time`, periods (dur
 Dates, times and booleans need a number format, or LibreOffice treats them as plain numbers
 the next time it saves. OpenDocumentSpreadsheets gives them ISO formats (`2026-11-18`, `2026-11-18 13:45:00`,
 `[HH]:MM:SS`, `TRUE`). A cell whose existing format fits the new value keeps it.
+
+## Rich text
+
+A text cell can hold runs of differently formatted text, as in XLSX.jl:
+
+```julia
+using OpenDocumentSpreadsheets: getRichTextString
+
+rt = RichTextString(RichTextRun("Water is H"), RichTextRun("2", [:vertAlign => "subscript"]), RichTextRun("O"))
+sh["A5"] = rt
+getRichTextString(sh, "A5") == rt            # true
+sh["A5"]                                     # "Water is H2O", its text
+```
+
+A run's attributes are `:bold`, `:italic`, `:under`, `:strike`, `:vertAlign` (`"superscript"` or
+`"subscript"`), `:color`, `:size` and `:name`. Each run with attributes is stored as LibreOffice stores
+one: a span with a text style holding just those attributes, the rest being the cell's. A line break
+starts a new paragraph.
+
+As in XLSX.jl, a string of one run is written as plain text, with the run's attributes given to the
+cell's font. The exception is a superscript or subscript, which a cell style can't hold.
+`getRichTextString` reads LibreOffice's own rich text too, and gives `nothing` for a cell with no
+formatted runs. Writing a new value to the cell drops its runs, as LibreOffice does.

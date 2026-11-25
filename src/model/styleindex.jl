@@ -129,11 +129,14 @@ struct StyleIndex
     rich::Vector{String}              # the paragraphs of `F_RICH` cells (hyperlinks, D-072), by `bits`
     richinfo::Vector{Tuple{String,String}}   # and their link: (href, text), unescaped
     linkflat::Vector{Bool}            # [whether a new document's relative hrefs are in a flat file's form] (F-065)
+    texts::Vector{String}             # the text styles of rich text runs (`TR1`, `TR2`, …: their text properties), by number
+    filetexts::Vector{Union{Nothing,Dict{String,Dict{String,String}}}}   # [the file's text styles], once read
 end
 
 StyleIndex(xmls::Vector{String} = String[]) =
     StyleIndex(Dict{String,Int32}(), ["Default"], [NO_DATA_STYLE], Set{String}(), Dict{Symbol,Int32}(),
-               Dict{Tuple{Int32,UInt8,Bool},String}(), zeros(UInt8, 64), xmls, Union{Nothing,StyleSheet}[nothing], String[], Tuple{String,String}[], [false])
+               Dict{Tuple{Int32,UInt8,Bool},String}(), zeros(UInt8, 64), xmls, Union{Nothing,StyleSheet}[nothing], String[], Tuple{String,String}[], [false],
+               String[], Union{Nothing,Dict{String,Dict{String,String}}}[nothing])
 
 @inline style_info(s::StyleIndex, id::Integer) = @inbounds s.info[id + 1]
 @inline style_name(s::StyleIndex, id::Integer) = @inbounds s.names[id + 1]

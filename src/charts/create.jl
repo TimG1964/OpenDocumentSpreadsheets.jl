@@ -312,6 +312,13 @@ function addChart(ws::Worksheet, kind::Symbol; anchor::Union{AbstractString,Cell
     push!(_frame_edit!(ws, r, c).added, img)
     _touch_cell!(ws, r, c)
     ch = Chart(xf, name * "/content.xml", name, nothing, ws.name, _cellname(r, c), _cellname(tr, tc))
+    # rich titles (D-088): their runs in place of the plain text written with the object
+    for (t, st) in ((title, "ch2"), (subtitle, "ch3"), (xtitle, "ch11"), (ytitle, "ch12"))
+        t isa RichTextString || continue
+        m = match(Regex("(<chart:(?:sub)?title chart:style-name=\"" * st * "\">).*?(</chart:(?:sub)?title>)", "s"), o.text)
+        m === nothing && continue
+        o.text = replace(o.text, m.match => m.captures[1] * _rich_title_paras(o, t) * m.captures[2]; count = 1)
+    end
     data === nothing || _add_data_series!(ch, o, data, seriesIn, firstRowLabels, firstColumnLabels)
     return ch
 end

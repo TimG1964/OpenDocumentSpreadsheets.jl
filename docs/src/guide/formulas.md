@@ -5,9 +5,12 @@ CurrentModule = OpenDocumentSpreadsheets
 # Formulas
 
 OpenDocument stores formulas in OpenFormula syntax (`of:=SUM([.A1:.B2];1)`). OpenDocumentSpreadsheets reads
-and writes them in the notation LibreOffice shows in its formula bar:
+and writes them in the notation LibreOffice shows in its formula bar. `getFormula` is public but not
+exported, as in XLSX.jl:
 
 ```julia
+using OpenDocumentSpreadsheets: getFormula
+
 getFormula(sh, "C1")                 # "=SUM(A1:B2,1)"
 getFormula(sh, "C1"; raw = true)     # "of:=SUM([.A1:.B2];1)"
 

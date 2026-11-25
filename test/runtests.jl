@@ -17,6 +17,12 @@ lo_major(soffice) = get!(_LO_MAJOR, soffice) do
     m === nothing ? 0 : parse(Int, m.captures[1])
 end
 const LO_FIXTURE_MAJOR = parse(Int, match(r"LibreOffice\s+(\d+)\.", read(joinpath(DATA, "lo-version.txt"), String)).captures[1])
+# The major and minor version: a distribution's LibreOffice can share the fixtures' major version and
+# still lack a feature of its minor one (CI's 26.x: threaded comments, the histogram; phase 9).
+_lo_vnum(s) = (m = match(r"LibreOffice\s+(\d+)\.(\d+)", s); m === nothing ? v"0" : VersionNumber(parse(Int, m.captures[1]), parse(Int, m.captures[2])))
+const _LO_VERSION = Dict{String,VersionNumber}()
+lo_version(soffice) = get!(() -> _lo_vnum(try read(`$soffice --version`, String) catch; "" end), _LO_VERSION, soffice)
+const LO_FIXTURE_VERSION = _lo_vnum(read(joinpath(DATA, "lo-version.txt"), String))
 
 @testset "OpenDocumentSpreadsheets" begin
     @testset "SheetCore" begin
@@ -73,6 +79,7 @@ const LO_FIXTURE_MAJOR = parse(Int, match(r"LibreOffice\s+(\d+)\.", read(joinpat
         include("write/test_docprops.jl")
         include("write/test_extras.jl")
         include("write/test_hyperlinks.jl")
+        include("write/test_richtext.jl")
         include("write/test_notes.jl")
         include("write/test_images.jl")
         include("write/test_validation.jl")
@@ -103,6 +110,9 @@ const LO_FIXTURE_MAJOR = parse(Int, match(r"LibreOffice\s+(\d+)\.", read(joinpat
     end
     @testset "phase 3 (speed)" begin
         include("test_phase3.jl")
+    end
+    @testset "docs" begin
+        include("test_docs.jl")             # the docs' examples run (phase 9)
     end
     @testset "public API only" begin
         include("test_public_api.jl")

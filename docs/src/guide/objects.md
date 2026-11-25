@@ -91,6 +91,7 @@ t = addtable!(s, "A1:B50"; name = "Sales")
 settotals!(t, "Revenue" => :sum, "Region" => "Total")    # a totals row under the table
 appendtable!(t, (Region = ["North"], Revenue = [1200]))  # rows added inside it
 gettablerange(t, "Revenue")                              # the column's data cells
+writeods("report.ods", xf; overwrite = true)              # saved, the table can be read by name
 readtable("report.ods", "Summary"; table_name = "Sales")
 writetable("out.ods", df; sheetname = "Data", as_table = true, table_name = "People")
 deletetable!(t)

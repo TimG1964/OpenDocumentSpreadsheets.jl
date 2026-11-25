@@ -178,8 +178,8 @@ end
         push!(files, writeods(joinpath(dir, "own.fods"), a), writeods(joinpath(dir, "import.fods"), b))
         run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to fods --outdir $(joinpath(dir, "lo")) $files`;
                      stdout = devnull, stderr = devnull))
-        threads = lo_major(SOFFICE) >= LO_FIXTURE_MAJOR     # an older LibreOffice drops the threads (CI's distribution one)
-        threads || @info "LibreOffice $(lo_major(SOFFICE)) is older than the fixtures' $LO_FIXTURE_MAJOR: its reading of threads is not checked"
+        threads = lo_version(SOFFICE) >= LO_FIXTURE_VERSION   # an older LibreOffice drops the threads (CI's 26.x)
+        threads || @info "LibreOffice $(lo_version(SOFFICE)) is older than the fixtures' $LO_FIXTURE_VERSION: its reading of threads is not checked"
         for (f, x) in (("new", xf), ("own", a), ("import", b))
             lo = readods(joinpath(dir, "lo", f * ".fods"))
             if threads

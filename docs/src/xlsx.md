@@ -120,6 +120,7 @@ The formatting functions work as in XLSX.jl too, with the differences listed in
   (`paperWidth`, `paperHeight`), `scaleToPages`, six more print options, a table's
   `has_header_row` and `filterButtons`, a filter's `caseSensitive`, `noDuplicates` and regular
   expressions, and a sort's `naturalSort` and `includeFormats`.
+- **Rich text** ([`RichTextString`](@ref), [`RichTextRun`](@ref), `getRichTextString`) is LibreOffice's: a run is a span whose text style holds only the run's attributes, so a run takes the attributes it doesn't set from the cell, as in LibreOffice. In Excel those come from the default font. Colours are stored as RGB, and a line break starts a new paragraph. Chart titles take rich text too.
 - **Conditional formats** ([`setConditionalFormat`](@ref), `getConditionalFormats`,
   `clearConditionalFormats`, `setColoredDataBars`) take XLSX.jl's types, keywords and presets,
   and are stored as LibreOffice's rules:

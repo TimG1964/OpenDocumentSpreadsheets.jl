@@ -28,6 +28,7 @@ makedocs(
             "Sheets and settings" => "api-sheets.md",
             "Links, notes and objects" => "api-objects.md",
             "Charts" => "api-charts.md",
+            "Charts: every function" => "api-charts-all.md",
         ],
     ],
     checkdocs = :public,

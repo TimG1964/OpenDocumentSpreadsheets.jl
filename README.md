@@ -8,6 +8,24 @@ modelled on [XLSX.jl](https://github.com/JuliaData/XLSX.jl).
 
 Formerly ODSFiles.jl.
 
+## Features
+
+- **Reading and writing** `.ods`, flat `.fods` and `.ots` files: typed values, tables
+  (Tables.jl), formulas, whole files or rows as they stream. An edited file keeps everything not
+  changed exactly as it was.
+- **Formatting:** fonts, fills, borders, alignment, number formats, named styles, merges,
+  widths, heights, and conditional formats.
+- **Sheets and settings:**
+  - row and column inserts and deletes, with references following;
+  - sheet operations, defined names, hiding, grouping, panes, protection, printing and document
+    properties.
+- **Objects:** hyperlinks, notes and threaded comments, pictures, validation, tables (database
+  ranges) and AutoFilters.
+- **Charts and sparklines:** XLSX.jl's chart API in a `Charts` submodule, and its sparklines.
+
+Everything is stored as LibreOffice stores it, and behaves as LibreOffice behaves where Excel and
+LibreOffice differ.
+
 ## Installation
 
 ```julia

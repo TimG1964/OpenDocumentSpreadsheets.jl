@@ -680,7 +680,7 @@ LibreOffice's titles can't follow a cell: a `CellRef` is an error (D-086).
 """
 function setChartTitleText(c::Chart, text)
     o = _editable(c)
-    paras = _title_xml(text)
+    paras = _title_xml(text, o, c.package)
     m = _find(r"<chart:title\b[^>]*>.*?</chart:title>"s, o.text)
     pa = first(something(findfirst("<chart:plot-area", o.text), 1:typemax(Int)))
     if m !== nothing && m.at < pa
@@ -695,7 +695,7 @@ function setChartTitleText(c::Chart, text)
 end
 function setAxisTitleText(c::Chart, ax, text)
     o = _editable(c)
-    paras = _title_xml(text)
+    paras = _title_xml(text, o, c.package)
     m = _axis_tag(o, c, ax)
     a = getChartAxis(c, ax)
     after = o.text[m.at+ncodeunits(m.match):end]
@@ -714,18 +714,96 @@ function setAxisTitleText(c::Chart, ax, text)
     end
     return c
 end
-function _title_xml(text)
+# A rich title's paragraphs (D-088): a span per run with attributes, its text style (`style:family="text"`)
+# in the object's automatic styles, as LibreOffice's import writes one (F-087); the font as
+# `fo:font-family`, and colours as their RGB (LibreOffice keeps no theme link in a chart, F-085).
+function _rich_title_paras(o, rts::RichTextString)
+    io = IOBuffer()
+    print(io, "<text:p>")
+    for run in rts.runs
+        props = _chart_run_props(run)
+        name = isempty(props) ? "" : _chart_text_style!(o, props)
+        for (k, part) in enumerate(split(replace(run.text, "\r\n" => "\n"), '\n'))
+            k > 1 && print(io, "</text:p><text:p>")
+            isempty(part) && continue
+            isempty(name) ? print(io, _esct(part)) : print(io, "<text:span text:style-name=\"", name, "\">", _esct(part), "</text:span>")
+        end
+    end
+    print(io, "</text:p>")
+    return replace(String(take!(io)), "<text:p></text:p>" => "<text:p/>")
+end
+
+function _chart_run_props(run::RichTextRun)
+    a = run.atts
+    a === nothing && return ""
+    p = Pair{String,String}[]
+    get(a, :bold, false) in (true, 1) && append!(p, ["fo:font-weight" => "bold", "style:font-weight-asian" => "bold", "style:font-weight-complex" => "bold"])
+    get(a, :italic, false) in (true, 1) && append!(p, ["fo:font-style" => "italic", "style:font-style-asian" => "italic", "style:font-style-complex" => "italic"])
+    get(a, :under, false) in (true, 1) && append!(p, ["style:text-underline-style" => "solid", "style:text-underline-width" => "auto",
+                                                       "style:text-underline-color" => "font-color"])
+    get(a, :strike, false) in (true, 1) && append!(p, ["style:text-line-through-style" => "solid", "style:text-line-through-type" => "single"])
+    v = get(a, :vertAlign, nothing)
+    v == "superscript" && push!(p, "style:text-position" => "super 58%")
+    v == "subscript" && push!(p, "style:text-position" => "sub 58%")
+    c = get(a, :color, nothing)
+    c === nothing || push!(p, "fo:color" => SheetCore.odf_color(c))
+    s = get(a, :size, nothing)
+    if s !== nothing
+        sz = string(isinteger(s) ? Int(s) : s) * "pt"
+        append!(p, ["fo:font-size" => sz, "style:font-size-asian" => sz, "style:font-size-complex" => sz])
+    end
+    n = get(a, :name, nothing)
+    n === nothing || push!(p, "fo:font-family" => (occursin(' ', n) ? "'$n'" : String(n)))
+    return join(" $k=\"$(_esc(v))\"" for (k, v) in p)
+end
+
+# The object's text style with `props`, made (`T1`, `T2`, …) when it has none.
+function _chart_text_style!(o, props::AbstractString)
+    for m in eachmatch(r"<style:style style:name=\"([^\"]*)\" style:family=\"text\"><style:text-properties([^>]*?)/></style:style>", o.text)
+        m.captures[2] == props && return String(m.captures[1])
+    end
+    k = 1
+    while occursin("style:name=\"T$k\"", o.text)
+        k += 1
+    end
+    _insert_before!(o, "</office:automatic-styles>", "<style:style style:name=\"T$k\" style:family=\"text\"><style:text-properties$props/></style:style>")
+    return "T$k"
+end
+
+function _title_xml(text, o, xf)
+    text isa RichTextString && return _rich_title_paras(o, text)
     text isa AbstractString && return _title_paras(text)
     text isa DrawingText || throw(ODSError("LibreOffice's titles can't follow a cell (F-081, D-086): give the text."))
     io = IOBuffer()
     for p in text.paragraphs
         print(io, "<text:p>")
         for r in p.runs
-            r.kind === :br ? print(io, "<text:line-break/>") : print(io, "<text:span>", _esct(something(r.text, "")), "</text:span>")
+            if r.kind === :br
+                print(io, "<text:line-break/>")
+                continue
+            end
+            props = r.props === nothing ? "" : _drawing_run_props(xf, r.props)
+            t = _esct(something(r.text, ""))
+            isempty(props) ? print(io, t) : print(io, "<text:span text:style-name=\"", _chart_text_style!(o, props), "\">", t, "</text:span>")
         end
         print(io, "</text:p>")
     end
     return String(take!(io))
+end
+
+# A DrawingML run's properties as a text style's (the text property setters' fields): every set field
+# is kept, and LibreOffice's refusals (caps, kerning, an outline) are errors (D-086).
+function _drawing_run_props(xf, rp::DrawingRunProps)
+    out = Pair{String,String}[]
+    for (field, v) in ((:size, rp.size), (:bold, rp.bold), (:italic, rp.italic), (:under, rp.under === nothing ? nothing : Symbol(rp.under)),
+                       (:strike, rp.strike === nothing ? nothing : Symbol(rp.strike)), (:caps, rp.caps), (:baseline, rp.baseline),
+                       (:kern, rp.kern), (:spacing, rp.spacing), (:line, rp.line), (:latin, rp.latin), (:ea, rp.ea), (:cs, rp.cs), (:lang, rp.lang),
+                       (:fill, rp.fill === nothing || rp.fill.fgcolor === nothing ? nothing : "#" * rp.fill.fgcolor.rgb))
+        v === nothing && continue
+        _, attrs = _text_attrs(xf, field, v)
+        append!(out, attrs)
+    end
+    return join(" $k=\"$(_esc(v))\"" for (k, v) in out)
 end
 
 const _LEGEND_ODF = Dict(:b => "bottom", :bottom => "bottom", :t => "top", :top => "top", :l => "start", :left => "start",

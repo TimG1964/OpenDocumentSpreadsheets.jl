@@ -64,6 +64,7 @@ include("model/workbook.jl")
 include("model/access.jl")
 include("model/rows.jl")
 include("model/tables.jl")
+include("model/richtext.jl")
 include("formula/openformula.jl")
 include("formula/uiformula.jl")
 include("formula/refs.jl")
@@ -97,6 +98,7 @@ include("write/protection.jl")
 include("write/printing.jl")
 include("write/docprops.jl")
 include("write/hyperlinks.jl")
+include("write/richtext.jl")
 include("write/notes.jl")
 include("write/images.jl")
 include("write/validation.jl")
@@ -128,12 +130,13 @@ export
     writetable, writetable!, streamods, writerow!, writerows!,
     # formats
     setFont, setBorder, setFill, setAlignment,
+    RichTextString, RichTextRun,                # rich text (D-088), as XLSX.jl exports them
     setFormat, setUniformFormat,
     setUniformFont, setUniformBorder, setUniformFill, setUniformAlignment, setUniformStyle,
     getMergedCells, isMergedCell, getMergedBaseCell, mergeCells, removeMergedCells,
     setColumnWidth, setRowHeight, autofitColumns,
     setCellStyle, addCellStyle!,
-    # sheets (phase 5)
+    # sheets
     insertRows, insertColumns, deleteRows, deleteColumns,
     renamesheet!, deletesheet!, copysheet!, movesheet!,
     addDefinedName, deleteDefinedName, deleteAllDefinedNames,
@@ -144,7 +147,7 @@ export
     setPageSetup, setPageMargins, setPrintOptions, setPrintArea, removePrintArea, setPrintTitles, removePrintTitles,
     setHeaderFooter, removeHeaderFooter, headerFooterField, headerFooterFont,
     setDocumentProperties, setCustomProperty, deleteCustomProperty,
-    # rich objects (phase 6)
+    # rich objects
     addHyperlink, deleteHyperlink,
     addComment, deleteComment,
     addThreadedComment, addThreadedReply, setThreadedCommentResolved, deleteThreadedComment,
@@ -153,11 +156,11 @@ export
     addtable!, deletetable!, settotals!, gettotals, removetotals!, appendtable!, gettablerange,
     setAutoFilter, removeAutoFilter,
     setConditionalFormat,
-    # sparklines (phase 8 step 8), as XLSX.jl's at its top level
+    # sparklines
     addSparklines, getSparklines, deleteSparklines
 
 @static if VERSION >= v"1.11"
-    eval(Meta.parse("public getcell, getcellrange, getFormula, get_dimension, ODSError, Cell, EmptyCell, DataTable, TableRow, TableRowIterator, SheetRow, StreamWriter, StreamSheet, " *
+    eval(Meta.parse("public getcell, getcellrange, getFormula, getRichTextString, get_dimension, ODSError, Cell, EmptyCell, DataTable, TableRow, TableRowIterator, SheetRow, StreamWriter, StreamSheet, " *
                     "getFont, getBorder, getFill, getAlignment, getFormat, getText, getDefaultFont, setOutsideBorder, CellFont, CellFill, CellBorder, CellAlignment, CellFormat, getColumnWidth, getRowHeight, getCellStyle, " *
                     "getDefinedNames, getAllDefinedNames, DefinedName, isRowHidden, isColumnHidden, getSheetVisibility, getTabColor, getRowOutlineLevel, getColumnOutlineLevel, getSheetView, " *
                     "isSheetProtected, getSheetProtection, getCellProtection, isWorkbookProtected, getWorkbookProtection, " *

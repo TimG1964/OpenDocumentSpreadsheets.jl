@@ -77,9 +77,14 @@ end
                 isfile(path) || (path = joinpath(out, "cs.ods"))
                 cs = getCharts(readods(path))
                 @test [x.sheet for x in cs] == ["Chart1", "Spread"]
-                @test cs[2] isa OC.ChartEx && OC.getChartTypes(cs[2]) == [:histogram]
                 @test [x.values.ref for x in getChartSeries(cs[1])] == ["Data.B2:B7"]
-                @test [x.values.ref for x in getChartSeries(cs[2])] == ["Data.C2:C7"]
+                # the histogram: LibreOffice 26.8 has it; an older one (CI's 26.x) reads it without its series
+                if lo_version(SOFFICE) >= LO_FIXTURE_VERSION
+                    @test cs[2] isa OC.ChartEx && OC.getChartTypes(cs[2]) == [:histogram]
+                    @test [x.values.ref for x in getChartSeries(cs[2])] == ["Data.C2:C7"]
+                else
+                    @test_skip cs[2] isa OC.ChartEx
+                end
                 @test OC.getChartTitle(cs[1]) == "On its own sheet"
             end
         else

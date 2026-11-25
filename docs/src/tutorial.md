@@ -153,7 +153,7 @@ openods("budget.ods"; mode = "rw") do xf
     addHyperlink(s, "A1"; url = "https://example.org/budget", display = "Budget")
     addComment(s, "B7", "Agreed with finance"; author = "Ann")
     addDataValidation(s, "C2:C40"; type = :list, values = ["Open", "Paid"])
-    t = addtable!(s, "A2:C40"; name = "Costs")
+    t = addtable!(s, "A1:C13"; name = "Costs")
     settotals!(t, "Amount" => :sum)
     setAutoFilter(xf["Income"], "A1:D80"; filters = ["Month" => ["Jan", "Feb"]],
                   sort = "Amount" => :descending)
