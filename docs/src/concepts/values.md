@@ -28,17 +28,17 @@ as `7.0`), and floats are written exactly.
 using Dates
 
 xf = newods("Types")
-t = xf["Types"]
-t["A1:A8"] = ["Integer", "Float", "Text", "Boolean", "Date", "Date and time", "Time", "Duration"]
-t["B1"] = 42
-t["B2"] = 3.14159
-t["B3"] = "Hello"
-t["B4"] = true
-t["B5"] = Date(2026, 11, 18)
-t["B6"] = DateTime(2026, 11, 18, 13, 45)
-t["B7"] = Time(9, 30)
-t["B8"] = Hour(36)
-setColumnWidth(t, "A:B"; width = 18)
+types = xf["Types"]
+types["A1:A8"] = ["Integer", "Float", "Text", "Boolean", "Date", "Date and time", "Time", "Duration"]
+types["B1"] = 42
+types["B2"] = 3.14159
+types["B3"] = "Hello"
+types["B4"] = true
+types["B5"] = Date(2026, 11, 18)
+types["B6"] = DateTime(2026, 11, 18, 13, 45)
+types["B7"] = Time(9, 30)
+types["B8"] = Hour(36)
+setColumnWidth(types, "A:B"; width = 18)
 ```
 
 <!-- shot: values_types cells=3x9 -->
@@ -68,7 +68,7 @@ text and merge spans. It is public but not exported, so import it by name:
 ```julia
 using OpenDocumentSpreadsheets: getcell
 
-c = getcell(t, "B2")       # 3.14159, on the Types sheet above
+c = getcell(types, "B2")   # 3.14159, on the Types sheet above
 c.datatype     # :float, :percentage, :currency, :date, :time, :boolean, :string, :error, :empty
 c.value
 c.style        # the name of its cell style
@@ -86,9 +86,9 @@ using OpenDocumentSpreadsheets: getRichTextString
 
 rt = RichTextString(RichTextRun("Water is H"), RichTextRun("2", [:vertAlign => "subscript"]),
                     RichTextRun("O, and "), RichTextRun("bold", [:bold => true, :color => "red"]))
-t["A10"] = rt
-getRichTextString(t, "A10") == rt            # true
-t["A10"]                                     # "Water is H2O, and bold", its text
+types["A10"] = rt
+getRichTextString(types, "A10") == rt        # true
+types["A10"]                                 # "Water is H2O, and bold", its text
 ```
 
 <!-- shot: values_richtext cells=3x10 -->
@@ -98,7 +98,7 @@ A run's attributes are `:bold`, `:italic`, `:under`, `:strike`, `:vertAlign` (`"
 `"subscript"`), `:color`, `:size` and `:name`. A run takes the attributes it doesn't set from the
 cell, and a line break starts a new paragraph.
 
-A string of one run is written as plain text, with the run's attributes given to the cell's font,
-except for a superscript or subscript, which a cell style can't hold. `getRichTextString` reads
+Rich text in a single format is saved as ordinary text, its format becoming the cell's font,
+except for a superscript or subscript, which a cell's font can't hold. `getRichTextString` reads
 rich text made in LibreOffice too, and gives `nothing` for a cell with no formatted runs. Writing a new
 value to the cell drops its runs, as LibreOffice does.

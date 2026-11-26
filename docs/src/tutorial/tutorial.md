@@ -9,6 +9,8 @@ budget. Run the examples in order, in one Julia session: each uses what the ones
 files are written to the current directory (`pwd()`). Each step links to the page that covers it in
 full.
 
+In these examples and throughout the guide, `xf` is an open file and `sh` is one of its sheets.
+
 ## A file to work with
 
 The tutorial reads and edits `budget.ods`, a year of income and costs. This example makes it; the
@@ -168,11 +170,11 @@ exactly as it was: see [Creating and editing files](creatingFiles.md).
 using OpenDocumentSpreadsheets.Charts
 
 openods("budget.ods"; mode = "rw") do xf
-    s = xf["Costs"]
-    c = addChart(s, :column; anchor = "F2:M18", title = "Costs by month")
+    sh = xf["Costs"]
+    c = addChart(sh, :column; anchor = "F2:M18", title = "Costs by month")
     addSeries(c, "B2:B13"; categories = "A2:A13", name_ref = "B1")
     setLegendPos(c, :b)                       # the legend at the bottom
-    addSparklines(s, "A15", "B2:B13")         # the year's amounts, in one cell
+    addSparklines(sh, "A15", "B2:B13")       # the year's amounts, in one cell
 end
 ```
 
@@ -188,10 +190,10 @@ Status column to two values, offered as a drop-down list:
 
 ```julia
 openods("budget.ods"; mode = "rw") do xf
-    s = xf["Costs"]
-    addHyperlink(s, "E1"; url = "https://example.org/budget", display = "Budget notes")
-    addComment(s, "B7", "Agreed with finance"; author = "Ann", visible = true)
-    addDataValidation(s, "C2:C13"; type = :list, values = ["Open", "Paid"])
+    sh = xf["Costs"]
+    addHyperlink(sh, "E1"; url = "https://example.org/budget", display = "Budget notes")
+    addComment(sh, "B7", "Agreed with finance"; author = "Ann", visible = true)
+    addDataValidation(sh, "C2:C13"; type = :list, values = ["Open", "Paid"])
 end
 ```
 
@@ -246,11 +248,11 @@ renamed and copied, and its header row is frozen:
 
 ```julia
 openods("budget.ods"; mode = "rw") do xf
-    s = xf["Costs"]
-    insertRows(s, 5; count = 3)            # the totals row moves to row 17, and sums B2:B16
-    renamesheet!(s, "Costs 2027")
-    copysheet!(s)                          # "Costs 2027 (copy)"
-    freezePanes(s; nrows = 1)              # row 1 stays in view while the rest scrolls
+    sh = xf["Costs"]
+    insertRows(sh, 5; count = 3)           # the totals row moves to row 17, and sums B2:B16
+    renamesheet!(sh, "Costs 2027")
+    copysheet!(sh)                         # "Costs 2027 (copy)"
+    freezePanes(sh; nrows = 1)             # row 1 stays in view while the rest scrolls
 end
 ```
 

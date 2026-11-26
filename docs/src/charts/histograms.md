@@ -13,12 +13,12 @@ using OpenDocumentSpreadsheets
 using OpenDocumentSpreadsheets.Charts
 
 xf = newods("Heights")
-ws = xf["Heights"]
-ws["A1"] = "Height (cm)"
+sh = xf["Heights"]
+sh["A1"] = "Height (cm)"
 for i in 1:200
-    ws[i+1, 1] = round(170 + 9 * sin(i) * cos(i / 7) + 4 * sin(i / 3); digits = 1)
+    sh[i+1, 1] = round(170 + 9 * sin(i) * cos(i / 7) + 4 * sin(i / 3); digits = 1)
 end
-h = addChartEx(ws, :histogram, "A2:A201"; anchor = "C2:J18", name_ref = "A1")
+h = addChartEx(sh, :histogram, "A2:A201"; anchor = "C2:J18", name_ref = "A1")
 setSeriesBinning(h, 1; binCount = 8)
 ```
 

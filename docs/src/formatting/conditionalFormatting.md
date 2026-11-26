@@ -13,16 +13,16 @@ that apply a cell style when they hold, and data bars, colour scales and icon se
 using OpenDocumentSpreadsheets
 
 xf = newods("Sales")
-s = xf["Sales"]
+sh = xf["Sales"]
 for i in 1:10
-    s[i, 1] = i * 3 - 7
-    s[i, 2] = isodd(i) ? "north" : "south"
+    sh[i, 1] = i * 3 - 7
+    sh[i, 2] = isodd(i) ? "north" : "south"
 end
-setConditionalFormat(s, "A1:A10", :cellIs; operator = "greaterThan", value = "10",
+setConditionalFormat(sh, "A1:A10", :cellIs; operator = "greaterThan", value = "10",
                      dxStyle = "greenfilltext")
-setConditionalFormat(s, "A1:A10", :cellIs; operator = "lessThan", value = "0",
+setConditionalFormat(sh, "A1:A10", :cellIs; operator = "lessThan", value = "0",
                      font = ["color" => "red", "bold" => "true"])
-setConditionalFormat(s, "B1:B10", :containsText; value = "north", style = "Good")
+setConditionalFormat(sh, "B1:B10", :containsText; value = "north", style = "Good")
 ```
 
 <!-- shot: condfmt_conditions cells=3x11 -->
@@ -72,14 +72,14 @@ Each entry of LibreOffice's Format ▸ Conditional ▸ Condition dialog is a typ
 
 ```julia
 xf = newods("Scales")
-c = xf["Scales"]
+scales = xf["Scales"]
 for i in 1:10
-    c[i, 1] = i^2; c[i, 2] = i^2; c[i, 3] = i^2
+    scales[i, 1] = i^2; scales[i, 2] = i^2; scales[i, 3] = i^2
 end
-setConditionalFormat(c, "A1:A10", :dataBar; databar = "green")
-setConditionalFormat(c, "B1:B10", :colorScale; colorscale = "redwhitegreen")
-setConditionalFormat(c, "C1:C10", :iconSet; iconset = "3Arrows")
-setColumnWidth(c, "A:C"; width = 14)
+setConditionalFormat(scales, "A1:A10", :dataBar; databar = "green")
+setConditionalFormat(scales, "B1:B10", :colorScale; colorscale = "redwhitegreen")
+setConditionalFormat(scales, "C1:C10", :iconSet; iconset = "3Arrows")
+setColumnWidth(scales, "A:C"; width = 14)
 ```
 
 <!-- shot: condfmt_scales cells=4x11 -->
@@ -93,8 +93,8 @@ values, and `minLength` and `maxLength` its shortest and longest bar.
 ## Reading and clearing
 
 ```julia
-OpenDocumentSpreadsheets.getConditionalFormats(s)            # range => (type = "cellIs", priority = 1), …
-OpenDocumentSpreadsheets.clearConditionalFormats(s, "B:B")   # 1 rule removed
+OpenDocumentSpreadsheets.getConditionalFormats(sh)           # range => (type = "cellIs", priority = 1), …
+OpenDocumentSpreadsheets.clearConditionalFormats(sh, "B:B")  # 1 rule removed
 ```
 
 ## LibreOffice's rules

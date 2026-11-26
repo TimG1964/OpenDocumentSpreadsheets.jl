@@ -9,23 +9,23 @@ using OpenDocumentSpreadsheets
 using OpenDocumentSpreadsheets: getHyperlink, getHyperlinks
 
 xf = newods("Links")
-s = xf["Links"]
+sh = xf["Links"]
 addsheet!(xf, "Data")["B10"] = 42
-s["A1"] = "Links"
-addHyperlink(s, "A2"; url = "https://example.org/", display = "Our site")
-addHyperlink(s, "A3"; location = "Data.B10", display = "See the data")
-s["A4"] = 1234
-addHyperlink(s, "A4"; url = "https://example.org/figures")      # a link of the cell itself
-addHyperlink(s, "B5:B7"; url = "https://example.org/list")       # one link per cell
-getHyperlink(s, "A2")       # (sheet, ref, url, location, display, tooltip)
-getHyperlinks(s)            # every link on the sheet
+sh["A1"] = "Links"
+addHyperlink(sh, "A2"; url = "https://example.org/", display = "Our site")
+addHyperlink(sh, "A3"; location = "Data.B10", display = "See the data")
+sh["A4"] = 1234
+addHyperlink(sh, "A4"; url = "https://example.org/figures")     # a link of the cell itself
+addHyperlink(sh, "B5:B7"; url = "https://example.org/list")      # one link per cell
+getHyperlink(sh, "A2")      # (sheet, ref, url, location, display, tooltip)
+getHyperlinks(sh)           # every link on the sheet
 ```
 
 <!-- shot: hyperlinks cells=3x5 -->
 ![A sheet with two links shown as underlined text, Our site and See the data, the number 1234 below them, and in B5 a link shown as its address](../images/hyperlinks.png)
 
 ```julia
-deleteHyperlink(s, "A3")
+deleteHyperlink(sh, "A3")
 ```
 
 - **Text cells** get a link round their text, as LibreOffice's Insert ▸ Hyperlink makes. `display`

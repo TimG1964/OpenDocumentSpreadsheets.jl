@@ -12,15 +12,15 @@ stops sheets being added, deleted, moved or renamed.
 using OpenDocumentSpreadsheets
 
 xf = newods("Form")
-s = xf["Form"]
-s["A1:A3"] = ["Name"; "Email"; "Days"]
-setCellProtection(s, "B1:B3"; locked = false)          # cells left editable
-setFill(s, "B1:B3"; pattern = "solid", fgColor = "FFF2CC")
-protectSheet(s; password = "secret", insertRows = true, deleteRows = true)
+sh = xf["Form"]
+sh["A1:A3"] = ["Name"; "Email"; "Days"]
+setCellProtection(sh, "B1:B3"; locked = false)         # cells left editable
+setFill(sh, "B1:B3"; pattern = "solid", fgColor = "FFF2CC")
+protectSheet(sh; password = "secret", insertRows = true, deleteRows = true)
 protectWorkbook(xf; password = "secret")
 
-OpenDocumentSpreadsheets.getSheetProtection(s)   # the permissions, and whether there is a password
-unprotectSheet(s)
+OpenDocumentSpreadsheets.getSheetProtection(sh)  # the permissions, and whether there is a password
+unprotectSheet(sh)
 ```
 
 - **Passwords** are stored as LibreOffice stores them, so any text works.

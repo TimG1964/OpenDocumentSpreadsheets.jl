@@ -12,19 +12,19 @@ LibreOffice's Format ▸ Columns ▸ Width dialog does. Row heights are in point
 using OpenDocumentSpreadsheets
 
 xf = newods("Sizes")
-s = xf["Sizes"]
-s["A1:D1"] = ["Narrow" "Width 20" "3 cm" "A long heading that needs room"]
-s["A2:D2"] = [1 2 3 4]
+sh = xf["Sizes"]
+sh["A1:D1"] = ["Narrow" "Width 20" "3 cm" "A long heading that needs room"]
+sh["A2:D2"] = [1 2 3 4]
 
-setColumnWidth(s, "A"; width = 6)              # in characters
-setColumnWidth(s, "B"; width = 20)
-setColumnWidth(s, "C"; width = 3, unit = :cm)  # a length
-setRowHeight(s, 2; height = 30)                # in points
-autofitColumns(s, "D")                         # LibreOffice's optimal width
+setColumnWidth(sh, "A"; width = 6)             # in characters
+setColumnWidth(sh, "B"; width = 20)
+setColumnWidth(sh, "C"; width = 3, unit = :cm)  # a length
+setRowHeight(sh, 2; height = 30)               # in points
+autofitColumns(sh, "D")                        # LibreOffice's optimal width
 
-OpenDocumentSpreadsheets.getColumnWidth(s, "B1")               # 20.7109375: 20, plus the padding
-OpenDocumentSpreadsheets.getColumnWidth(s, "C1"; unit = :cm)   # 3.0
-OpenDocumentSpreadsheets.getRowHeight(s, "A2")                 # 30.2109375: 30, plus the padding
+OpenDocumentSpreadsheets.getColumnWidth(sh, "B1")              # 20.7109375: 20, plus the padding
+OpenDocumentSpreadsheets.getColumnWidth(sh, "C1"; unit = :cm)  # 3.0
+OpenDocumentSpreadsheets.getRowHeight(sh, "A2")                # 30.2109375: 30, plus the padding
 ```
 
 <!-- shot: widths cells=5x4 -->

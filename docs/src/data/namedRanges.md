@@ -5,24 +5,26 @@ CurrentModule = OpenDocumentSpreadsheets
 # Named ranges
 
 LibreOffice's Sheet ▸ Named Ranges and Expressions gives names to ranges, cells and constants, for
-the whole file or for one sheet. A file must be open for writing (`mode="rw"`, or made by
-[`newods`](@ref)); the getters also work on files opened for reading.
+the whole file or for one sheet. The functions for them have `DefinedName` in their names:
+[`addDefinedName`](@ref), [`deleteDefinedName`](@ref) and the others below. A file must be open for
+writing (`mode="rw"`, or made by [`newods`](@ref)); the getters also work on files opened for
+reading.
 
 ```julia
 using OpenDocumentSpreadsheets
 
 xf = newods("Data")
-d = xf["Data"]
-d["A1:B1"] = ["Month" "Rate"]
+sh = xf["Data"]
+sh["A1:B1"] = ["Month" "Rate"]
 for i in 1:12
-    d[i+1, 1] = i; d[i+1, 2] = 0.01i
+    sh[i+1, 1] = i; sh[i+1, 2] = 0.01i
 end
 
-addDefinedName(xf, "rates", "Data.B2:B13")                  # a named range ($-absolute by default)
+addDefinedName(xf, "rates", "Data.B2:B13")                  # a named range, absolute ($Data.$B$2:$B$13)
 addDefinedName(xf, "vat", 0.2)                              # a named expression
-addDefinedName(d, "first", "A1"; absolute = false)          # local to the sheet, relative
+addDefinedName(sh, "first", "A1"; absolute = false)         # local to the sheet, relative
 addDefinedName(xf, "total", raw"=SUM($Data.$B$2:$B$13)")    # a formula
-setFormula(d, "D1"; val = "=SUM(rates)*(1+vat)")
+setFormula(sh, "D1"; val = "=SUM(rates)*(1+vat)")
 
 xf["rates"]                                         # the range's values
 OpenDocumentSpreadsheets.getDefinedNames(xf)        # the file's names

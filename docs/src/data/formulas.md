@@ -13,17 +13,17 @@ using OpenDocumentSpreadsheets
 using OpenDocumentSpreadsheets: getFormula
 
 xf = newods("Prices")
-p = xf["Prices"]
-p["A1:C1"] = ["Item" "Price" "With VAT"]
-p["A2:B4"] = ["Tea" 3.5; "Cake" 4.25; "Soup" 6]
+sh = xf["Prices"]
+sh["A1:C1"] = ["Item" "Price" "With VAT"]
+sh["A2:B4"] = ["Tea" 3.5; "Cake" 4.25; "Soup" 6]
 for r in 2:4
-    setFormula(p, "C$r"; val = "=B$r*1.2")
+    setFormula(sh, "C$r"; val = "=B$r*1.2")
 end
-setFormula(p, "C5"; val = "=SUM(C2:C4)")
-setFormula(p, "D5"; val = "of:=[.C5]/3", raw = true)
+setFormula(sh, "C5"; val = "=SUM(C2:C4)")
+setFormula(sh, "D5"; val = "of:=[.C5]/3", raw = true)
 
-getFormula(p, "C5")                 # "=SUM(C2:C4)"
-getFormula(p, "C5"; raw = true)     # "of:=SUM([.C2:.C4])"
+getFormula(sh, "C5")                # "=SUM(C2:C4)"
+getFormula(sh, "C5"; raw = true)    # "of:=SUM([.C2:.C4])"
 ```
 
 <!-- shot: formulas cells=5x6 cursor=C5 bar -->

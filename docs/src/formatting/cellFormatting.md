@@ -19,19 +19,19 @@ file, the reference names its sheet: `setFont(xf, "Sheet1.A1"; bold = true)`.
 using OpenDocumentSpreadsheets
 
 xf = newods("Report")
-s = xf["Report"]
-s["A1"] = "Quarterly report"
-s["A3:D3"] = ["Region" "Q1" "Q2" "Q3"]
-s["A4:D6"] = ["North" 1200.5 1310 1405.25; "South" 980 1012.75 1100; "East" 1430 1388 1502.5]
-setColumnWidth(s, "A:D"; width = 12)
+sh = xf["Report"]
+sh["A1"] = "Quarterly report"
+sh["A3:D3"] = ["Region" "Q1" "Q2" "Q3"]
+sh["A4:D6"] = ["North" 1200.5 1310 1405.25; "South" 980 1012.75 1100; "East" 1430 1388 1502.5]
+setColumnWidth(sh, "A:D"; width = 12)
 
-setFont(s, "A1"; bold = true, size = 16, color = "darkblue")
-setFont(s, "A3:D3"; bold = true, color = "white")
-setFill(s, "A3:D3"; pattern = "solid", fgColor = "4472C4")
-setBorder(s, "A3:D6"; outside = ["style" => "medium", "color" => "4472C4"])
-setBorder(s, "A4:D6"; bottom = ["style" => "thin", "color" => "BBBBBB"])
-setAlignment(s, "B3:D3"; horizontal = "center")
-setFont(s, "A4:A6"; italic = true)
+setFont(sh, "A1"; bold = true, size = 16, color = "darkblue")
+setFont(sh, "A3:D3"; bold = true, color = "white")
+setFill(sh, "A3:D3"; pattern = "solid", fgColor = "4472C4")
+setBorder(sh, "A3:D6"; outside = ["style" => "medium", "color" => "4472C4"])
+setBorder(sh, "A4:D6"; bottom = ["style" => "thin", "color" => "BBBBBB"])
+setAlignment(sh, "B3:D3"; horizontal = "center")
+setFont(sh, "A4:A6"; italic = true)
 ```
 
 <!-- shot: cellformat_basic cells=5x7 -->
@@ -43,7 +43,7 @@ A cell's background (Format ▸ Cells ▸ Background) is set with `pattern = "so
 backgrounds, so a pattern is blended into one colour. Colours are hex (`"4472C4"`) or names
 (`"darkblue"`).
 
-Each setter changes only what its keywords give: `setFont(s, "A1"; bold = true)` leaves the font's
+Each setter changes only what its keywords give: `setFont(sh, "A1"; bold = true)` leaves the font's
 size, colour and name, and the cell's fill, borders and number format, as they were. LibreOffice
 keeps formatting in cell styles, so a setter gives each cell a style made from its current one; a
 named style the cell had stays underneath, as in LibreOffice.
@@ -54,8 +54,8 @@ cell's style resolves to, also on files opened for reading:
 ```julia
 using OpenDocumentSpreadsheets: getFont, getFill
 
-getFont(s, "A1")          # its font: name, size, bold, colour, ...
-getFill(s, "B3")          # its fill
+getFont(sh, "A1")         # its font: name, size, bold, colour, ...
+getFill(sh, "B3")         # its fill
 ```
 
 Every setter works on empty cells, as in LibreOffice, and whole columns and rows are formatted to
@@ -68,12 +68,12 @@ everything else. The `setUniform*` functions instead make the range alike: they 
 (top-left) cell, then give every cell that cell's font, fill, border, alignment or number format.
 
 ```julia
-u = addsheet!(xf, "Regions")
-u["A1:C2"] = ["North" 1 2; "South" 3 4]
-setFont(u, "A1"; bold = true, size = 14)
+regions = addsheet!(xf, "Regions")
+regions["A1:C2"] = ["North" 1 2; "South" 3 4]
+setFont(regions, "A1"; bold = true, size = 14)
 
-setFont(u, "A1:C2"; color = "darkgreen")      # all green; A1 is still the only bold, 14 pt cell
-setUniformFont(u, "A1:C2"; italic = true)     # every cell gets A1's font: bold, 14 pt, green, italic
+setFont(regions, "A1:C2"; color = "darkgreen")  # all green; A1 is still the only bold, 14 pt cell
+setUniformFont(regions, "A1:C2"; italic = true)  # every cell gets A1's font: bold, 14 pt, green, italic
 ```
 
 `setUniformFill`, `setUniformBorder`, `setUniformAlignment` and `setUniformFormat` work the same way
@@ -87,15 +87,15 @@ of the named formats. [`getText`](@ref OpenDocumentSpreadsheets.getText) shows a
 shows it:
 
 ```julia
-s["F3:F8"] = ["Code"; "#,##0.00"; "0.0%"; "YYYY-MM-DD"; "[HH]:MM"; "0.00E+00";;]
-s["G3"] = "Shown"
+sh["F3:F8"] = ["Code"; "#,##0.00"; "0.0%"; "YYYY-MM-DD"; "[HH]:MM"; "0.00E+00";;]
+sh["G3"] = "Shown"
 for (r, v) in zip(4:8, [1234.5, 0.256, 46000, 1.75, 0.000123])
-    s[r, 7] = v
-    setFormat(s, "G$r"; format = s[r, 6])
+    sh[r, 7] = v
+    setFormat(sh, "G$r"; format = sh[r, 6])
 end
-setColumnWidth(s, "F:G"; width = 12)
+setColumnWidth(sh, "F:G"; width = 12)
 
-OpenDocumentSpreadsheets.getText(s, "G4")      # "1,234.50"
+OpenDocumentSpreadsheets.getText(sh, "G4")     # "1,234.50"
 ```
 
 <!-- shot: cellformat_numbers cells=7x9 -->
@@ -115,17 +115,17 @@ own.
 
 ```julia
 xf = newods("Styles")
-st = xf["Styles"]
-st["A1"] = "Heading 1"; st["A2"] = "Good"; st["A3"] = "Bad"; st["A4"] = "Accent 1"
-st["A5"] = "Total"; st["B5"] = 4321.5
+styled = xf["Styles"]
+styled["A1"] = "Heading 1"; styled["A2"] = "Good"; styled["A3"] = "Bad"; styled["A4"] = "Accent 1"
+styled["A5"] = "Total"; styled["B5"] = 4321.5
 for r in 1:4
-    setCellStyle(st, "A$r", st[r, 1])        # LibreOffice's built-in styles
+    setCellStyle(styled, "A$r", styled[r, 1])  # LibreOffice's built-in styles
 end
 addCellStyle!(xf, "Total"; parent = "Default",
               font = (bold = true,), border = (top = ["style" => "double"],), format = "#,##0.00")
-setCellStyle(st, "A5:B5", "Total")
-setColumnWidth(st, "A"; width = 14)
-OpenDocumentSpreadsheets.getCellStyle(st, "A1")   # "Heading 1"
+setCellStyle(styled, "A5:B5", "Total")
+setColumnWidth(styled, "A"; width = 14)
+OpenDocumentSpreadsheets.getCellStyle(styled, "A1")  # "Heading 1"
 ```
 
 <!-- shot: cellformat_styles cells=3x6 -->

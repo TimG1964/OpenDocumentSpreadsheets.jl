@@ -15,8 +15,8 @@ addsheet!(xf, "Summary")
 setFormula(xf["Summary"], "A1"; val = "=Sheet1.A1*2")
 
 renamesheet!(xf["Sheet1"], "Data")    # =Sheet1.A1*2 becomes =Data.A1*2
-c = copysheet!(xf["Data"])            # "Data (copy)", appended
-movesheet!(c; before = 1)             # or after = "Data", or a sheet
+copied = copysheet!(xf["Data"])       # "Data (copy)", appended
+movesheet!(copied; before = 1)        # or after = "Data", or a sheet
 deletesheet!(xf, "Data (copy)")       # references to it would become #REF!
 sheetnames(xf)                        # ["Data", "Summary"]
 ```

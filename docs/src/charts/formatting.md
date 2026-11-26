@@ -12,12 +12,12 @@ using OpenDocumentSpreadsheets
 using OpenDocumentSpreadsheets.Charts
 
 xf = newods("Data")
-ws = xf["Data"]
-ws["A1"] = "Month"; ws["B1"] = "North"; ws["C1"] = "South"
+sh = xf["Data"]
+sh["A1"] = "Month"; sh["B1"] = "North"; sh["C1"] = "South"
 for (i, m) in enumerate(["Jan", "Feb", "Mar", "Apr", "May", "Jun"])
-    ws[i+1, 1] = m; ws[i+1, 2] = 10i; ws[i+1, 3] = 40 - 5i
+    sh[i+1, 1] = m; sh[i+1, 2] = 10i; sh[i+1, 3] = 40 - 5i
 end
-c = addChart(ws, :column; anchor = "E2:L18", title = "Sales")
+c = addChart(sh, :column; anchor = "E2:L18", title = "Sales")
 addSeries(c, "B2:B7"; categories = "A2:A7", name_ref = "B1")
 addSeries(c, "C2:C7"; categories = "A2:A7", name_ref = "C1")
 
@@ -38,12 +38,12 @@ LibreOffice's Insert ▸ Trend Line and Insert ▸ Y Error Bars:
 
 ```julia
 xf = newods("Trend")
-t = xf["Trend"]
-t["A1:B1"] = ["x" "y"]
+trend = xf["Trend"]
+trend["A1:B1"] = ["x" "y"]
 for (i, y) in enumerate([2.1, 3.9, 6.2, 7.8, 10.1, 12.2, 13.8])
-    t[i+1, 1] = i; t[i+1, 2] = y
+    trend[i+1, 1] = i; trend[i+1, 2] = y
 end
-c = addChart(t, :scatter; anchor = "D2:K18", title = "Measurements")
+c = addChart(trend, :scatter; anchor = "D2:K18", title = "Measurements")
 addSeries(c, "B2:B8"; categories = "A2:A8", name_ref = "B1")
 addTrendline(c, 1, :linear; displayEquation = true)
 setErrorBars(c, 1; type = :percent, value = 10)

@@ -12,10 +12,10 @@ using OpenDocumentSpreadsheets
 using OpenDocumentSpreadsheets.Charts
 
 xf = newods("Data")
-ws = xf["Data"]
-ws["A1:B1"] = ["Month" "Sales"]
-ws["A2:B4"] = ["Jan" 10; "Feb" 20; "Mar" 15]
-addSeries(addChart(ws, :column; anchor = "D2:J16", title = "Sales"), "B2:B4"; categories = "A2:A4", name_ref = "B1")
+sh = xf["Data"]
+sh["A1:B1"] = ["Month" "Sales"]
+sh["A2:B4"] = ["Jan" 10; "Feb" 20; "Mar" 15]
+addSeries(addChart(sh, :column; anchor = "D2:J16", title = "Sales"), "B2:B4"; categories = "A2:A4", name_ref = "B1")
 writeods("sales.ods", xf; overwrite = true)
 
 xf = readods("sales.ods")

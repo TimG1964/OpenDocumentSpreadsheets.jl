@@ -12,23 +12,23 @@ LibreOffice's View ▸ Freeze Cells keeps rows and columns in place while the re
 using OpenDocumentSpreadsheets
 
 xf = newods("Grid")
-s = xf["Grid"]
+sh = xf["Grid"]
 for r in 1:40, c in 1:12
-    s[r, c] = r == 1 ? "Col $c" : c == 1 ? "Row $r" : r * c
+    sh[r, c] = r == 1 ? "Col $c" : c == 1 ? "Row $r" : r * c
 end
-setFont(s, 1, :; bold = true)
-setFont(s, :, 1; bold = true)
+setFont(sh, 1, :; bold = true)
+setFont(sh, :, 1; bold = true)
 
-freezePanes(s; nrows = 1, ncols = 1)       # or freezePanes(s, "B2")
-setSheetView(s; topLeftCell = "E20")       # scrolled down and right
+freezePanes(sh; nrows = 1, ncols = 1)      # or freezePanes(sh, "B2")
+setSheetView(sh; topLeftCell = "E20")      # scrolled down and right
 ```
 
 <!-- shot: frozen cells=8x10 top=keep cursor=keep -->
 ![The sheet scrolled to row 20 and column E, with row 1's headings and column A's row labels still showing, frozen above and to the left of thin lines](../images/frozen.png)
 
 ```julia
-splitPanes(s; nrows = 10)                  # a split that doesn't freeze
-removePanes(s)
+splitPanes(sh; nrows = 10)                 # a split that doesn't freeze
+removePanes(sh)
 ```
 
 LibreOffice keeps a split's position in screen pixels, so a split after row 10 falls exactly at the
@@ -40,8 +40,8 @@ edge of row 10 on a 96-dpi screen at 100% zoom, and near it otherwise.
 and the cell at its top left.
 
 ```julia
-setSheetView(s; zoom = 125, showGridLines = false, activeCell = "C3", topLeftCell = "A1")
-OpenDocumentSpreadsheets.getSheetView(s)
+setSheetView(sh; zoom = 125, showGridLines = false, activeCell = "C3", topLeftCell = "A1")
+OpenDocumentSpreadsheets.getSheetView(sh)
 ```
 
 The view is saved with the file, as LibreOffice saves it:
@@ -54,7 +54,7 @@ The view is saved with the file, as LibreOffice saves it:
 
 ```julia
 addsheet!(xf, "Plan"); addsheet!(xf, "Notes")
-setTabColor(s, "FF8000")                   # or a colour name: "orange"
+setTabColor(sh, "FF8000")                  # or a colour name: "orange"
 setTabColor(xf["Plan"], "4472C4")
 setSheetVisibility(xf["Notes"], :hidden)
 ```
@@ -63,7 +63,7 @@ setSheetVisibility(xf["Notes"], :hidden)
 ![LibreOffice's sheet tabs: Grid, the open sheet, underlined in orange, and Plan on blue; the hidden Notes sheet has no tab](../images/tabs.png)
 
 ```julia
-removeTabColor(s)
+removeTabColor(sh)
 setSheetVisibility(xf["Notes"], :visible)
 ```
 

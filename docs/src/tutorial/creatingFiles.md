@@ -73,12 +73,15 @@ saveods(xf)
 
 ## Editing keeps the rest of the file
 
-OpenDocumentSpreadsheets doesn't rebuild a file it edits. It copies the original and rewrites only the
-rows that hold edited or formatted cells, and the columns whose formats changed:
-- untouched sheets, settings, pictures, charts and the other parts stay byte for byte;
-- styles are only added: new automatic styles go into the sheet's content and named styles into the
-  file's styles, and styles it made that no cell uses any more aren't written;
-- in an edited row, the cells you didn't change keep their formatting, notes and links.
+Editing a file changes only what you change:
+- the sheets, settings, pictures, charts and everything else you don't touch stay exactly as they
+  were;
+- the styles already in the file are never changed: new formatting adds styles of its own;
+- in a row you edit, the cells you didn't change keep their formatting, notes and links.
 
-A file saved without edits is identical to the original. So a file made in LibreOffice, with
+A file saved without edits is identical to the original. So a file made in LibreOffice, even with
 features this package doesn't know about, can be edited safely.
+
+This is because OpenDocumentSpreadsheets doesn't rebuild a file it edits. It copies the original and
+rewrites only the rows that hold edited or formatted cells, and the columns whose formats changed.
+Styles it added that no cell uses any more aren't written.

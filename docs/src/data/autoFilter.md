@@ -12,31 +12,31 @@ using OpenDocumentSpreadsheets
 using OpenDocumentSpreadsheets: getAutoFilter
 
 xf = newods("Sales")
-s = xf["Sales"]
-s["A1:C1"] = ["Region" "Product" "Revenue"]
+sh = xf["Sales"]
+sh["A1:C1"] = ["Region" "Product" "Revenue"]
 rows = [("North", "Tea", 1200), ("South", "Cake", 950), ("East", "Tea", 1430),
         ("West", "Soup", 610), ("North", "Cake", 880), ("South", "Soup", 1020)]
 for (i, r) in enumerate(rows)
-    s[i+1, 1] = r[1]; s[i+1, 2] = r[2]; s[i+1, 3] = r[3]
+    sh[i+1, 1] = r[1]; sh[i+1, 2] = r[2]; sh[i+1, 3] = r[3]
 end
-setColumnWidth(s, "A:C"; width = 12)
+setColumnWidth(sh, "A:C"; width = 12)
 
-setAutoFilter(s, "A1:C7"; filters = ["Region" => ["North", "South"], "Revenue" => (">" => 900)],
+setAutoFilter(sh, "A1:C7"; filters = ["Region" => ["North", "South"], "Revenue" => (">" => 900)],
               sort = "Revenue" => :descending)
-getAutoFilter(s)            # CellRange("A1:C7")
+getAutoFilter(sh)           # CellRange("A1:C7")
 ```
 
 <!-- shot: autofilter cells=4x8 -->
 ![The sales range with filter buttons on its header, showing only North and South rows over 900, in descending order of revenue: 1200, 1020, 950; rows 2, 6 and 7 are hidden](../images/autofilter.png)
 
 ```julia
-setAutoFilter(s, :; sort = ["Region", "Revenue" => :descending], naturalSort = true)
-removeAutoFilter(s)         # shows every row again
+setAutoFilter(sh, :; sort = ["Region", "Revenue" => :descending], naturalSort = true)
+removeAutoFilter(sh)        # shows every row again
 ```
 
 ## Filtering
 
-Rows are hidden as LibreOffice's Data ▸ More Filters ▸ Refresh Range hides them:
+Rows that don't match are hidden, as LibreOffice's Data ▸ More Filters ▸ Refresh Range hides them:
 - Text that LibreOffice reads as a number (`"10"`, `"2026-11-23"`) is compared with numbers by value.
 - List items are compared as text, so a date matches only at midnight.
 - A top or bottom ranking (`(:top, 10)`) counts every cell that isn't empty. Text and errors rank

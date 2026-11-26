@@ -19,16 +19,16 @@ Adding or changing a database range needs a file open for writing (`mode="rw"`, 
 using OpenDocumentSpreadsheets
 
 xf = newods("Sales")
-s = xf["Sales"]
-s["A1:C1"] = ["Region" "Product" "Revenue"]
+sh = xf["Sales"]
+sh["A1:C1"] = ["Region" "Product" "Revenue"]
 rows = [("North", "Tea", 1200), ("South", "Cake", 950), ("East", "Tea", 1430),
         ("West", "Soup", 610), ("North", "Cake", 880), ("South", "Soup", 1020)]
 for (i, r) in enumerate(rows)
-    s[i+1, 1] = r[1]; s[i+1, 2] = r[2]; s[i+1, 3] = r[3]
+    sh[i+1, 1] = r[1]; sh[i+1, 2] = r[2]; sh[i+1, 3] = r[3]
 end
-setColumnWidth(s, "A:C"; width = 12)
+setColumnWidth(sh, "A:C"; width = 12)
 
-t = addtable!(s, "A1:C7"; name = "Sales")
+t = addtable!(sh, "A1:C7"; name = "Sales")
 settotals!(t, "Region" => "Total", "Revenue" => :sum)     # a totals row under the range
 writeods("sales.ods", xf)
 ```
@@ -61,4 +61,4 @@ deletetable!(t)
 ## Not available
 
 LibreOffice has no styles for database ranges: format their cells instead. `style` (and
-`writetable`'s `table_style`) is accepted only as `nothing` or `"None"`; any other style is an error.
+`writetable`'s `table_style`) can only be `nothing` or `"None"`; any other style is an error.

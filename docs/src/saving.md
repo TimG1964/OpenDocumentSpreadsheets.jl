@@ -17,9 +17,10 @@ New files are written in ODF 1.4, the version LibreOffice writes, or in ODF 1.3 
 
 ## Smaller files: `display_text=false`
 
-Like LibreOffice, OpenDocumentSpreadsheets writes each number, date, time and boolean cell twice: as
-its value and as the text shown in the cell. Spreadsheet programs work out the shown text from the
-value, so it can be left out:
+`display_text=false` makes a file of numbers about half the size, and faster to write. It leaves out
+the text shown in each number, date, time and boolean cell, which LibreOffice and
+OpenDocumentSpreadsheets otherwise write beside the value. Spreadsheet programs work out the shown
+text from the value, so nothing is lost:
 
 ```julia
 using OpenDocumentSpreadsheets
@@ -36,13 +37,12 @@ streamods("rows.ods"; display_text = false, overwrite = true) do s
 end
 ```
 
-For numeric data the files are then about half the size, and faster to write. Tools that read only
-the shown text would see such cells as empty.
+Tools that read only the shown text, rather than the value, would see such cells as empty.
 
 ## Large files
 
-- [`streamods`](@ref) and `writetable(...; streaming=true)` write rows as they are produced, in
-  bounded memory:
+- To write a file too large to hold in memory, write its rows as they are produced, with
+  [`streamods`](@ref) or `writetable(...; streaming=true)`:
 
 ```julia
 streamods("big.ods"; overwrite = true) do s
@@ -53,5 +53,8 @@ streamods("big.ods"; overwrite = true) do s
 end
 ```
 
-- `readtable` and `readdata` read a file only as far as the sheet they need.
-- `openods(path; enable_cache=false)` with `eachrow` reads rows without keeping them.
+- To read one sheet of a large file, use `readtable` or `readdata`: they read the file only as far as
+  that sheet.
+- To go through a large sheet row by row without loading it all, open the file with
+  `openods(path; enable_cache=false)` and use `eachrow`: each row is read when you reach it, and not
+  kept.

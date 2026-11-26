@@ -14,17 +14,17 @@ using OpenDocumentSpreadsheets
 using OpenDocumentSpreadsheets: getDataValidation
 
 xf = newods("Orders")
-o = xf["Orders"]
-o["A1:C1"] = ["Colour" "Quantity" "Size"]
+sh = xf["Orders"]
+sh["A1:C1"] = ["Colour" "Quantity" "Size"]
 lists = addsheet!(xf, "Lists")
 lists["A1:A3"] = ["Small"; "Medium"; "Large";;]
 
-addDataValidation(o, "A2:A20"; type = :list, values = ["Red", "Green", "Blue"])
-addDataValidation(o, "B2:B20"; type = :whole, operator = :between, formula1 = 1, formula2 = 10,
+addDataValidation(sh, "A2:A20"; type = :list, values = ["Red", "Green", "Blue"])
+addDataValidation(sh, "B2:B20"; type = :whole, operator = :between, formula1 = 1, formula2 = 10,
                   error = "A whole number from 1 to 10", errorStyle = :stop)
-addDataValidation(o, "C2:C20"; type = :list, formula1 = "Lists.\$A\$1:\$A\$3", sortEntries = true)
-o["A2"] = "Green"
-getDataValidation(o, "B5")
+addDataValidation(sh, "C2:C20"; type = :list, formula1 = "Lists.\$A\$1:\$A\$3", sortEntries = true)
+sh["A2"] = "Green"
+getDataValidation(sh, "B5")
 ```
 
 LibreOffice shows a list rule's values as a drop-down on the cell:
@@ -36,7 +36,7 @@ A cell has one rule: a new rule replaces the rule of the cells it covers, and
 [`deleteDataValidation`](@ref) removes one:
 
 ```julia
-deleteDataValidation(o, "C2:C20")
+deleteDataValidation(sh, "C2:C20")
 ```
 
 ## The Validity dialog and the keywords

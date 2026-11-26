@@ -10,18 +10,18 @@ These set what LibreOffice's Format ▸ Page Style and Format ▸ Print Ranges s
 using OpenDocumentSpreadsheets
 
 xf = newods("Budget")
-s = xf["Budget"]
-s["A1:C1"] = ["Month" "Income" "Costs"]
+sh = xf["Budget"]
+sh["A1:C1"] = ["Month" "Income" "Costs"]
 for i in 1:60
-    s[i+1, 1] = "Month $i"; s[i+1, 2] = 1000 + 10i; s[i+1, 3] = 800 + 7i
+    sh[i+1, 1] = "Month $i"; sh[i+1, 2] = 1000 + 10i; sh[i+1, 3] = 800 + 7i
 end
 
-setPageSetup(s; orientation = :landscape, paperSize = :A4, fitToWidth = 1, fitToHeight = 0)
-setPageMargins(s; left = 0.5, right = 0.5, top = 0.75, bottom = 0.75)   # in inches
-setPrintOptions(s; gridLines = true, horizontalCentered = true)
-setPrintArea(s, "A1:C61")
-setPrintTitles(s; rows = 1)                      # repeated on every page
-setHeaderFooter(s; header = (center = "&A",), footer = (right = "Page &P of &N",))
+setPageSetup(sh; orientation = :landscape, paperSize = :A4, fitToWidth = 1, fitToHeight = 0)
+setPageMargins(sh; left = 0.5, right = 0.5, top = 0.75, bottom = 0.75)  # in inches
+setPrintOptions(sh; gridLines = true, horizontalCentered = true)
+setPrintArea(sh, "A1:C61")
+setPrintTitles(sh; rows = 1)                     # repeated on every page
+setHeaderFooter(sh; header = (center = "&A",), footer = (right = "Page &P of &N",))
 ```
 
 <!-- shot: printing preview -->
@@ -42,7 +42,7 @@ styles:
 [`headerFooterFont`](@ref) and [`headerFooterField`](@ref) build them:
 
 ```julia
-setHeaderFooter(s; header = headerFooterFont(bold = true) * "Budget " * headerFooterField(:date))
+setHeaderFooter(sh; header = headerFooterFont(bold = true) * "Budget " * headerFooterField(:date))
 ```
 
 ## Page styles
