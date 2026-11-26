@@ -25,7 +25,12 @@ unprotectSheet(s)
 
 - **Passwords** are stored as LibreOffice stores them, so any text works.
 - **Permissions** are LibreOffice's: selecting protected and unprotected cells, and inserting and
-  deleting rows and columns. LibreOffice has no permission to format, sort, insert hyperlinks or edit
-  objects and scenarios on a protected sheet, and no window protection: asking for them is an error.
+  deleting rows and columns.
 - **Hiding contents:** `hideAll` and `hidePrint` (*Hide all* and *Hide when printing*) hide a cell's
   contents on screen or in print while the sheet is protected.
+
+## Not available
+
+LibreOffice can't store these, so asking for one is an error that says why: permissions to format,
+sort, insert hyperlinks, or edit objects and scenarios on a protected sheet, and window protection
+(`protectWorkbook`'s `windows`).

@@ -57,4 +57,8 @@ deletetable!(t)
 - Ranges may overlap, and a range may be its header row alone.
 - A totals row's settings are read from its cells' formulas, which are written as LibreOffice
   writes them (`SUBTOTAL(109,$Sales.$C$2:$C$7)`).
-- LibreOffice has no styles for database ranges: `style` is accepted only as `nothing` or `"None"`.
+
+## Not available
+
+LibreOffice has no styles for database ranges: format their cells instead. `style` (and
+`writetable`'s `table_style`) is accepted only as `nothing` or `"None"`; any other style is an error.

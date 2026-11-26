@@ -28,4 +28,6 @@ LibreOffice's Anchor ▸ To Cell (resize with cell) does. It moves with its cell
 deletes, sorts and sheet copies. `alt` and `description` are the picture's short and long descriptions for
 readers who can't see it: the *Text* and *Alt Text* fields of LibreOffice's Format ▸ Alt Text.
 
-LibreOffice has no pictures inside cells, so `inCell=true` is an error.
+## Not available
+
+LibreOffice has no pictures inside cells, so `inCell=true` is an error that says why.

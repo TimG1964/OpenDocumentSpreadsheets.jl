@@ -44,7 +44,6 @@ Rows are hidden as LibreOffice's Data ▸ More Filters ▸ Refresh Range hides t
   and 9 shows only the 9.
 - `caseSensitive` and `noDuplicates` are LibreOffice's *Case sensitive* and *No duplications*
   options, and a regular expression (`r"^a.*"`) can be a criterion.
-- LibreOffice can't store above-average, below-average or relative-date filters, so they are errors.
 
 ## Sorting
 
@@ -58,3 +57,8 @@ alphabetical order, then errors, with empty cells last.
 - The options are `caseSensitive`, `naturalSort` (`"a2"` before `"a10"`) and
   `includeFormats=false`, which moves the values but leaves the formats.
 - A sort of merged cells (unless `includeFormats=false`) or of array formulas is an error.
+
+## Not available
+
+LibreOffice can't store these filters, so asking for one is an error that says why: above or below
+average, and dates relative to today (`:today`, `:Q1`, …).

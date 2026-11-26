@@ -65,7 +65,10 @@ Other options include gradients and hatches for fills, explosion of pie slices
 ([`setSeriesExplosion`](@ref)), and how axis labels are arranged
 ([`setAxisLabelArrangement`](@ref)).
 
-LibreOffice can't store titles that follow a cell, compound lines, line joins, marker borders,
-bubble-size labels, or text caps, kerning and outlines: asking for them is an error.
-
 The [Charts: every function](../api-charts-all.md) page lists every setter.
+
+## Not available
+
+LibreOffice can't store these, so asking for one is an error that says why: titles that follow a
+cell, compound lines, line joins, marker borders, bubble-size labels, and text caps, kerning and
+outlines.

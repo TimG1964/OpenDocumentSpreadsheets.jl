@@ -28,9 +28,6 @@ setSeriesBinning(h, 1; binCount = 8)
 Bins are set by their width (`binSize`) or count (`binCount`). LibreOffice draws the bins stored with
 the chart, but labels the bars with the ranges of its own automatic bins.
 
-Of the other "chartex" kinds, LibreOffice has no waterfall, funnel, treemap, sunburst, Pareto or box
-and whisker chart, so they are errors.
-
 ## Chart sheets
 
 A chart sheet is a sheet that holds only a chart, anchored to the page:
@@ -42,3 +39,8 @@ addSeries(c, "Heights.A2:A21"; name_ref = "Heights.A1")
 
 It is an ordinary sheet in the file, so its references name their sheet: `"Heights.A2:A21"`.
 `addChartEx(xf, …; sheetname)` makes a histogram on a sheet of its own.
+
+## Not available
+
+LibreOffice has no waterfall, funnel, treemap, sunburst, Pareto or box and whisker charts, so
+asking `addChartEx` for one is an error that says why.

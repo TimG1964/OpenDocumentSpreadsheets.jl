@@ -110,6 +110,11 @@ c = addChart(ws, :line; anchor = "E20:L36", data = "A1:C7", seriesIn = :columns,
 LibreOffice's model shows in a few rules:
 - A chart's categories are its x axis's: every series of a non-XY chart shares them.
 - Smoothing is the chart's: all its lines or none.
-- Titles are text: LibreOffice has no titles that follow a cell.
+- Titles are text.
 
 [`deleteChart`](@ref) removes a chart and its frame.
+
+## Not available
+
+LibreOffice can't store these, so asking for one is an error that says why: titles that follow a
+cell, and categories of a series' own.

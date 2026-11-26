@@ -49,7 +49,6 @@ The view is saved with the file, as LibreOffice saves it:
   preview.
 - The zoom runs from 20% to 600%.
 - A selection is kept as its cursor only (`activeCell`, or the first cell of `selection`).
-- Calc has no page layout view, so `view = :pageLayout` is an error.
 
 ## Tab colours and hidden sheets
 
@@ -68,5 +67,9 @@ removeTabColor(s)
 setSheetVisibility(xf["Notes"], :visible)
 ```
 
-Tab colours are hex (`"FF8000"`) or colour names; theme colours aren't accepted. The last visible
-sheet can't be hidden.
+Tab colours are hex (`"FF8000"`) or colour names. The last visible sheet can't be hidden.
+
+## Not available
+
+Calc can't store these, so asking for one is an error that says why: the page layout view
+(`view = :pageLayout`), and theme colours for tabs.

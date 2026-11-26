@@ -33,5 +33,8 @@ deleteHyperlink(s, "A3")
 - **Numbers and formulas** get a link of the cell itself, since their shown text isn't the cell's.
 - **Places in the file** are given with `location`, a cell or range on a sheet.
 
-LibreOffice has no tooltips for links, so `tooltip` is an error. A link stays with its cell through
-edits, inserts, deletes, sorts and sheet copies.
+A link stays with its cell through edits, inserts, deletes, sorts and sheet copies.
+
+## Not available
+
+LibreOffice has no tooltips for links, so `tooltip` is an error that says why.

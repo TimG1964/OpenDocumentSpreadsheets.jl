@@ -39,5 +39,26 @@ A cell has one rule: a new rule replaces the rule of the cells it covers, and
 deleteDataValidation(o, "C2:C20")
 ```
 
-Two more options: `caseSensitive` (*Case sensitive*) for text comparisons, and `sortEntries`
-(*Sort entries ascending*) to show a list's values in order.
+## The Validity dialog and the keywords
+
+Each setting of LibreOffice's Data ▸ Validity dialog is a keyword of
+[`addDataValidation`](@ref OpenDocumentSpreadsheets.addDataValidation):
+
+| Validity dialog | Keyword |
+|---|---|
+| *Criteria* ▸ *Allow*: All values, Integer, Decimal, Date, Time, Text length, Custom | `type = :any`, `:whole`, `:decimal`, `:date`, `:time`, `:textLength`, `:custom` |
+| *Allow*: List, with its entries | `type = :list`, `values = ["Red", "Green"]` |
+| *Allow*: Cell range | `type = :list`, `formula1 = "Lists.$A$1:$A$3"` |
+| *Data*: equal, less than, greater than, less than or equal, greater than or equal to, not equal | `operator = :equal`, `:lessThan`, `:greaterThan`, `:lessThanOrEqual`, `:greaterThanOrEqual`, `:notEqual` |
+| *Data*: valid range, invalid range | `operator = :between` (the default), `:notBetween` |
+| *Minimum* (or the one value), *Maximum* | `formula1`, `formula2` |
+| Custom's formula | `formula1 = "=ISNUMBER(B2)"` |
+| *Allow empty cells* | `allowBlank` (`true` by default) |
+| *Show selection list* (a list) | `dropdown` |
+| *Sort entries ascending* (a list) | `sortEntries` |
+| *Case sensitive* | `caseSensitive` |
+| *Input Help*: *Show input help when cell is selected*, *Title*, *Input help* | `showInputMessage`, `promptTitle`, `prompt` |
+| *Error Alert*: *Handle invalid values*, *Action*, *Title*, *Error message* | `showErrorMessage`, `errorStyle = :stop`, `:warning` or `:information`, `errorTitle`, `error` |
+
+`formula1` and `formula2` take numbers, dates and times as they are, or a reference or formula in
+the notation LibreOffice's formula bar shows.

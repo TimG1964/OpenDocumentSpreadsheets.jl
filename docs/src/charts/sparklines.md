@@ -33,4 +33,7 @@ together are a group, which shares its options: markers for the high, low, first
 points and their colours, the line weight, the axis, and the scale (`min`, `max`).
 
 A sparkline goes with its cell through inserts and deletes, and its data moves as a chart's does.
-LibreOffice keeps no date axis for sparklines, so `dateRange` is an error.
+
+## Not available
+
+LibreOffice keeps no date axis for sparklines, so `dateRange` is an error that says why.
