@@ -3,7 +3,7 @@
 
 Read and write OpenDocument spreadsheets (`.ods`, `.fods`, `.ots`) in pure Julia.
 
-The manual is at <https://TimG1964.github.io/OpenDocumentSpreadsheets.jl/stable/>.
+The manual is at <https://TimG1964.github.io/OpenDocumentSpreadsheets.jl/dev/>.
 """
 module OpenDocumentSpreadsheets
 

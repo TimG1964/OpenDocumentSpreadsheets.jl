@@ -69,7 +69,10 @@ makedocs(
     # External links are checked only when asked, as they depend on other sites being up:
     # the CI job "Documentation links" sets DOCUMENTER_LINKCHECK=true.
     linkcheck = get(ENV, "DOCUMENTER_LINKCHECK", "false") == "true",
-    linkcheck_ignore = [r"^https://github\.com/TimG1964/OpenDocumentSpreadsheets\.jl/(blob|tree)/"],
+    # Not checked: the repo's files and the docs' own site, which may not hold a page until this
+    # build is deployed (`stable/` only after a release).
+    linkcheck_ignore = [r"^https://github\.com/TimG1964/OpenDocumentSpreadsheets\.jl/(blob|tree)/",
+                        r"^https://TimG1964\.github\.io/OpenDocumentSpreadsheets\.jl/"],
 )
 
 deploydocs(
