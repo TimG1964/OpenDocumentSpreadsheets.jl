@@ -591,8 +591,8 @@ Columns not given are left as they are. A table without a totals row gets one: t
 last, which must be empty, and the table grows by it (LibreOffice's *Contains totals row*,
 `calcext:contains-footer`).
 
-A function is written as LibreOffice's import writes it, `SUBTOTAL(109,…)` over the column's data
-rows as an absolute range (LibreOffice saves structured references so). A custom formula is
+A function is written as the formula LibreOffice saves for it: `SUBTOTAL(109,…)` over the column's
+data rows, as an absolute range. A custom formula is
 in LibreOffice's notation; structured references to the table in it (`Sales[Revenue]`,
 `Sales[[#All],[Revenue]]`) are written as ranges too. The file must be writable.
 """

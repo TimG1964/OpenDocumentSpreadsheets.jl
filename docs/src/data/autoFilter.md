@@ -39,6 +39,9 @@ removeAutoFilter(s)         # shows every row again
 Rows are hidden as LibreOffice's Data ▸ More Filters ▸ Refresh Range hides them:
 - Text that LibreOffice reads as a number (`"10"`, `"2026-11-23"`) is compared with numbers by value.
 - List items are compared as text, so a date matches only at midnight.
+- A top or bottom ranking (`(:top, 10)`) counts every cell that isn't empty. Text and errors rank
+  above the largest numbers, where they take up places but aren't shown: `(:top, 2)` over `x`, 5
+  and 9 shows only the 9.
 - `caseSensitive` and `noDuplicates` are LibreOffice's *Case sensitive* and *No duplications*
   options, and a regular expression (`r"^a.*"`) can be a criterion.
 - LibreOffice can't store above-average, below-average or relative-date filters, so they are errors.
@@ -47,8 +50,10 @@ Rows are hidden as LibreOffice's Data ▸ More Filters ▸ Refresh Range hides t
 
 Rows are put in LibreOffice's order: numbers (and `FALSE`, `TRUE`), then text in LibreOffice's
 alphabetical order, then errors, with empty cells last.
-- Each row's cells move with their formats, validity rules, notes, links and pictures, and formulas
-  move as if copied.
+- Each row's cells move with their formats, validity rules, notes, links and pictures, and a hidden
+  row stays hidden as it moves.
+- A formula moves as if copied (`=B5*2` moved to row 2 becomes `=B2*2`), and is saved without a
+  result: LibreOffice calculates it when it opens the file.
 - Row heights, and formulas elsewhere that refer to the sorted cells, stay as they are.
 - The options are `caseSensitive`, `naturalSort` (`"a2"` before `"a10"`) and
   `includeFormats=false`, which moves the values but leaves the formats.

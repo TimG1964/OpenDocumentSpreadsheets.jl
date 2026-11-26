@@ -42,8 +42,13 @@ A cell's background (Format ▸ Cells ▸ Background) is set with `pattern = "so
 the colour behind it; OpenDocument cells have plain backgrounds, so a pattern is blended into one
 colour. Colours are hex (`"4472C4"`) or names (`"darkblue"`).
 
+Each setter changes only what its keywords give: `setFont(s, "A1"; bold = true)` leaves the font's
+size, colour and name, and the cell's fill, borders and number format, as they were. LibreOffice
+keeps formatting in cell styles, so a setter gives each cell a style made from its current one; a
+named style the cell had stays underneath, as in LibreOffice.
+
 Setters return the name of the cell style they made, for a single cell. Getters report what the
-cell's style resolves to:
+cell's style resolves to, also on files opened for reading:
 
 ```julia
 using OpenDocumentSpreadsheets: getFont, getFill

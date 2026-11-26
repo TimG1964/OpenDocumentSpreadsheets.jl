@@ -535,7 +535,7 @@ it meets the criteria of every filtered column. A criterion is one of:
 - a value, or a vector of values, to show: text (in any case), numbers, dates, `true`/`false`, and
   `missing` for empty cells.
 - a condition, `op => value`, where `op` is `"=="`, `"!="`, `">"`, `">="`, `"<"` or `"<="` and `value`
-  a number, a date or text. With `"=="` and `"!="`, text may use Excel's wildcards: `*` for any
+  a number, a date or text. With `"=="` and `"!="`, text may use wildcards: `*` for any
   characters, `?` for any one, and `~` before one of them for itself. `"!=" => ""` shows the cells
   that aren't empty.
 - two conditions joined by `:and` or `:or`: `(">=" => 10, :and, "<" => 20)`.

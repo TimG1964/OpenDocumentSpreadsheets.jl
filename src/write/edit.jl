@@ -198,7 +198,8 @@ function setdata!(ws::Worksheet, ref::AbstractString, value)
     v, _, isformula = _name_value(dn)
     (isformula || !is_defined_name_value_a_reference(v)) &&
         throw(ODSError("The defined name `$ref` is not a cell or cell range to write to."))
-    return setdata!(ws, v, value)
+    # the cells the name refers to, on the sheet its reference names (Q-031)
+    return setdata!(getsheet(get_odsfile(ws), v.sheet), v, value)
 end
 setdata!(ws::Worksheet, ref::AbstractString, value::AbstractVector, dim::Integer) =
     setdata!(ws, CellRef(something(_plain_ref(ref), ref)), value, dim)

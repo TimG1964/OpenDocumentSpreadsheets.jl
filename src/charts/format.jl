@@ -190,8 +190,8 @@ const _LEGEND_POS = Dict("bottom" => :b, "top" => :t, "start" => :l, "end" => :r
     getLegendPos(c) -> Union{Nothing,Symbol}
 
 `:b`, `:t`, `:l`, `:r` or `:tr`, and the other corners `:tl`, `:bl`, `:br`; `nothing` without a legend.
-LibreOffice keeps a corner as a custom position (`style:legend-expansion="custom"` with `svg:x` and
-`svg:y`, as its import writes `:tr`): the corner is the quarter of the chart the legend is in.
+LibreOffice keeps a corner as a custom position: the corner given is the quarter of the chart the
+legend is in.
 """
 getLegendPos(c::AbstractChart) = _maybe(_legend_node(_doc(c))) do n
     if _get(n, "style:legend-expansion") == "custom"

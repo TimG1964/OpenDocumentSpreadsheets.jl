@@ -31,6 +31,9 @@ splitPanes(s; nrows = 10)                  # a split that doesn't freeze
 removePanes(s)
 ```
 
+LibreOffice keeps a split's position in screen pixels, so a split after row 10 falls exactly at the
+edge of row 10 on a 96-dpi screen at 100% zoom, and near it otherwise.
+
 ## The view
 
 [`setSheetView`](@ref) sets how a sheet looks when LibreOffice opens it: its zoom, gridlines, cursor
@@ -41,8 +44,12 @@ setSheetView(s; zoom = 125, showGridLines = false, activeCell = "C3", topLeftCel
 OpenDocumentSpreadsheets.getSheetView(s)
 ```
 
-The view is kept in LibreOffice's view settings. Some of them are the whole file's, as in
-LibreOffice: row and column headers, zero values and the page-break preview.
+The view is saved with the file, as LibreOffice saves it:
+- Some settings are the whole file's: row and column headers, zero values and the page-break
+  preview.
+- The zoom runs from 20% to 600%.
+- A selection is kept as its cursor only (`activeCell`, or the first cell of `selection`).
+- Calc has no page layout view, so `view = :pageLayout` is an error.
 
 ## Tab colours and hidden sheets
 
@@ -61,4 +68,5 @@ removeTabColor(s)
 setSheetVisibility(xf["Notes"], :visible)
 ```
 
-The last visible sheet can't be hidden.
+Tab colours are hex (`"FF8000"`) or colour names; theme colours aren't accepted. The last visible
+sheet can't be hidden.

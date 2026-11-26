@@ -247,8 +247,9 @@ end
 """
     setSheetVisibility(sheet, visibility::Symbol)
 
-Show (`:visible`) or hide (`:hidden`) a sheet's tab. `:veryHidden` is taken as `:hidden`: ODF
-has no very hidden sheets, and LibreOffice imports Excel's as hidden ones. The file
+Show (`:visible`) or hide (`:hidden`) a sheet's tab, as LibreOffice's Sheet ▸ Show Sheet and Hide
+Sheet do. `:veryHidden` is also accepted, and hides the sheet as `:hidden` does: OpenDocument has
+only one kind of hidden sheet. The file
 must keep a visible sheet, so hiding the last one is an error (LibreOffice ignores it). When the
 sheet LibreOffice opens on is hidden, it opens on the visible sheet before it (or the first
 visible one), as LibreOffice does when that sheet is hidden.

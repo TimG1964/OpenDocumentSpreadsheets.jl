@@ -119,9 +119,9 @@ keywords given change; `""` removes one. They are stored in the file's metadata:
 - `creator`: `meta:initial-creator`; `lastModifiedBy`: `dc:creator`
 - `keywords`: one `meta:keyword` for each part between `;` or `,`
 - `created`, `modified` (`Date` or `DateTime`): `meta:creation-date`, `dc:date`
-- `category`, `contentStatus`, `company`, `manager`, which ODF lacks: the custom properties
-  LibreOffice's import makes of them (`OOXMLCorePropertyCategory`, `OOXMLCorePropertyContentStatus`,
-  `Company`, `Manager`)
+- `category`, `contentStatus`, `company`, `manager`, which OpenDocument has no fields for: custom
+  properties, under the names LibreOffice uses for them (`OOXMLCorePropertyCategory`,
+  `OOXMLCorePropertyContentStatus`, `Company`, `Manager`), which `getCustomProperties` leaves out
 
 OpenDocumentSpreadsheets never changes `modified` or `lastModifiedBy` when it saves a file (LibreOffice does).
 """

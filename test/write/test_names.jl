@@ -138,6 +138,32 @@ end
     @test q2["mine"] == "tim" && q2["yours"] == "another"
 end
 
+@testset "a name refers to cells on another sheet (Q-031)" begin
+    xf = newods("S")
+    s = xf["S"]
+    d = addsheet!(xf, "Data")
+    d["A1"] = 42; d["B1:B3"] = [1; 2; 3;;]
+    addDefinedName(s, "other", "Data.A1")             # S's own name, Data's cells
+    addDefinedName(s, "otherRange", "Data.B1:B3")
+    addDefinedName(xf, "fileName", "Data.A1")
+    # read through the sheet, as LibreOffice reads `=other` on S (42; the oracle below)
+    @test s["other"] == 42 && s["fileName"] == 42
+    @test s["otherRange"] == Any[1; 2; 3;;]
+    @test OpenDocumentSpreadsheets.getcell(s, "other").value == 42
+    # written and formatted where the cells are
+    s["other"] = 7
+    @test d["A1"] == 7 && s["A1"] === missing
+    s["fileName"] = 8
+    @test d["A1"] == 8 && s["A1"] === missing
+    setFont(s, "otherRange"; bold = true)
+    bold(sh, c) = haskey(OpenDocumentSpreadsheets.getFont(sh, c).font, "b")     # bold is a flag key
+    @test bold(d, "B2") && !bold(s, "B2")                                       # Data's cells, not S's
+    # a name of S on S's own cells is unchanged
+    addDefinedName(s, "mine", "S.C1")
+    s["mine"] = 3
+    @test s["C1"] == 3 && s["mine"] == 3
+end
+
 @testset "deleteDefinedName and deleteAllDefinedNames (XLSX.jl's cases)" begin
     mk() = begin
         f = newods("S")
@@ -286,6 +312,8 @@ end
         addDefinedName(xf, "num", 42)
         addDefinedName(xf, "txt", "hi")
         addDefinedName(xf["T"], "num", 1)                                  # hides the file's on T
+        addDefinedName(xf["S"], "onT", "T.B3")                              # S's own name, T's cell (Q-031)
+        setFormula(xf["S"], "F4"; val = "=onT")
         for (sh, cell) in (("S", "E4"), ("T", "E4"))
             setFormula(xf[sh], cell; val = "=fx_a")
         end
@@ -310,6 +338,7 @@ end
         @test lo["S"]["E4"] == want["S.E4=fx_a"] && lo["T"]["E4"] == want["T.E4=fx_a"]
         @test lo["S"]["B2"] == 5 && lo["T"]["B2"] == 5                     # (LibreOffice's own rl_a gives 50 on T)
         @test lo["S"]["F1"] == 18 && lo["S"]["F2"] == 43 && lo["T"]["F2"] == 2 && lo["S"]["F3"] == "hi"
+        @test lo["S"]["F4"] == 50 == xf["S"]["onT"]                         # LibreOffice and the package agree
         @test Set(dn.name for dn in getAllDefinedNames(lo)) == Set(dn.name for dn in getAllDefinedNames(xf))
         lp = readods(joinpath(dir, "lo", "patched.fods"))
         @test lp["Data"]["Z1"] == 7 * nrsum

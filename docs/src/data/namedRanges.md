@@ -40,5 +40,9 @@ ranges](../concepts/addressing.md)).
 - In a name's formula a reference without `$` is relative, the sheet's name included: write
   `$Data.$B$2` to fix it.
 - Names match without regard to case.
+- Whole columns and rows can be named (`"Data.A:A"`).
+- A sheet's own name may refer to cells on another sheet. Read, written or formatted through its
+  sheet (`sh["name"]`), it gives those cells, as a formula using it does in LibreOffice.
+- A constant keeps its type: `true` reads back as `true`, not as 1.
 
 Saving an edited file changes only the names added or deleted.

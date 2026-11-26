@@ -200,11 +200,11 @@ end
 
 Freeze the first `nrows` rows and `ncols` columns, so that they stay in view while the rest
 scrolls; or everything above and to the left of `anchor_cell` (`"B3"` freezes row 1:2 and
-column A). The view goes back to the top left, and the cursor to the first cell that scrolls, as
-LibreOffice shows an Excel file with frozen panes. Calling it again replaces the panes.
+column A), as LibreOffice's View ▸ Freeze Cells does. The view goes back to the top left, and the
+cursor to the first cell that scrolls. Calling it again replaces the panes.
 
-The panes are LibreOffice's view settings for the sheet (settings.xml), which LibreOffice keeps
-where they are when rows or columns are inserted or deleted.
+The panes are saved with the sheet's view settings, which LibreOffice keeps where they are when
+rows or columns are inserted or deleted.
 
 See also [`splitPanes`](@ref), [`removePanes`](@ref), [`setSheetView`](@ref).
 """
@@ -215,8 +215,7 @@ freezePanes(ws::Worksheet, anchor::AbstractString) = _apply_panes!(ws, 2, _ancho
     splitFreeze(sheet; nrows=1, ncols=0)
     splitFreeze(sheet, anchor_cell)
 
-The same as [`freezePanes`](@ref): LibreOffice has no separate "frozen split", and its xlsx
-import reads Excel's as frozen panes.
+The same as [`freezePanes`](@ref): LibreOffice has no separate frozen split.
 """
 splitFreeze(ws::Worksheet; nrows::Integer = 1, ncols::Integer = 0) = freezePanes(ws; nrows, ncols)
 splitFreeze(ws::Worksheet, anchor::AbstractString) = freezePanes(ws, anchor)

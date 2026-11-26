@@ -21,5 +21,8 @@ deleteCustomProperty(xf, "Version")
 ```
 
 - Custom properties are text, numbers, booleans and dates, kept in name order, as LibreOffice
-  keeps them.
+  keeps them. Numbers are stored as decimals, and a whole one reads back as an `Int64`.
+- `category`, `contentStatus`, `company` and `manager` have no fields in OpenDocument: they are kept
+  as custom properties under the names LibreOffice gives them, and `getCustomProperties` leaves
+  them out.
 - Saving never changes the modification date: set `modified` yourself if you want it.

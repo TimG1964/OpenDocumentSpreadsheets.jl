@@ -190,9 +190,9 @@ Widths are in characters, as [`setColumnWidth`](@ref) takes them, kept between `
 and `max_width`. A column whose cells show nothing keeps its width; cells in merged ranges
 are left out. Returns the width set for each column, by column number.
 
-The widths are approximate: characters are measured with the widths Excel uses for Calibri,
-Aptos, Arial, Times New Roman and Courier New, LibreOffice's Liberation fonts as their metric
-twins (Arial, Times New Roman, Courier New), and other fonts as Calibri.
+The widths are approximate: characters are measured with built-in width tables for Calibri,
+Aptos, Arial, Times New Roman and Courier New. LibreOffice's Liberation fonts use the tables of the
+fonts they match in size (Arial, Times New Roman, Courier New), and other fonts Calibri's.
 """
 function autofitColumns(ws::Worksheet, cols = :; min_width::Real = 0, max_width::Real = 255)
     _require_writable(ws, "autofit columns")

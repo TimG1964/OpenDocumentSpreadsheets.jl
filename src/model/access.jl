@@ -105,8 +105,9 @@ end
 """
     ref_chooser(f, ws::Worksheet, ref::AbstractString)
 
-Resolve `ref` on `ws` and call `f(ws, typed_ref)` (or `f(xf, …)` for a workbook name that
-refers to another sheet). Tried in order: a cell (`A1`, `\$A\$1`), a cell range, a column
+Resolve `ref` on `ws` and call `f(ws, typed_ref)`, or `f(xf, …)` for a defined name, the sheet's
+own or the workbook's, that refers to cells: its reference names its sheet, which may be another
+one, as in LibreOffice (Q-031). Tried in order: a cell (`A1`, `\$A\$1`), a cell range, a column
 range (`A:C`), a row range (`2:5`), a name local to the sheet, a workbook name, a list of
 areas (`A1:A4,C1` or `A1:A4~C1`), and a sheet-qualified reference in LibreOffice's or
 Excel's notation (`Sheet1.A1:B2`, `Sheet1!A1:B2`), which must name this sheet.
@@ -125,8 +126,9 @@ function ref_chooser(f::Function, ws::Worksheet, ref::AbstractString)
         is_valid_row_range(p) && return f(ws, RowRange(p))
     end
     if is_worksheet_defined_name(ws, ref)
+        # a sheet's own name may refer to cells on another sheet, which LibreOffice reads there (Q-031)
         v = get_defined_name_value(ws, ref)
-        return is_defined_name_value_a_reference(v) ? f(ws, v) : v
+        return is_defined_name_value_a_reference(v) ? f(get_odsfile(ws), v) : v
     elseif is_workbook_defined_name(get_odsfile(ws), ref)
         v = get_defined_name_value(get_odsfile(ws), ref)
         return is_defined_name_value_a_reference(v) ? f(get_odsfile(ws), v) : v

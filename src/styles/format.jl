@@ -70,7 +70,8 @@ Set the number format of cells (address forms as [`setFont`](@ref)). `format` is
   `"ShortDate"` (`m/d/yyyy`), `"LongDate"` (`d-mmm-yy`), `"Time"` (`h:mm:ss`), `"Scientific"`
   (`##0.0E+0`);
 - a built-in id, as a string (`"39"` is `#,##0.00_);(#,##0.00)`);
-- or a format code, checked as Excel checks it (`"#,##0.00"`, `"d mmm yyyy"`, `"[Red]0.0%"`).
+- or a format code (`"#,##0.00"`, `"d mmm yyyy"`, `"[Red]0.0%"`); a code that isn't valid is an
+  error.
 
 The code is stored as an ODF data style, in the form LibreOffice writes for it: a
 code of several sections becomes one style per section, chosen by `style:map` conditions.
@@ -111,9 +112,10 @@ _numfmt_id(sh::StyleSheet, code::String) =
     getFormat(sheet, ref) -> CellFormat
     getFormat(sheet, row, col) / getFormat(xf, "Sheet1.A1")
 
-The number format of one cell: its code (read back from the ODF data style, as Excel's
-code for it) and an id, Excel's built-in id where the code is a built-in one, else one from
-164 up. An unformatted cell has `General` (id 0). Works on read-only files.
+The number format of one cell: its code, rebuilt from the file's number style in the form
+[`setFormat`](@ref) takes, and an id. The id is a built-in format's number where the code is one
+(the ids `setFormat` accepts: 0 for `General`, 2 for `0.00`, …), else a number from 164 up. An
+unformatted cell has `General` (id 0). Works on read-only files.
 """
 function getFormat(x::Union{Worksheet,ODSFile}, ref...)
     ws, r, c = format_cell(x, ref...)

@@ -378,8 +378,9 @@ end
     setSeriesLineColor / setSeriesLineWidth / setSeriesLineDash / setSeriesLineCap(c, i, value) -> Chart
     setSeriesLineCompound / setSeriesLineJoin / setSeriesLineMiterLimit(c, i, value) -> error
 
-Series `i`'s line: a colour, a width in points, a dash (`:solid`, `:dot`, `:dash`, `:sysDash` and the
-other DrawingML names, written as LibreOffice's dashes), a cap (`:rnd`, `:sq`, `:flat`). LibreOffice's chart lines have no
+Series `i`'s line: a colour, a width in points, a dash (`:solid`, `:dot`, `:dash`, `:lgDash` (long),
+`:dashDot`, `:lgDashDot`, `:lgDashDotDot`, `:sysDash`, `:sysDot`, `:sysDashDot`, `:sysDashDotDot`;
+the `sys` ones are denser), a cap (`:rnd` round, `:sq` square, `:flat`). LibreOffice's chart lines have no
 compound lines, joins or miter limits: those are errors.
 """
 function setSeriesLine(c::Chart, i::Integer; color = nothing, width = nothing, dash = nothing, cap = nothing,
@@ -629,8 +630,8 @@ One text property of a part of the chart. Fields: `:size` (points), `:bold`, `:i
 (`:underline`), `:strike` (`:strikethrough`), `:baseline` (a fraction of the size), `:spacing`
 (points), `:fill` (`:color`), `:latin` (`:font`), `:ea`, `:cs`, `:lang`; `:inherit` removes one.
 LibreOffice's chart text has no capitals setting, kerning size or coloured outline: `:caps`, `:kern`
-and `:line` are errors. The chart space's text is its series labels', as LibreOffice's import
-places it.
+and `:line` are errors. The chart space's text (`setChartSpaceTextProp`) is set on its series'
+labels.
 """
 setChartTitleTextProp(c::Chart, field::Symbol, v) = (o = _editable(c); _style_text!(o, c.package, _own_style!(o, _title_tag(o)), field, v); c)
 setLegendTextProp(c::Chart, field::Symbol, v) = (o = _editable(c); _style_text!(o, c.package, _own_style!(o, _legend_tag(o)), field, v); c)
@@ -817,8 +818,8 @@ const _LEGEND_CORNERS = Dict(:tr => (:r, :t), :topRight => (:r, :t), :tl => (:l,
     setLegendOverlay(c, overlay) -> Chart
     setLegendEntryDeleted(c, positions, deleted) -> Chart
 
-The legend's place: `:b`, `:t`, `:l`, `:r`, `:tr`, and the other corners `:tl`, `:bl`, `:br`; a
-corner is a custom position in that corner of the chart, as LibreOffice's import writes `:tr`.
+The legend's place: `:b` (bottom), `:t`, `:l`, `:r`, and the corners `:tr`, `:tl`, `:bl`, `:br`; a
+corner is a custom position in that corner of the chart.
 `:inherit` removes the position, which LibreOffice reads as `:r`. Whether the legend may overlap the
 plot area, and the series whose entries are hidden. The first two make a legend if the chart has none.
 `expansion` shapes the legend: `:wide`, `:high` or `:balanced` (not for a corner).

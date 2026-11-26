@@ -230,8 +230,8 @@ _pages_edited(xf::ODSFile) = !isempty(xf.pageedits.pages)
 Set how a sheet is printed, as LibreOffice keeps it in the sheet's page style. Only the
 keywords given change.
 - `orientation`: `:portrait` or `:landscape` (the page's width and height swap)
-- `paperSize`: one of $(join((":$k" for k in keys(PAPER_SIZES)), ", ")), or Excel's number for
-  A6 (70); the page gets the size LibreOffice's xlsx import gives that paper
+- `paperSize`: one of $(join((":$k" for k in keys(PAPER_SIZES)), ", ")), or a paper's number
+  (`70` is A6); the page gets that paper's size
 - `scale`: a percentage, 10 to 400
 - `fitToWidth`, `fitToHeight`: the pages to fit the sheet on, across and down (0: as many as
   needed). `scale` and fitting are alternatives: giving one turns the other off.
@@ -319,10 +319,11 @@ end
     getPageSetup(sheet; unit=:cm) -> NamedTuple
 
 `(orientation, paperSize, scale, fitToWidth, fitToHeight, paperWidth, paperHeight, scaleToPages)`,
-each `nothing` where the page style doesn't say: the paper is Excel's number for the page's size,
-if it is one LibreOffice's import knows; `scale` is given only when it isn't 100% and the sheet
-isn't fitted to pages. The last three are LibreOffice's: the page's width and height as
-it is printed (turned when landscape), in `unit`s, and the pages to fit the sheet on in all.
+each `nothing` where the page style doesn't say. `paperSize` is the paper's number (9 for A4,
+1 for letter, …) when the page's size is one of [`setPageSetup`](@ref)'s papers; `scale` is given
+only when it isn't 100% and the sheet isn't fitted to pages; `paperWidth` and `paperHeight` are
+the page's size as it is printed (turned when landscape), in `unit`s; `scaleToPages` is the number
+of pages to fit the sheet on in all.
 Works on read-only files.
 """
 function getPageSetup(ws::Worksheet; unit::Symbol = :cm)
@@ -361,11 +362,14 @@ const _PAGE_MARGINS = (left = 0.7, right = 0.7, top = 0.75, bottom = 0.75, heade
 """
     setPageMargins(sheet; left, right, top, bottom, header, footer)
 
-Set the printed margins, in inches, as Excel's: `top` and `bottom` are the distances to the
-sheet's cells, `header` and `footer` those to the header and footer. They are stored as
-LibreOffice's xlsx import stores them: with a header shown, the page's top margin is the
-header's distance, and the header's height the rest of the top margin (less 1/6 inch of spacing).
-Only the keywords given change.
+Set the printed margins, in inches, each measured from the edge of the page: `top` and `bottom`
+to the sheet's cells, `header` and `footer` to the header and footer. Only the keywords given
+change.
+
+LibreOffice's page style measures the top from the edge to the header, which has a height of its
+own, so the margins are converted: with a header shown, the page style's top margin is `header`, and
+the header's height the rest of `top` (less 1/6 inch of spacing). The bottom is converted in the
+same way.
 """
 function setPageMargins(ws::Worksheet; kw...)
     _require_writable(ws, "set page margins")
@@ -385,8 +389,8 @@ end
 """
     getPageMargins(sheet) -> NamedTuple
 
-The printed margins in inches, `(left, right, top, bottom, header, footer)`, as Excel's (see
-[`setPageMargins`](@ref)). Where the page style gives none, LibreOffice's 2 cm. Works on read-only
+The printed margins in inches, `(left, right, top, bottom, header, footer)`, measured as
+[`setPageMargins`](@ref) takes them. Where the page style gives none, LibreOffice's 2 cm. Works on read-only
 files.
 """
 getPageMargins(ws::Worksheet) = NamedTuple{keys(_PAGE_MARGINS)}(Tuple(round.(_print_state(ws).margins; digits = 4)))
@@ -595,8 +599,8 @@ const _HEADER_FOOTER_MAX = 255
     headerFooterField(field::Symbol) -> String
 
 The code for `field` in a header or footer: `:page` `&P`, `:pages` `&N`, `:date` `&D`, `:time`
-`&T`, `:file` `&F`, `:path` `&Z`, `:sheet` `&A`. OpenDocumentSpreadsheets writes each as the ODF field
-LibreOffice's import makes of it.
+`&T`, `:file` `&F`, `:path` `&Z`, `:sheet` `&A`. Each is written as the field LibreOffice's
+Header/Footer dialog inserts for it.
 """
 function headerFooterField(field::Symbol)
     haskey(_HEADER_FOOTER_FIELDS, field) ||
@@ -1002,8 +1006,8 @@ as text styles; first-page and even-page headers are `style:header-first` and `s
 `""` removes one. Giving `firstHeader`/`firstFooter` turns `differentFirst` on, and
 `evenHeader`/`evenFooter` `differentOddEven`.
 
-Showing or hiding a header or footer keeps Excel's margins ([`setPageMargins`](@ref)): LibreOffice's
-are derived from them again. `scaleWithDoc` and `alignWithMargins` have no LibreOffice counterpart:
+Showing or hiding a header or footer keeps the margins as [`setPageMargins`](@ref) measures them:
+the page style's are worked out from them again. `scaleWithDoc` and `alignWithMargins` have no LibreOffice counterpart:
 only their defaults (`true`) are accepted.
 """
 function setHeaderFooter(ws::Worksheet; kw...)
@@ -1076,10 +1080,10 @@ end
     getHeaderFooter(sheet) -> Union{Nothing, NamedTuple}
 
 The headers and footers, or `nothing` if none is shown: `header`, `footer`, `evenHeader`,
-`evenFooter`, `firstHeader`, `firstFooter` (each `(left, center, right)` with Excel's codes, or
-`nothing`), `differentOddEven`, `differentFirst`, and `scaleWithDoc`, `alignWithMargins` (always
-`true`). ODF's fields become Excel's codes, and fonts that differ from the headers' commonest one
-become font codes. A sheet without a page style of its own shows LibreOffice's default (the
+`evenFooter`, `firstHeader`, `firstFooter` (each `(left, center, right)` with the codes
+[`setHeaderFooter`](@ref) takes, or `nothing`), `differentOddEven`, `differentFirst`, and
+`scaleWithDoc`, `alignWithMargins` (always `true`). The file's fields become those codes, and fonts
+that differ from the headers' commonest one become font codes. A sheet without a page style of its own shows LibreOffice's default (the
 sheet's name, and "Page &P"). Works on read-only files.
 """
 function getHeaderFooter(ws::Worksheet)
@@ -1108,7 +1112,8 @@ end
 """
     removeHeaderFooter(sheet) -> Bool
 
-Hide all of a sheet's headers and footers (Excel's margins kept). `false` if none was shown.
+Hide all of a sheet's headers and footers, keeping the margins as [`setPageMargins`](@ref) measures
+them. `false` if none was shown.
 """
 function removeHeaderFooter(ws::Worksheet)
     _require_writable(ws, "remove headers and footers")
