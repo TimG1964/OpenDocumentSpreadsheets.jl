@@ -4,9 +4,6 @@
 using OpenDocumentSpreadsheets: tokenize_formula, render_ui_formula, ui_function_name, _strip_formula_prefix,
     FT_REF, FT_FUNC, FT_NAME, FT_NUMBER, FT_STRING, FT_ERROR, FT_OP, FT_SEP, FT_ROWSEP, FT_SPACE
 
-# rows of a TSV with a header line
-read_tsv(path) = [split(l, '\t') for l in split(chomp(read(path, String)), r"\r?\n")[2:end]]
-
 @testset "tokenizer" begin
     s = "=SUM([.A1:.B2];'x'&\"a\"\"b\";{1;2|3;4}) <> -1.5E+3% ~ #N/A ! name_1"
     toks = tokenize_formula(s)

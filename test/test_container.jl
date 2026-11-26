@@ -199,9 +199,7 @@ end
     end
 end
 
-# LibreOffice as the oracle (Q-005). Skipped when it is not installed, as on CI.
-const SOFFICE = get(ENV, "ODS_SOFFICE",
-    Sys.iswindows() ? raw"C:\Program Files\LibreOffice\program\soffice.com" : something(Sys.which("soffice"), ""))
+# LibreOffice as the oracle (Q-005): `SOFFICE`, from runtests.jl.
 
 @testset "LibreOffice opens what we write" begin
     if isempty(SOFFICE) || !isfile(SOFFICE)

@@ -1,6 +1,6 @@
 # Sheet operations (phase 5 step 4; D-053, D-054): renamesheet!, deletesheet!, copysheet!,
 # movesheet!, against LibreOffice's results (experiment 022, test/data/shift/lo-sheetops-*), on the
-# model, in saved files, and through LibreOffice. Uses formula/test_refs.jl's `load_oracle`,
+# model, in saved files, and through LibreOffice. Uses test/oracle_refs.jl's `load_oracle`,
 # `cf_meaning` and write/test_lines.jl's `saved_refs`.
 
 using OpenDocumentSpreadsheets: renamesheet!, deletesheet!, copysheet!, movesheet!, sheetnames, patched_settings

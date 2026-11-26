@@ -17,7 +17,7 @@
 
 ### Tests
 - **Quiet (#2):** a test run no longer prints a docs example's output.
-- **Grouped by function (#2):** the summary lists each group and file. `Pkg.test(test_args = ["charts"])` runs only the groups it names.
+- **Grouped by function (#2):** each group prints its results, with a line per file, as soon as it finishes, so a run shows progress. A failing group no longer stops the rest; the run fails at the end, naming it. `Pkg.test(test_args = ["charts"])` runs only the groups it names, and each group runs on its own. `write` is split into four groups.
 
 
 ## v0.1.0

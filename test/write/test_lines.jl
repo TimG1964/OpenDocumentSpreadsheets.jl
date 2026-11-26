@@ -1,6 +1,6 @@
 # Inserting and deleting rows and columns (phase 5 step 3; D-050 to D-052): the model, the patched
 # save, and LibreOffice's results (experiment 021, test/data/shift/). Uses `load_oracle`, `cellpos`,
-# `lineop` and `cf_meaning` from formula/test_refs.jl.
+# `lineop` and `cf_meaning` from test/oracle_refs.jl.
 
 using OpenDocumentSpreadsheets: IndexMap, insert_lines!, delete_lines!, current_line, line_pieces, getFormula, _sheets,
     _cached_store, sheet_formats, _fmt_at, _fmt_cell, effective_style, style_name, getMergedCells,

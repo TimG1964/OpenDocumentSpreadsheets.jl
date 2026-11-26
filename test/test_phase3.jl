@@ -3,7 +3,7 @@
 
 using Dates
 import Tables
-using OpenDocumentSpreadsheets: _parse_float, content_through_sheet, open_container, read_xml
+using OpenDocumentSpreadsheets: _parse_float, content_through_sheet, open_container, read_xml, ODSError
 
 @testset "lazy sheet index" begin
     xf = readods(joinpath(DATA, "lo-tables.ods"))
