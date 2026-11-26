@@ -5,19 +5,18 @@
     ChartRef
 
 One reference of a chart series, with the values its cells hold now (LibreOffice draws a chart from
-its cells: F-079).
+its cells).
 
 # Fields
 - `kind::Symbol`: `:num` when every value is a number (or empty), else `:str`; `:strLit` for a series
-  name given as text (`loext:label-string`, F-081).
+  name given as text (`loext:label-string`).
 - `ref::Union{Nothing,String}`: the reference in this package's notation (`Data.B2:B7`); `nothing` for
   a literal.
 - `format_code::Union{Nothing,String}`: the number format of the first number (`"General"`…), or
   `nothing`.
 - `ptCount::Int`: the number of points (cells).
 - `data::Vector`: the values, `missing` for empty cells and errors.
-- `errors::Dict{Int,String}`: position => error text (`"#DIV/0!"`): every error, not only `#N/A` as
-  in XLSX.jl's cache.
+- `errors::Dict{Int,String}`: position => error text (`"#DIV/0!"`): every error.
 """
 struct ChartRef
     kind::Symbol
@@ -99,8 +98,8 @@ end
 """
     ChartEx
 
-A handle to a chart of a kind XLSX.jl makes with `addChartEx`: in LibreOffice, a histogram
-(`loext:histogram`, F-080). Fields as [`Chart`](@ref)'s.
+A handle to a chart made with [`addChartEx`](@ref): in LibreOffice, a histogram
+(`loext:histogram`). Fields as [`Chart`](@ref)'s.
 """
 struct ChartEx <: AbstractChart
     package::ODSFile

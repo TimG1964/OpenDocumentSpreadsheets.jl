@@ -248,7 +248,7 @@ end
     setSheetVisibility(sheet, visibility::Symbol)
 
 Show (`:visible`) or hide (`:hidden`) a sheet's tab. `:veryHidden` is taken as `:hidden`: ODF
-has no very hidden sheets, and LibreOffice imports Excel's as hidden ones (F-051). The file
+has no very hidden sheets, and LibreOffice imports Excel's as hidden ones. The file
 must keep a visible sheet, so hiding the last one is an error (LibreOffice ignores it). When the
 sheet LibreOffice opens on is hidden, it opens on the visible sheet before it (or the first
 visible one), as LibreOffice does when that sheet is hidden.
@@ -284,8 +284,8 @@ getSheetVisibility(ws::Worksheet) = ws.props === nothing ? (ws.visible ? :visibl
     setTabColor(sheet, color)
 
 Colour a sheet's tab: a hex colour (`"FF0000"`, `"#FF0000"`, `"FFFF0000"`: the alpha is ignored,
-as LibreOffice ignores it), a Colors.jl colour name or a `Colorant`. Theme colours are Excel's,
-and are not accepted, as elsewhere in OpenDocumentSpreadsheets.
+as LibreOffice ignores it), a Colors.jl colour name or a `Colorant`. Theme colours are
+not accepted, as elsewhere in OpenDocumentSpreadsheets.
 
 See also [`getTabColor`](@ref), [`removeTabColor`](@ref).
 """

@@ -205,7 +205,7 @@ end
     getAxisMajorUnit(c, ax) / getAxisMinorUnit(c, ax) -> Union{Nothing,Float64}
 
 The interval between major ticks, and between minor ones (LibreOffice stores the number of minor
-intervals in a major one: F-081).
+intervals in a major one).
 """
 getAxisMajorUnit(c::Chart, ax::AxisRef) = _num(get(_axis_style(c, ax), "chart:interval-major", nothing))
 function getAxisMinorUnit(c::Chart, ax::AxisRef)

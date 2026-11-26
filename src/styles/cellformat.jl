@@ -181,7 +181,7 @@ end
 """
     CellFont(fontId, font, applyFont)
 
-A cell's font, as [`getFont`](@ref) returns it (XLSX.jl's shape, D-032). `fontId` is the name
+A cell's font, as [`getFont`](@ref) returns it. `fontId` is the name
 of the cell's style (ODF has no font table).
 """
 struct CellFont
@@ -294,7 +294,7 @@ end
 """
     CellFill(fillId, fill, applyFill)
 
-A cell's fill, as [`getFill`](@ref) returns it (XLSX.jl's shape, D-032). `fillId` is the name
+A cell's fill, as [`getFill`](@ref) returns it. `fillId` is the name
 of the cell's style.
 """
 struct CellFill
@@ -452,7 +452,7 @@ end
 """
     CellBorder(borderId, border, applyBorder)
 
-A cell's borders, as [`getBorder`](@ref) returns them (XLSX.jl's shape, D-032). `borderId` is
+A cell's borders, as [`getBorder`](@ref) returns them. `borderId` is
 the name of the cell's style.
 """
 struct CellBorder
@@ -521,8 +521,8 @@ end
 """
     CellAlignment(alignment, applyAlignment)
 
-A cell's alignment, as [`getAlignment`](@ref) returns it (XLSX.jl's shape, D-032):
-`alignment["alignment"]` holds XLSX.jl's attributes (`horizontal`, `vertical`, `wrapText`,
+A cell's alignment, as [`getAlignment`](@ref) returns it:
+`alignment["alignment"]` holds the attributes (`horizontal`, `vertical`, `wrapText`,
 `shrinkToFit`, `indent`, `textRotation`) that the cell's style sets.
 """
 struct CellAlignment
@@ -606,11 +606,11 @@ columns can also be integers, ranges, vectors or `:`. Only the attributes given 
 - `size`: in points, 1 to 409
 - `color`: a hex colour (`"FF0000"`, `"#FF0000"`, `"FFFF0000"`), a Colors.jl name or a `Colorant`
 - `name`: a font name (declared as a font face in the file)
-- `vertAlign`: only `"baseline"`; ODF cells have no superscript or subscript (D-036)
+- `vertAlign`: only `"baseline"`; ODF cells have no superscript or subscript
 
 As in LibreOffice, empty cells are formatted too, and whole columns and rows are formatted
-as such, not only up to the used area (D-033). Returns the name of the cell's new style for a
-single cell, else -1 (XLSX.jl returns a font id; ODF has no font table, D-032).
+as such, not only up to the used area. Returns the name of the cell's new style for a
+single cell, else -1.
 """
 setFont
 
@@ -620,7 +620,7 @@ setFont
 Set the background of cells (address forms as [`setFont`](@ref)). `pattern="solid"` with
 `fgColor` gives a solid background, `"none"` none. ODF cells have no pattern fills: other
 patterns blend `fgColor` into `bgColor` (white by default) as LibreOffice does when it
-imports one (D-036).
+imports one.
 """
 setFill
 
@@ -630,7 +630,8 @@ setFill
 Set cell borders (address forms as [`setFont`](@ref)). Each side is a vector of pairs:
 `["style" => "thin", "color" => "red"]`; `diagonal` also takes `"direction" => "up"`,
 `"down"` or `"both"`. `allsides` sets the four sides. `outside` sets the border around a
-range as a whole, alone. Styles are XLSX.jl's, written as LibreOffice writes them (F-032).
+range as a whole, alone. Styles are `"thin"`, `"medium"`, `"thick"`, `"dashed"`, `"dotted"`, `"double"` and the others,
+written as LibreOffice writes them.
 """
 setBorder
 
@@ -698,7 +699,7 @@ end
     getFont(sheet, ref) -> CellFont
     getFont(sheet, row, col) / getFont(xf, "Sheet1.A1")
 
-The font of one cell, in XLSX.jl's shape (D-032): `font` holds `"b"`, `"i"`, `"strike"`
+The font of one cell: `font` holds `"b"`, `"i"`, `"strike"`
 (`=> nothing` when set), `"u"` (`nothing` for single, `Dict("val" => "double")`), `"sz"`,
 `"name"` and `"color"` (`Dict("rgb" => "FFRRGGBB")`), and other ODF text properties under
 `"odf:…"` keys. The values are those the cell's style resolves to, through its parent styles
@@ -728,7 +729,7 @@ getBorder
     getAlignment(sheet, ref) -> CellAlignment
 
 The alignment of one cell: `alignment["alignment"]` holds the attributes the cell's style
-sets, in XLSX.jl's names and values.
+sets.
 """
 getAlignment
 

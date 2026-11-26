@@ -137,7 +137,7 @@ end
     RefStyle
 
 The notation a sheet-qualified reference is written and shown in: [`ExcelStyle`](@ref)
-(`Sheet1!A1`, as XLSX.jl uses) or [`ODFStyle`](@ref) (`Sheet1.A1`, as LibreOffice shows).
+(`Sheet1!A1`) or [`ODFStyle`](@ref) (`Sheet1.A1`, as LibreOffice shows).
 """
 abstract type RefStyle end
 
@@ -145,7 +145,7 @@ abstract type RefStyle end
     ExcelStyle <: RefStyle
 
 Excel's notation: `Sheet1!A1`, `'My sheet'!A1:B2`, lists of ranges joined by `,`. Parsing
-accepts only this form, as XLSX.jl always has.
+accepts only this form.
 """
 struct ExcelStyle <: RefStyle end
 
@@ -154,8 +154,8 @@ struct ExcelStyle <: RefStyle end
 
 LibreOffice's notation: `Sheet1.A1`, `'My sheet'.A1:B2`, `'My sheet'.A:C`, lists of
 ranges joined by `~`. Parsing also accepts absolute marks (`\$Sheet1.\$A\$1`), a sheet named on
-both ends of a range (`'S'.A1:'S'.B2`), lists joined by `,`, and Excel's `!` form, so that
-references written for XLSX.jl keep working (D-014).
+both ends of a range (`'S'.A1:'S'.B2`), lists joined by `,`, and the `!` form other spreadsheet
+programs use.
 """
 struct ODFStyle <: RefStyle end
 

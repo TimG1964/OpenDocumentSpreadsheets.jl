@@ -367,7 +367,7 @@ getcellrange(xf::ODSFile, r::NonContiguousRange) = getcellrange(getsheet(xf, r.s
 
 Whether a cell holds an error result (`#DIV/0!`, `#N/A`, `Err:502`, ...), which
 [`getdata`](@ref) reads as `missing`. For a range, a matrix of `Bool`s (a vector of them
-for a list of ranges). The ODF file marks errors with `calcext:value-type="error"` (F-023).
+for a list of ranges). The ODF file marks errors with `calcext:value-type="error"`.
 """
 iserror(c::AbstractCell) = c isa Cell && c.datatype === :error
 iserror(ws::Worksheet, args...) = _map_cells(iserror, getcell(ws, args...))

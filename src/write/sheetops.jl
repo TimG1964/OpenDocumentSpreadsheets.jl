@@ -38,7 +38,7 @@ end
 
 Rename a sheet. Every reference to it follows, as in LibreOffice: formulas on every sheet,
 defined names and their base cells, print ranges, conditional formats, validations, database
-ranges and charts (D-053). Internal hyperlinks (`#Sheet1.A1`) are not changed, as LibreOffice
+ranges and charts. Internal hyperlinks (`#Sheet1.A1`) are not changed, as LibreOffice
 doesn't change them. Renaming a sheet to its own name in another case is allowed; a name another
 sheet has (in any case), or one LibreOffice doesn't allow, is an error.
 """
@@ -63,7 +63,7 @@ end
     deletesheet!(xf, name) -> ODSFile
     deletesheet!(xf, i::Integer) -> ODSFile
 
-Delete a sheet (by itself, its name or its position). As in LibreOffice (D-053, F-047):
+Delete a sheet (by itself, its name or its position). As in LibreOffice:
 references to it in the other sheets' formulas, and in defined names, become `#REF!`; a 3-D
 reference that ends on it ends on the sheet next to it, inside the span; its local names, and the
 database ranges, conditional formats and validations on it go with it. The only sheet can't be
@@ -108,7 +108,7 @@ Move a sheet next to another: immediately `before` or `after` it (give exactly o
 `sheet`, `before` and `after` can be a `Worksheet`, a sheet name or a position (as before the
 move): `before = 1` moves it to the start, `after = sheetcount(xf)` to the end.
 
-Nothing is rewritten, as in LibreOffice and XLSX.jl: references name their sheets. A 3-D
+Nothing is rewritten, as in LibreOffice: references name their sheets. A 3-D
 reference (`Sheet1.A1:Sheet3.A1`) covers the sheets between its two ends in the order they are
 in, so moving a sheet into or out of that span changes what it covers.
 """
@@ -294,7 +294,7 @@ end
     copysheet!(sheet, name = "") -> Worksheet
 
 Copy a sheet to the end of the file, named `name`, or `"<name> (copy)"` (with a number added
-until it is free). As in LibreOffice (D-053, F-047):
+until it is free). As in LibreOffice:
 - the copy's references to the source sheet written with a relative sheet name (`[Data.A5]`)
   keep their distance in the sheet order, so they refer to the copy; references with an absolute
   sheet name (`[\$Data.A5]`), and those without one, are kept

@@ -207,7 +207,7 @@ Write one `table:table-cell` (or `table:covered-table-cell`). `nothing` is an em
 With `style_default`, a cell in the `Default` style says so (`table:style-name="Default"`),
 because its row or column has a default style it must not take. With `display=false`, a
 number, date, time or boolean cell is written without its display text (`text:p`), which
-readers recompute from the value (D-029).
+readers recompute from the value.
 """
 function write_cell(io::IO, d::Union{Nothing,CellData}, styles::StyleIndex; repeat::Integer = 1, style_default::Bool = false,
                     display::Bool = true)
@@ -478,7 +478,7 @@ end
     write_table(io, ws)
 
 A sheet made by OpenDocumentSpreadsheets, written whole: its columns, its rows from the store (with their
-formats, if any), and one empty cell for an empty sheet (as LibreOffice writes one, F-015).
+formats, if any), and one empty cell for an empty sheet (as LibreOffice writes one).
 """
 function write_table(io::IO, ws::Worksheet; display::Bool = true)
     _has_groups(ws.formats) && return _with_groups(o -> _write_table_flat(o, ws; display), io, ws.formats)   # phase 5 step 7

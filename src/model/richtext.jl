@@ -9,14 +9,14 @@ const ValidRichTextAttributes = [:bold, :italic, :under, :strike, :vertAlign, :c
 """
     RichTextRun(text::AbstractString, pairs::Union{Nothing,Vector{Pair{Symbol,Any}}} = nothing) -> RichTextRun
 
-One run of a [`RichTextString`](@ref): its text and none, one or several font attributes, as XLSX.jl's:
+One run of a [`RichTextString`](@ref): its text and none, one or several font attributes:
 - `:bold`, `:italic`, `:under`, `:strike`: `true` to set it;
 - `:vertAlign`: `"superscript"` or `"subscript"`;
 - `:color`: a colour, as hex (`"FF0000"`, `"FFFF0000"`) or a name (`"red"`);
 - `:size`: the font size in points;
 - `:name`: the font's name.
 
-An attribute a run doesn't set is the cell's, as in LibreOffice (D-088).
+An attribute a run doesn't set is the cell's, as in LibreOffice.
 
 # Examples
 ```julia
@@ -50,11 +50,10 @@ end
     RichTextString(runs::RichTextRun...) -> RichTextString
     RichTextString(runs::Vector{RichTextRun}) -> RichTextString
 
-A cell's text made of runs, each with its own font attributes (see [`RichTextRun`](@ref)), as
-XLSX.jl's. Its text is the runs' joined; a `"\\n"` starts a new line (a paragraph in ODF).
+A cell's text made of runs, each with its own font attributes (see [`RichTextRun`](@ref)). Its text is the runs' joined; a `"\\n"` starts a new line (a paragraph in ODF).
 
 Written to a cell (`sheet["A1"] = rt`), each run with attributes is a span with a text style, as
-LibreOffice keeps one (F-087). A string of one run is written as XLSX.jl writes it: plain text, the run's
+LibreOffice keeps one. A string of one run is written as plain text, the run's
 attributes the cell's font ([`setFont`](@ref)), but a superscript or subscript, which a cell style
 can't hold. [`getRichTextString`](@ref) reads one back.
 """

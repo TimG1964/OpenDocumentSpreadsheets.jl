@@ -227,24 +227,23 @@ _points_of(addr::AbstractString) = sum(length(r) * length(c) for (_, r, c) in _r
              subtitle = nothing, threeD = false, deep = false) -> Chart
 
 A new chart of `kind` over the cells of `anchor` (`"F2:M18"`), with no series yet (add them with
-[`addSeries`](@ref)): a frame in the first cell, resizing with its cells up to the last, as
-LibreOffice's import places XLSX.jl's charts (F-079), and an object in LibreOffice's own look (F-082,
-D-085).
+[`addSeries`](@ref)): a frame in the first cell, resizing with its cells up to the last, and an object in
+LibreOffice's own look.
 
-`kind` is one of XLSX.jl's: `:column`, `:bar`, `:stackedColumn`, `:stackedBar`, `:percentStackedColumn`,
+`kind` is one of `:column`, `:bar`, `:stackedColumn`, `:stackedBar`, `:percentStackedColumn`,
 `:percentStackedBar`, `:line`, `:lineMarkers`, `:stackedLine`, `:percentStackedLine`,
 `:stackedLineMarkers`, `:percentStackedLineMarkers`, `:area`, `:stackedArea`, `:percentStackedArea`,
 `:pie`, `:doughnut`, `:scatter`, `:bubble`, `:radar`, `:filledRadar`, `:combo` (LibreOffice's column and
-line chart); and LibreOffice's (D-076) `:pieOfPie`, `:barOfPie`, and the stock charts `:stock` (low,
+line chart), `:pieOfPie`, `:barOfPie`, and the stock charts `:stock` (low,
 high, close), `:stockOHLC` (open, low, high, close, as candlesticks), `:stockVolume` and
 `:stockVolumeOHLC` (a volume series first, in columns on the left axis). A stock chart's series are
 added in that order.
 
 `title` is text (`nothing` or `false`: none; LibreOffice has no automatic title). `xtitle` and `ytitle`
 title the axes (not on a pie or doughnut). LibreOffice's titles can't follow a cell: a `CellRef` is an
-error (D-086).
+error.
 
-LibreOffice's own options (D-076):
+LibreOffice's own options:
 - `subtitle`; `threeD` and `deep` for a 3-D chart; `dataTable = true` for a data table under the plot;
 - `interpolation` of line, XY and radar lines: `:straight`, `:smooth`, `:bspline`, `:stepStart`,
   `:stepEnd`, `:stepCenterX`, `:stepCenterY`;
@@ -292,11 +291,11 @@ function addChart(ws::Worksheet, kind::Symbol; anchor::Union{AbstractString,Cell
     name = _new_object_name(xf)
     text = _new_chart_text(kind; title = title === false ? nothing : title, subtitle, xtitle, ytitle, threeD, deep,
                            version = version in ("1.3", "1.4") ? version : "1.4")
-    kind === :combo && (text = _combo_text(text))
     width = sum(_col_cm(ws, x) for x in c:tc); height = sum(_row_cm(ws, x) for x in r:tr)
     # the object's page is the frame's size, as LibreOffice's (its custom positions are on it)
     text = replace(text, "svg:width=\"16cm\" svg:height=\"9cm\"" => "svg:width=\"$(_fmt_cm(width))\" svg:height=\"$(_fmt_cm(height))\""; count = 1)
     xf.chartobjs[name] = o = ChartObj(text, length(xf.ops))
+    kind === :combo && _secondary_y!(o)
     # LibreOffice's own options (D-076)
     plot = _plot_style(o)
     opts = Pair{String,String}[]
@@ -326,11 +325,7 @@ end
 # A stock chart's own parts, as LibreOffice's (experiment 039 part A): with volume, a secondary y axis
 # for the prices; the gain and loss markers and the range line.
 function _stock_parts!(o, volume::Bool)
-    if volume
-        ax = _add_style!(o, """<style:chart-properties chart:display-label="true" chart:logarithmic="false" chart:reverse-direction="false" text:line-break="false" chart:link-data-style-to-source="true" chart:axis-position="end"/><style:graphic-properties svg:stroke-color="#b3b3b3"/>""" * _TEXT10;
-                         datastyle = true)
-        _insert_before!(o, "<chart:wall", "<chart:axis chart:dimension=\"y\" chart:name=\"secondary-y\" chart:style-name=\"$ax\"/>")
-    end
+    volume && _secondary_y!(o)
     gain = _add_style!(o, """<style:graphic-properties draw:fill-color="#ffffff"/>""")
     loss = _add_style!(o, """<style:graphic-properties svg:stroke-color="#b3b3b3" draw:fill-color="#000000"/>""")
     range = _add_style!(o, """<style:graphic-properties svg:stroke-color="$(volume ? "#ff420e" : "#004586")"/>""")
@@ -369,11 +364,14 @@ function _add_data_series!(c::Chart, o, data, seriesIn::Symbol, firstRow::Bool, 
     return c
 end
 
-# A column and line chart: a secondary y axis, for the line group (F-081).
-function _combo_text(text::String)
-    i = findfirst("<chart:wall", text)
-    ax = """<chart:axis chart:dimension="y" chart:name="secondary-y" chart:style-name="ch7"/>"""
-    return text[1:prevind(text, first(i))] * ax * text[first(i):end]
+# A secondary y axis, at the plot's right (a combo chart's line group, F-081; a stock chart's prices),
+# in a style of its own: the primary axis' crosses at 0, which would draw it over the primary. ODF's
+# order is axes, then series: LibreOffice ignores an axis after the series.
+function _secondary_y!(o)
+    ax = _add_style!(o, """<style:chart-properties chart:display-label="true" chart:logarithmic="false" chart:reverse-direction="false" text:line-break="false" chart:link-data-style-to-source="true" chart:axis-position="end"/><style:graphic-properties svg:stroke-color="#b3b3b3"/>""" * _TEXT10;
+                     datastyle = true)
+    _insert_before!(o, occursin("<chart:series ", o.text) ? "<chart:series " : "<chart:wall",
+                    "<chart:axis chart:dimension=\"y\" chart:name=\"secondary-y\" chart:style-name=\"$ax\"/>")
 end
 
 # The class of the chart and whether it is an XY, bubble, pie, line-like or combo chart.
@@ -419,17 +417,17 @@ end
     addSeries(c::Chart, values; categories = nothing, name = nothing, name_ref = nothing, bubble_sizes = nothing,
               markers = nothing, smooth = nothing, line = nothing, color = nothing, group = nothing) -> Chart
 
-Adds a series, as XLSX.jl's `addSeries` does, in LibreOffice's form (F-080, F-081):
+Adds a series to a chart, in LibreOffice's form:
 - `values` (and `categories`, `name_ref`, `bubble_sizes`) are references: `"Data.B2:B7"`, `"Data!B2:B7"`,
   `"B2:B7"` (on the chart's sheet), or a range object.
-- `categories` are the x axis's (a chart's, not a series': a different range later is an error,
-  D-086), or an XY or bubble series' x values. `bubble_sizes` is required on a bubble chart.
+- `categories` are the x axis's (a chart's, not a series': a different range later is an error),
+  or an XY or bubble series' x values. `bubble_sizes` is required on a bubble chart.
 - `name` is the series' name as text (`loext:label-string`), `name_ref` a cell holding it.
 - `markers` (`true`, `false` or a symbol: `:circle`, `:square`, `:diamond`, `:triangle`, `:x`, `:plus`,
   `:star`, `:dash`, `:dot`, `:none`, `:auto`, and LibreOffice's `:arrowDown`, `:arrowLeft`, `:bowTie`,
   `:hourglass`, `:loStar`, `:vBar`) on line, radar and XY series; `:picture` is an error (no picture).
 - `smooth` on line and XY series: LibreOffice smooths a chart's lines all or none, so a series that
-  differs from those before is an error (D-086).
+  differs from those before is an error.
 - `line` joins an XY series' points.
 - `color` (hex, a colour name, or a theme colour such as `:accent1`) is the series' colour (not on a pie
   or doughnut, whose points are coloured one by one).
@@ -590,8 +588,8 @@ end
     makeCombo(c::Chart) -> Chart
 
 Makes a `:column`, `:stackedColumn` or `:line` chart of two or more series LibreOffice's column and
-line chart, as XLSX.jl's `makeCombo` does: its last series becomes a line on a secondary y axis, the
-others clustered columns (F-081).
+line chart: its last series becomes a line on a secondary y axis, the
+others clustered columns.
 """
 function makeCombo(c::Chart)
     o = _editable(c)
@@ -611,14 +609,28 @@ function makeCombo(c::Chart)
     k = 0
     o.text = replace(o.text, r"<chart:series\b[^>]*>" => m -> (k += 1; k == n ?
         replace(replace(m, r" chart:attached-axis=\"[^\"]*\"" => ""), r"chart:class=\"[^\"]*\"" => "chart:attached-axis=\"secondary-y\" chart:class=\"chart:line\"") : m))
-    o.text = _combo_text(o.text)
+    # each series drawn as its group is, in its own colour, as addSeries draws them: the columns
+    # filled without an outline, the line stroked (a column's style has no stroke, which hides a line)
+    styles = [m.captures[1] for m in eachmatch(r"<chart:series\b[^>]*chart:style-name=\"([^\"]*)\"", o.text)]
+    for (j, st) in enumerate(styles)
+        sm = match(Regex("<style:style style:name=\"" * st * "\"[^>]*>.*?</style:style>", "s"), o.text)
+        sm === nothing && continue
+        g = match(r"<style:graphic-properties\b[^>]*?(?:/>|>.*?</style:graphic-properties>)"s, sm.match)
+        cm = g === nothing ? nothing : match(r"draw:fill-color=\"([^\"]*)\"", g.match)
+        col = cm === nothing ? _PALETTE[mod1(j, length(_PALETTE))] : cm.captures[1]
+        gp = j == n ? """<style:graphic-properties svg:stroke-width="0.08cm" svg:stroke-color="$col" draw:fill-color="$col"/>""" :
+                      """<style:graphic-properties draw:stroke="none" draw:fill-color="$col"/>"""
+        new = g === nothing ? replace(sm.match, r"(</style:style>)$" => SubstitutionString(gp * "\\1")) : replace(sm.match, g.match => gp)
+        o.text = replace(o.text, sm.match => new; count = 1)
+    end
+    _secondary_y!(o)
     return c
 end
 
 """
     deleteChart(c::AbstractChart) -> Nothing
 
-Removes a chart: its frame and, at the next save, its object (F-083). A chart anchored to the page (not
+Removes a chart: its frame and, at the next save, its object. A chart anchored to the page (not
 to a cell) can't be removed, as pictures on the page can't.
 """
 function deleteChart(c::AbstractChart)

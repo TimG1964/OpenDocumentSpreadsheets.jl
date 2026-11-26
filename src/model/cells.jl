@@ -240,7 +240,7 @@ _datetime_from_ms(v::Integer) = Dates.DateTime(1, 1, 1) + Dates.Millisecond(v - 
 """
     duration_value(ns::Integer)
 
-The Julia value of a time cell holding `ns` nanoseconds (D-017): a `Dates.Time` from 0 to
+The Julia value of a time cell holding `ns` nanoseconds: a `Dates.Time` from 0 to
 under 24 hours, otherwise a canonical `Dates.CompoundPeriod` (for example `1 day, 12 hours`
 or `-1 hour`).
 """

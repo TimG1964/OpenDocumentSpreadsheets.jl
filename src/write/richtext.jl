@@ -247,7 +247,7 @@ _props_dict(p::AbstractString) = Dict{String,String}(String(a.captures[1]) => XM
     getRichTextString(sheet, row, col) -> Union{RichTextString, Nothing}
     getRichTextString(xf, "Sheet1!A1") -> Union{RichTextString, Nothing}
 
-A text cell's rich text, as XLSX.jl's: its runs and their attributes, or `nothing` for a cell whose
+A text cell's rich text: its runs and their attributes, or `nothing` for a cell whose
 text has no runs of its own formatting (plain text, a number, an empty cell). It reads the cells
 written with a [`RichTextString`](@ref) and LibreOffice's own rich text (its spans' text styles), while
 their text is unchanged. A run's attributes are those its span sets: the rest are the cell's.

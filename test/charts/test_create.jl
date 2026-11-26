@@ -167,6 +167,23 @@ end
     l = _add_kind_series!(addChart(ws, :line; anchor = "H20:O36"), :line)
     makeCombo(l)
     @test getChartTypes(l) == [:barChart, :lineChart]
+    # the line is stroked (a column's style has none, which hid it) and the columns aren't; the
+    # secondary axis comes before the series, as ODF orders them (LibreOffice ignores it after)
+    mktempdir() do dir
+        p = joinpath(dir, "combo.ods")
+        writeods(p, xf)
+        z = ZipArchives.ZipReader(read(p))
+        for ch in (c, l)
+            t = String(ZipArchives.zip_readentry(z, ch.name * "/content.xml"))
+            @test findfirst("chart:name=\"secondary-y\"", t) < findfirst("<chart:series ", t)
+            sts = [m.captures[1] for m in eachmatch(r"<chart:series\b[^>]*chart:style-name=\"([^\"]*)\"", t)]
+            gp(st) = match(Regex("<style:style style:name=\"" * st * "\"[^>]*>.*?</style:style>", "s"), t).match
+            @test occursin("svg:stroke-width", gp(last(sts))) && !occursin("draw:stroke=\"none\"", gp(last(sts)))
+            @test all(st -> occursin("draw:stroke=\"none\"", gp(st)), sts[1:end-1])
+            ax = match(r"chart:name=\"secondary-y\" chart:style-name=\"([^\"]*)\"", t).captures[1]
+            @test occursin("chart:axis-position=\"end\"", gp(ax))      # at the right, not over the primary
+        end
+    end
     one = addChart(ws, :column; anchor = "H40:O56"); addSeries(one, "B2:B7")
     @test_throws OpenDocumentSpreadsheets.ODSError makeCombo(one)
     @test_throws OpenDocumentSpreadsheets.ODSError makeCombo(_add_kind_series!(addChart(ws, :bar; anchor = "H60:O76"), :bar))

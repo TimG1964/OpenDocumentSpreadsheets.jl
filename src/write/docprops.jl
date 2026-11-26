@@ -114,8 +114,7 @@ end
                           category, contentStatus, created, modified, company, manager)
 
 Set the file's document properties, as LibreOffice's *File → Properties* shows them. Only the
-keywords given change; `""` removes one. They are stored as LibreOffice's xlsx import stores
-XLSX.jl's (F-056):
+keywords given change; `""` removes one. They are stored in the file's metadata:
 - `title`, `subject`, `description`: `dc:title`, `dc:subject`, `dc:description`
 - `creator`: `meta:initial-creator`; `lastModifiedBy`: `dc:creator`
 - `keywords`: one `meta:keyword` for each part between `;` or `,`
@@ -221,9 +220,8 @@ end
 
 Set the custom document property `name` (replacing one of that name, without regard to case) to a
 string, a number, a `Bool`, or a `Date` or `DateTime`. Stored as LibreOffice's user-defined
-properties are (F-056): numbers as `float`, dates and date-times as `date`. The four names
-LibreOffice's import gives XLSX.jl's category, content status, company and manager are those
-properties: set them with [`setDocumentProperties`](@ref).
+properties are: numbers as `float`, dates and date-times as `date`. The four names that hold the
+category, content status, company and manager are set with [`setDocumentProperties`](@ref).
 """
 function setCustomProperty(xf::ODSFile, name::AbstractString, value)
     _require_writable(xf, "set a custom property")
@@ -245,7 +243,7 @@ end
     getCustomProperties(xf) -> Vector{Pair{String,Any}}
 
 The file's custom document properties, in the file's order: `String`, `Int64` (a whole `float`, on 32-bit Julia too),
-`Float64`, `Bool` or `DateTime` values, or the text for other types. The four that hold XLSX.jl's
+`Float64`, `Bool` or `DateTime` values, or the text for other types. The four that hold the
 category, content status, company and manager are left out (they are
 [`getDocumentProperties`](@ref)'s). Works on read-only files.
 """

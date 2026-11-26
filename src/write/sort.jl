@@ -233,7 +233,7 @@ end
 """
     _sort_rows!(ws, r1, c1, r2, c2, keys, cs, nat, formats) -> Dict
 
-Puts rows r1+1:r2 of columns c1:c2 in the order of `keys`, as LibreOffice's sort does (F-072). Ties
+Puts rows r1+1:r2 of columns c1:c2 in the order of `keys`, as LibreOffice's sort does. Ties
 keep their order. Returns the formulas moved with a value, as a filter sees them, by their new cell:
 they are saved without one (LibreOffice computes them), and a filter applied with the sort takes
 the value they had.

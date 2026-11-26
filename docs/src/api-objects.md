@@ -4,11 +4,14 @@ CurrentModule = OpenDocumentSpreadsheets
 
 # API reference: links, notes and objects
 
-Hyperlinks, notes and threaded comments, pictures, data validation, tables, AutoFilters and sorting (phase 6). [Links, notes, pictures and tables](guide/objects.md) introduces them.
+Hyperlinks, notes and threaded comments, pictures, Validity rules, database ranges, AutoFilters and sorting.
+The guide introduces them: [Pictures](objects/pictures.md), [Notes and comments](objects/notes.md),
+[Hyperlinks](objects/hyperlinks.md), [Validity](data/validity.md), [Database ranges](data/tables.md) and
+[AutoFilter and sorting](data/autoFilter.md).
 
 ## Hyperlinks
 
-LibreOffice's two kinds of link: a URL field in a cell's text, and a cell link in its style (F-058):
+LibreOffice's two kinds of link: a URL field in a cell's text, and a cell link in its style:
 
 ```@docs
 addHyperlink
@@ -19,7 +22,7 @@ deleteHyperlink
 
 ## Notes and threaded comments
 
-LibreOffice's annotations, and the threaded comments it keeps inside them (F-059):
+LibreOffice's annotations, and the threaded comments it keeps inside them:
 
 ```@docs
 addComment
@@ -37,7 +40,7 @@ getThreadedComments
 
 ## Pictures
 
-Pictures anchored in cells, resizing with them, as LibreOffice's import places XLSX.jl's (F-060):
+Pictures anchored in cells, resizing with them:
 
 ```@docs
 addImage
@@ -47,7 +50,7 @@ deleteImage
 
 ## Data validation
 
-The rules of LibreOffice's Data ▸ Validity, stored as its import stores XLSX.jl's (F-061, F-068):
+The rules of LibreOffice's Data ▸ Validity:
 
 ```@docs
 addDataValidation
@@ -58,7 +61,7 @@ deleteDataValidation
 
 ## Tables
 
-Tables are LibreOffice's database ranges (Data ▸ Define Range), stored as its import stores XLSX.jl's tables (F-062, F-070). LibreOffice has no table styles, and keeps no totals settings: they are read from the totals cells' formulas.
+Tables are LibreOffice's database ranges (Data ▸ Define Range). LibreOffice has no styles for them, and keeps no totals settings: they are read from the totals cells' formulas.
 
 ```@docs
 Table
@@ -76,7 +79,7 @@ gettablerange
 
 ## AutoFilters
 
-A sheet's AutoFilter is LibreOffice's anonymous database range of the sheet, with filter buttons (F-062). Its criteria are stored as LibreOffice stores them, and rows are hidden as LibreOffice's Refresh Range hides them (F-071); a sort puts the rows in LibreOffice's order and moves what LibreOffice's Data ▸ Sort moves (F-072). Both differ from Excel in places: see [`setAutoFilter`](@ref).
+A sheet's AutoFilter is LibreOffice's anonymous database range of the sheet, with filter buttons. Its criteria are stored as LibreOffice stores them, and rows are hidden as LibreOffice's Refresh Range hides them; a sort puts the rows in LibreOffice's order and moves what LibreOffice's Data ▸ Sort moves.
 
 ```@docs
 setAutoFilter

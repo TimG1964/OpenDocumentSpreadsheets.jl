@@ -585,8 +585,8 @@ end
     setConditionalFormat(sheet, rows, cols, type; kw...) -> 0
 
 Add a conditional format to a range (a cell, a range, whole columns `"B:B"` or rows, several of these
-separated by commas, or rows and columns given apart), as XLSX.jl does, stored as LibreOffice's
-conditional format (D-081). `type` and its keywords are XLSX.jl's:
+separated by commas, or rows and columns given apart), stored as LibreOffice's conditional
+format. `type` and its keywords:
 
 - `:cellIs`: `operator` (`greaterThan` (default), `greaterEqual`, `lessThan`, `lessEqual`, `equal`,
   `notEqual`, `between`, `notBetween`), `value` (default: the mean of the range's numbers), `value2`
@@ -618,19 +618,19 @@ conditional format (D-081). `type` and its keywords are XLSX.jl's:
 
 The highlight rules (all but data bars, colour scales and icon sets) format matching cells with
 `dxStyle` (`redfilltext` (default), `yellowfilltext`, `greenfilltext`, `redfill`, `redtext`,
-`redborder`) or with custom `format`, `font`, `border` and `fill`, each a vector of pairs as XLSX.jl
-takes them (`font = ["color" => "red", "bold" => "true"]`; a font may also have LibreOffice's `name`
-and `size`). As LibreOffice's import does, each rule's format becomes a named cell style,
+`redborder`) or with custom `format`, `font`, `border` and `fill`, each a vector of pairs
+(`font = ["color" => "red", "bold" => "true"]`; a font may also have LibreOffice's `name`
+and `size`). Each rule's format becomes a named cell style,
 `ConditionalStyle_N`. LibreOffice's own option `style` applies any named cell style instead
 (`style = "Good"`; its built-in styles are added when used).
 
-Values and thresholds are numbers or cell references given as strings, as in XLSX.jl, or formulas;
-references are relative to the range's top-left cell. Formulas may use XLSX.jl's `Sheet!A1` or
-LibreOffice's `Sheet.A1`.
+Values and thresholds are numbers or cell references given as strings, or formulas;
+references are relative to the range's top-left cell. Formulas may use `Sheet.A1` or
+`Sheet!A1`.
 
 Rules are applied in the order they are set: a rule on the same range as an earlier one is its next
-entry, as in LibreOffice, which applies the first true condition of a range. XLSX.jl's options that
-LibreOffice doesn't support are errors (D-081, D-084): `stopIfTrue`, the standard deviations of
+entry, as in LibreOffice, which applies the first true condition of a range. Options that
+LibreOffice doesn't support are errors: `stopIfTrue`, the standard deviations of
 `:aboveAverage`, data bar borders (`borders`, `border_col`, `neg_border_col`, `sameNegBorders`),
 `direction="rightToLeft"`, custom icon sets (`iconset = "Custom"`, `icon_list`) and
 `reverse = "true"`. Returns 0. The file must be writable.
@@ -662,8 +662,7 @@ end
     setColoredDataBars(sheet, rng; bands=5, colors=["green", "red"], breaks=nothing, gte=true,
                        showVal, direction, min_type, min_val, max_type, max_val, clear=true) -> Vector{Pair}
 
-Data bars whose colour changes with the value as well as their length, as XLSX.jl's
-`setColoredDataBars` writes them: the cells of `rng` are split into bands of value (`bands` equal
+Data bars whose colour changes with the value as well as their length: the cells of `rng` are split into bands of value (`bands` equal
 intervals between the smallest and largest number, or `breaks`; a value on a break goes in the band
 above it, or below with `gte=false`), and each band gets a solid data bar of its colour (`colors`:
 one per band, or two to interpolate between), on a shared scale (`min_type`/`max_type` `num` (the

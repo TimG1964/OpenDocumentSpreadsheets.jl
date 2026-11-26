@@ -13,7 +13,7 @@ A named range (`table:named-range`) or named expression (`table:named-expression
 `scope` is the sheet a local name belongs to, or `nothing` for a workbook name.
 `range` is the `table:cell-range-address`, `expression` the `table:expression`.
 `span`: where its element is in the text it was read from (empty for a name OpenDocumentSpreadsheets added),
-so that a save deletes it there and keeps every other name as it is (phase 5).
+so that a save deletes it there and keeps every other name as it is.
 The public view of a name is [`DefinedName`](@ref).
 """
 struct NameDef
@@ -485,10 +485,10 @@ returns.
 - `enable_cache=false`: every read scans the sheet again, keeping nothing, and stops after
   the last row it needs. Use it with [`eachrow`](@ref Base.eachrow(::Worksheet)) to stream a large sheet.
 
-Modes, as in XLSX.jl:
+Modes:
 - `"r"`: read only.
 - `"rw"`: read and edit; save with [`saveods`](@ref) or [`writeods`](@ref). Saving patches the
-  original file: everything OpenDocumentSpreadsheets does not edit is kept as it was (D-023).
+  original file: everything OpenDocumentSpreadsheets does not edit is kept as it was.
 - `"w"`: start a new, empty spreadsheet (with one sheet, `Sheet1`) that will be written to
   `source`; an existing file there is not read.
 
@@ -786,7 +786,7 @@ The value of a defined name: a sheet-qualified reference (`SheetCellRef`, `Sheet
 a named expression that is a number, string or logical value. Other expressions throw: they
 would need a formula evaluator. A reference without a sheet (a relative name's `.B2`) is on its
 base cell's sheet. LibreOffice saves a named range of several areas as an expression of
-references joined by `~`, `;` or spaces (F-026, F-050).
+references joined by `~`, `;` or spaces.
 """
 function get_defined_name_value(dn::NameDef)
     v, _, isformula = _name_value(dn)      # src/write/names.jl
@@ -817,7 +817,7 @@ defined_names(ws::Worksheet) = copy(_local_names(ws))
 
 The smallest range holding every cell with a value or formula. ODS files do not record it,
 so it is computed from the sheet (the cache, or a scan without the cache). An empty sheet
-gives `A1:A1`, as in XLSX.jl. With `allow_load=false`, an unread sheet gives `A1:A1`
+gives `A1:A1`. With `allow_load=false`, an unread sheet gives `A1:A1`
 without being read.
 """
 function get_dimension(ws::Worksheet; allow_load::Bool = true)::CellRange

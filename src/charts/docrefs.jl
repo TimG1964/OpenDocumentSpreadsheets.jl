@@ -1,4 +1,4 @@
-# Docstrings of the public names documented with their families (phase 9): each its own signature
+# Docstrings of the public names documented with their families: each its own signature
 # and a link to its family, so that `?name` shows something. Generated, then checked by hand.
 
 """
@@ -700,7 +700,7 @@ setSeriesLineWidth
     setSeriesLayoutFlag(c::ChartEx, i, flag, value) -> error
 
 Settings of the chartex kinds LibreOffice lacks (waterfall, box and whisker, treemap) and of an
-aggregated histogram: errors (D-086). See [`setSeriesName`](@ref).
+aggregated histogram: errors. See [`setSeriesName`](@ref).
 """
 setSeriesSubtotals
 @doc (@doc setSeriesSubtotals) setSeriesAggregation
@@ -713,7 +713,7 @@ setSeriesSubtotals
 
 A [`SchemeColor`](@ref)'s tokens (`:bg1`, `:tx1`, …, `:accent1` … `:accent6`, `:hlink`, `:folHlink`
 and the aliases `:lt1`, `:dk1`, `:lt2`, `:dk2`) and transforms (`:lumMod`, `:lumOff`, `:shade`, `:tint`,
-`:satMod`, `:alpha`), as XLSX.jl's.
+`:satMod`, `:alpha`).
 """
 SCHEME_TOKENS
 @doc (@doc SCHEME_TOKENS) COLOR_TRANSFORMS
@@ -721,7 +721,7 @@ SCHEME_TOKENS
 """
     CX_KINDS
 
-XLSX.jl's chartex kinds: `:waterfall`, `:funnel`, `:treemap`, `:sunburst`, `:histogram`, `:pareto`,
+The chartex kinds: `:waterfall`, `:funnel`, `:treemap`, `:sunburst`, `:histogram`, `:pareto`,
 `:boxWhisker`. LibreOffice has the histogram; see [`addChartEx`](@ref).
 """
 CX_KINDS

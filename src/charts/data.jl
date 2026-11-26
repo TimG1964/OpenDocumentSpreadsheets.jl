@@ -224,7 +224,7 @@ getChartSeries(c::AbstractChart) = _series(c.package, _doc(c))
 The ranges of each series: `idx`, `name`, `categories`, `values` and `bubble_sizes`, each a
 [`ChartRange`](@ref). Without a name, every chart's: `(chart name, ranges)`.
 
-LibreOffice keeps a chart's references even when their cells are deleted (F-043): they never become
+LibreOffice keeps a chart's references even when their cells are deleted: they never become
 `#REF!`.
 """
 getChartRanges(c::AbstractChart) =
@@ -340,7 +340,7 @@ end
     getChartTitle(c::AbstractChart) -> Union{Nothing,String}
 
 The chart's title as text (paragraphs joined by `"\\n"`), or `nothing` when it has none. LibreOffice has
-no automatic titles and no titles bound to cells (F-081).
+no automatic titles and no titles bound to cells.
 """
 function getChartTitle(c::AbstractChart)
     t = get(_children(_doc(c).chart, "chart:title"), 1, nothing)

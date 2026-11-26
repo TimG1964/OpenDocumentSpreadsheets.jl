@@ -13,3 +13,6 @@ Manifest.toml
 # LibreOffice: throwaway profiles and lock files
 lo-profile/
 .~lock.*#
+
+# The docs' screenshot generator's working files (docs/screenshots/README.md)
+/docs/screenshots/work/

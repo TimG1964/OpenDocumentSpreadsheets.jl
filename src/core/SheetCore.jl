@@ -1,7 +1,7 @@
 """
     SheetCore
 
-The format-independent core shared by the spreadsheet back ends (D-001): cell references
+The format-independent core shared by the spreadsheet back ends: cell references
 and ranges, tabular data and Tables.jl input, number formats and displayed text, date
 serial numbers, text widths for autofit, colours, and reading zip parts.
 

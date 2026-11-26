@@ -6,8 +6,6 @@
 Read and write OpenDocument spreadsheets (`.ods`, `.fods`, `.ots`) in Julia, with an API
 modelled on [XLSX.jl](https://github.com/JuliaData/XLSX.jl).
 
-Formerly ODSFiles.jl.
-
 ## Features
 
 - **Reading and writing** `.ods`, flat `.fods` and `.ots` files: typed values, tables

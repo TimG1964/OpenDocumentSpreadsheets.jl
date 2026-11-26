@@ -615,8 +615,7 @@ end
 """
     write_patched_table(out::_ChunkedIO, ws::Worksheet)
 
-Writes the `table:table` of a sheet read from the file, with its edits (D-023), to `out`
-(D-048).
+Writes the `table:table` of a sheet read from the file, with its edits, to `out`.
 """
 function write_patched_table(out::_ChunkedIO, ws::Worksheet; display::Bool = true, rw::Union{Nothing,RefRewriter} = nothing)
     node = ws.entry.node
@@ -730,7 +729,7 @@ end
 
 One sheet's table as it is now: written from the model (a sheet made by OpenDocumentSpreadsheets), patched (an
 edited sheet read from the file, or a copy), or copied with its references replayed and its name
-set (phase 5).
+set.
 """
 function _write_sheet(out::_ChunkedIO, ws::Worksheet, rw::Union{Nothing,RefRewriter}; display::Bool = true)
     ws.entry === nothing && return write_table(out, ws; display)
@@ -869,8 +868,8 @@ end
     write_patched_content(out::_ChunkedIO, xf::ODSFile)
 
 Writes the content.xml (or flat document) of a file that was read, with its edits, new
-sheets and new styles (D-023), to `out` as it is made (D-048). A flat document also gets
-the named styles OpenDocumentSpreadsheets added (D-045). Text that isn't edited is copied from the
+sheets and new styles, to `out` as it is made. A flat document also gets
+the named styles OpenDocumentSpreadsheets added. Text that isn't edited is copied from the
 original in pieces as large as the gaps between edits.
 """
 function write_patched_content(out::_ChunkedIO, xf::ODSFile; display::Bool = true)
@@ -1026,7 +1025,7 @@ end
     patched_styles(xf::ODSFile, xml) -> String
 
 A file's styles.xml (`xml`) with the named styles OpenDocumentSpreadsheets added, their data styles in
-`office:styles` and the font faces they name in `office:font-face-decls` (D-045, F-040).
+`office:styles` and the font faces they name in `office:font-face-decls`.
 Everything else is kept as it was.
 """
 function patched_styles(xf::ODSFile, xml::AbstractString)

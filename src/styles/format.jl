@@ -10,7 +10,7 @@
 """
     BUILTIN_FORMATS
 
-Excel's built-in number formats by id, as XLSX.jl numbers them.
+Excel's built-in number formats, by their ids.
 """
 const BUILTIN_FORMATS = Dict{Int,String}(
     0 => "General", 1 => "0", 2 => "0.00", 3 => "#,##0", 4 => "#,##0.00",
@@ -72,10 +72,10 @@ Set the number format of cells (address forms as [`setFont`](@ref)). `format` is
 - a built-in id, as a string (`"39"` is `#,##0.00_);(#,##0.00)`);
 - or a format code, checked as Excel checks it (`"#,##0.00"`, `"d mmm yyyy"`, `"[Red]0.0%"`).
 
-The code is stored as an ODF data style, in the form LibreOffice writes for it (F-031): a
+The code is stored as an ODF data style, in the form LibreOffice writes for it: a
 code of several sections becomes one style per section, chosen by `style:map` conditions.
 A value whose type doesn't fit the format is not converted: a date cell given `"0.00"`
-stays a date cell, which LibreOffice shows as a number and retypes when it saves (F-011).
+stays a date cell, which LibreOffice shows as a number and retypes when it saves.
 Returns the name of the cell's new style for a single cell, else -1.
 """
 setFormat(x::Union{Worksheet,ODSFile}, ref...; kw...) =
@@ -84,7 +84,7 @@ setFormat(x::Union{Worksheet,ODSFile}, ref...; kw...) =
 """
     CellFormat(numFmtId, format, applyNumberFormat)
 
-A cell's number format, as [`getFormat`](@ref) returns it (XLSX.jl's shape, D-032):
+A cell's number format, as [`getFormat`](@ref) returns it:
 `format["numFmt"]` holds `"numFmtId"` and `"formatCode"`.
 """
 struct CellFormat
@@ -203,11 +203,11 @@ end
     getText(sheet, row, col) / getText(xf, "Sheet1.A1")
 
 The text a cell shows: its value in its number format, as LibreOffice shows it when the
-column is wide enough (F-030). `1234.5` formatted `"#,##0.00"` is `"1,234.50"`, a date
+column is wide enough. `1234.5` formatted `"#,##0.00"` is `"1,234.50"`, a date
 formatted `"d mmm yyyy"` is `"7 Mar 2026"`. A formula shows its stored value; an empty cell,
 or a formula without a value, is `""`; an error shows its text.
 
-LibreOffice differs from Excel in places, and `getText` follows LibreOffice: General shows
+`getText` shows a value as LibreOffice does: General shows
 up to 15 significant digits, `?` pads with a figure space (U+2007), `0.##` of a whole number
 has no point, seconds are truncated, and day numbers count from the document's null date.
 A fill (`*x`) is left out, as there is no column width. Works on read-only files.

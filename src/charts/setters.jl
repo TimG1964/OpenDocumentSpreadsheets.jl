@@ -102,11 +102,11 @@ const _SCHEME_ALIASES = Dict(:lt1 => :bg1, :dk1 => :tx1, :lt2 => :bg2, :dk2 => :
                 alpha = nothing)
     SchemeColor(token, transforms)
 
-A theme colour, as XLSX.jl's: a token (`:bg1`, `:tx1`, `:bg2`, `:tx2`, `:accent1` … `:accent6`, `:hlink`,
+A theme colour: a token (`:bg1`, `:tx1`, `:bg2`, `:tx2`, `:accent1` … `:accent6`, `:hlink`,
 `:folHlink`, or the aliases `:lt1`, `:dk1`, `:lt2`, `:dk2`) and transforms in percent, applied in order.
 It resolves to the document's theme (LibreOffice's, for a new document) and is written as LibreOffice's
-theme reference, so LibreOffice follows a change of theme (F-082). LibreOffice keeps `lumMod`, `lumOff`,
-`tint` and `shade`; `alpha` is a fill's transparency; `satMod` is an error (D-086).
+theme reference, so LibreOffice follows a change of theme. LibreOffice keeps `lumMod`, `lumOff`,
+`tint` and `shade`; `alpha` is a fill's transparency; `satMod` is an error.
 """
 struct SchemeColor
     token::Symbol
@@ -341,12 +341,12 @@ _own_stroke(o, st) = _style_attr(o, st, "draw:stroke")
 gradientAngle = 0, hatch = nothing, hatchAngle = 0) -> Chart
 
 Series `i`'s fill: a colour (hex, a colour name, a theme colour such as `:accent1` or a
-[`SchemeColor`](@ref)), `:none`, or `:inherit` (LibreOffice's default). LibreOffice's own option
-(D-076): `transparency`, 0 to 100 percent; a gradient from `color` to `gradient` (another colour), of
+[`SchemeColor`](@ref)), `:none`, or `:inherit` (LibreOffice's default). LibreOffice's own option:
+`transparency`, 0 to 100 percent; a gradient from `color` to `gradient` (another colour), of
 `gradientStyle` (`:linear`, `:axial`, `:radial`, `:ellipsoid`, `:square`, `:rectangular`) at
 `gradientAngle` degrees; or a `hatch` (`:single`, `:double`, `:triple`) of lines of `color` at `hatchAngle`
 degrees. A line, XY or radar series has one colour, its line's and its symbols' (LibreOffice's): its fill
-is its line colour, and `:none`, transparency, gradients and hatches are errors (D-086).
+is its line colour, and `:none`, transparency, gradients and hatches are errors.
 """
 function setSeriesFill(c::Chart, i::Integer, color::Union{SchemeColorLike,Colors.Colorant}; transparency::Union{Nothing,Integer} = nothing,
 gradient = nothing, gradientStyle::Symbol = :linear, gradientAngle::Integer = 0, hatch = nothing,
@@ -378,9 +378,9 @@ end
     setSeriesLineColor / setSeriesLineWidth / setSeriesLineDash / setSeriesLineCap(c, i, value) -> Chart
     setSeriesLineCompound / setSeriesLineJoin / setSeriesLineMiterLimit(c, i, value) -> error
 
-Series `i`'s line: a colour, a width in points, a dash (XLSX.jl's names and Excel's aliases, written as
-LibreOffice's import writes them), a cap (`:rnd`, `:sq`, `:flat`). LibreOffice's chart lines have no
-compound lines, joins or miter limits (D-086): those are errors.
+Series `i`'s line: a colour, a width in points, a dash (`:solid`, `:dot`, `:dash`, `:sysDash` and the
+other DrawingML names, written as LibreOffice's dashes), a cap (`:rnd`, `:sq`, `:flat`). LibreOffice's chart lines have no
+compound lines, joins or miter limits: those are errors.
 """
 function setSeriesLine(c::Chart, i::Integer; color = nothing, width = nothing, dash = nothing, cap = nothing,
                        compound = nothing, join = nothing, miterLimit = nothing)
@@ -518,10 +518,9 @@ end
     setMarkerFill / setMarkerLineColor / setMarkerLineWidth(c, i, value; point = nothing) -> error
 
 A line, XY or radar series' (or point's, from 1) symbol and size (2 to 72 points). Symbols are
-XLSX.jl's (`:circle`, `:square`, `:diamond`, `:triangle`, `:x`, `:plus`, `:star`, `:dash`, `:dot`,
+the usual ones (`:circle`, `:square`, `:diamond`, `:triangle`, `:x`, `:plus`, `:star`, `:dash`, `:dot`,
 `:none`, `:auto`) and LibreOffice's own (`:arrowDown`, `:arrowLeft`, `:bowTie`, `:hourglass`, `:loStar`,
-`:vBar`). LibreOffice draws a symbol in its series' colours: a fill or border of its own is an error
-(D-086).
+`:vBar`). LibreOffice draws a symbol in its series' colours: a fill or border of its own is an error.
 """
 function setMarker(c::Chart, i::Integer; point = nothing, symbol = nothing, size = nothing, fill = nothing,
                    lineColor = nothing, lineWidth = nothing)
@@ -631,8 +630,8 @@ One text property of a part of the chart. Fields: `:size` (points), `:bold`, `:i
 (`:underline`), `:strike` (`:strikethrough`), `:baseline` (a fraction of the size), `:spacing`
 (points), `:fill` (`:color`), `:latin` (`:font`), `:ea`, `:cs`, `:lang`; `:inherit` removes one.
 LibreOffice's chart text has no capitals setting, kerning size or coloured outline: `:caps`, `:kern`
-and `:line` are errors (D-086). The chart space's text is its series labels', as LibreOffice's import
-places it (F-081).
+and `:line` are errors. The chart space's text is its series labels', as LibreOffice's import
+places it.
 """
 setChartTitleTextProp(c::Chart, field::Symbol, v) = (o = _editable(c); _style_text!(o, c.package, _own_style!(o, _title_tag(o)), field, v); c)
 setLegendTextProp(c::Chart, field::Symbol, v) = (o = _editable(c); _style_text!(o, c.package, _own_style!(o, _legend_tag(o)), field, v); c)
@@ -676,7 +675,7 @@ _axis_style!(o, c, ax) = _own_style!(o, _axis_tag(o, c, ax))
     setAxisTitleText(c, ax, text) -> Chart
 
 The chart's (or an axis') title: a string (a line break starts a paragraph) or a `DrawingText`.
-LibreOffice's titles can't follow a cell: a `CellRef` is an error (D-086).
+LibreOffice's titles can't follow a cell: a `CellRef` is an error.
 """
 function setChartTitleText(c::Chart, text)
     o = _editable(c)
@@ -819,11 +818,11 @@ const _LEGEND_CORNERS = Dict(:tr => (:r, :t), :topRight => (:r, :t), :tl => (:l,
     setLegendOverlay(c, overlay) -> Chart
     setLegendEntryDeleted(c, positions, deleted) -> Chart
 
-The legend's place: `:b`, `:t`, `:l`, `:r`, `:tr`, and the other corners `:tl`, `:bl`, `:br` (D-076); a
-corner is a custom position in that corner of the chart, as LibreOffice's import writes `:tr` (F-081).
+The legend's place: `:b`, `:t`, `:l`, `:r`, `:tr`, and the other corners `:tl`, `:bl`, `:br`; a
+corner is a custom position in that corner of the chart, as LibreOffice's import writes `:tr`.
 `:inherit` removes the position, which LibreOffice reads as `:r`. Whether the legend may overlap the
 plot area, and the series whose entries are hidden. The first two make a legend if the chart has none.
-LibreOffice's own (D-076): `expansion`, `:wide`, `:high` or `:balanced` (not for a corner).
+LibreOffice's own: `expansion`, `:wide`, `:high` or `:balanced` (not for a corner).
 """
 function setLegendPos(c::Chart, pos::Symbol; overlay = nothing, expansion = nothing)
     corner = get(_LEGEND_CORNERS, pos, nothing)
@@ -881,7 +880,7 @@ end
     setPlotAreaLine(c; color, width, dash, cap) -> Chart
     setPlotAreaLine(c, :none | :inherit) -> Chart
 
-The plot area's border: LibreOffice's wall (F-081).
+The plot area's border: LibreOffice's wall.
 """
 function setPlotAreaLine(c::Chart; kw...)
     o = _editable(c)
@@ -901,7 +900,7 @@ setPlotAreaLine(c::Chart, v::Symbol) = v === :none ? setPlotAreaLine(c; color = 
     setLabelFlag(c, i, flag, on) -> Chart
 
 Whether series `i`'s labels show `flag`: `:value`, `:percent`, `:categoryName`, `:seriesName`,
-`:legendKey`. LibreOffice has no bubble-size labels: `:bubbleSize` is an error (D-086).
+`:legendKey`. LibreOffice has no bubble-size labels: `:bubbleSize` is an error.
 """
 function setLabelFlag(c::Chart, i::Integer, flag::Symbol, on::Bool)
     flag === :bubbleSize && throw(ODSError("LibreOffice's labels can't show bubble sizes (D-086)."))
@@ -998,8 +997,8 @@ end
     setAxisGridlines(c, ax; major, minor) / setAxisLine(c, ax; …) / setAxisNumberFormatCode(c, ax, code)
     setAxisNumberFormatLinked(c, ax, linked) -> Chart
 
-An axis' scale and look, in LibreOffice's form (F-082). LibreOffice stores a minor unit as the number of
-minor intervals in a major one (F-081): it needs a major unit it divides (D-086).
+An axis' scale and look, in LibreOffice's form. LibreOffice stores a minor unit as the number of
+minor intervals in a major one: it needs a major unit it divides.
 """
 function setAxisScaling(c::Chart, ax; orientation = nothing, min = nothing, max = nothing)
     attrs = Pair{String,Union{Nothing,String}}[]
@@ -1109,7 +1108,7 @@ setAxisNumberFormatLinked(c::Chart, ax, linked::Bool) = _axis_set!(c, ax, ["char
 """
     setGroupGapWidth(c, g, pct) / setGroupOverlap(c, g, pct) -> Chart
 
-A bar group's gap width (0 to 500 percent) and overlap (−100 to 100), on its y axis' style (F-082).
+A bar group's gap width (0 to 500 percent) and overlap (−100 to 100), on its y axis' style.
 """
 function setGroupGapWidth(c::Chart, g::ChartGroup, pct)
     pct === :inherit || (pct isa Integer && 0 <= pct <= 500) || throw(ODSError("A gap width is 0 to 500 percent."))
@@ -1132,7 +1131,7 @@ const _TREND_ODF = Dict(:linear => "linear", :log => "logarithmic", :exp => "exp
                  displayEquation = false, displayRSquared = false) -> Chart
     deleteTrendlines(c, i) -> Chart
 
-A trendline on series `i` (XLSX.jl reads them; LibreOffice stores them, D-076): `kind` `:linear`, `:log`,
+A trendline on series `i`, LibreOffice's Insert ▸ Trend Line: `kind` `:linear`, `:log`,
 `:exp`, `:power`, `:poly` (with `order`, 2 to 6) or `:movingAvg` (with `period`); its `name`;
 extrapolation `forward` and `backward`; a forced `intercept`; the equation and R² shown.
 """
@@ -1165,7 +1164,7 @@ const _ERR_ODF = Dict(:fixed => "constant", :percent => "percentage", :stdDev =>
     setErrorBars(c, i; type, value, plus, minus, bars = :both, direction = :y) -> Chart
     deleteErrorBars(c, i) -> Chart
 
-Error bars on series `i` (XLSX.jl reads them; LibreOffice stores them, D-076): `type` `:fixed`,
+Error bars on series `i`, LibreOffice's Insert ▸ Y Error Bars: `type` `:fixed`,
 `:percent` or `:stdDev` (with `value`), `:stdErr`, or `:range` (with the cells `plus` and `minus`);
 `bars` `:both`, `:plus` or `:minus`; `direction` `:y` or `:x` (XY charts).
 """
@@ -1219,7 +1218,7 @@ end
 """
     setAxisLabelArrangement(c, ax; stagger = nothing, overlap = nothing, breakText = nothing) -> Chart
 
-LibreOffice's label options of an axis (D-076): `stagger` (`:odd`, `:even`, `:none`), whether labels may
+LibreOffice's label options of an axis: `stagger` (`:odd`, `:even`, `:none`), whether labels may
 `overlap`, and whether they may break into lines.
 """
 function setAxisLabelArrangement(c::Chart, ax; stagger = nothing, overlap = nothing, breakText = nothing)
@@ -1235,7 +1234,7 @@ end
     setSeriesExplosion(c, i, pct; point = nothing) -> Chart
 
 How far a pie or doughnut series (or one point) is pulled out, in percent of the radius (LibreOffice's
-`chart:pie-offset`, D-076).
+`chart:pie-offset`).
 """
 function setSeriesExplosion(c::Chart, i::Integer, pct::Integer; point = nothing)
     0 <= pct <= 100 || throw(ODSError("An explosion is 0 to 100 percent."))

@@ -177,7 +177,7 @@ const _ODFF_PREFIXES = ("COM.MICROSOFT.", "ORG.OPENOFFICE.", "ORG.LIBREOFFICE.",
     ui_function_name(name) -> String
 
 The name LibreOffice shows for a stored (ODFF) function name: from LibreOffice's own map
-(experiment 010, F-027), else by dropping a known prefix (F-025).
+(experiment 010), else by dropping a known prefix.
 """
 function ui_function_name(name::AbstractString)
     any(islowercase, name) && return String(name)     # unknown to LibreOffice: as stored

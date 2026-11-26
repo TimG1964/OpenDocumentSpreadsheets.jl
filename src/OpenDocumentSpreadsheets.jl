@@ -3,7 +3,7 @@
 
 Read and write OpenDocument spreadsheets (`.ods`, `.fods`, `.ots`) in pure Julia.
 
-The public API mirrors XLSX.jl wherever that is reasonable (see `records/api-divergence.md` in the workspace).
+The manual is at <https://TimG1964.github.io/OpenDocumentSpreadsheets.jl/stable/>.
 """
 module OpenDocumentSpreadsheets
 
@@ -40,8 +40,8 @@ parse_sheet_ref(s::AbstractString) = SheetCore.parse_sheet_ref(SheetCore.ODFStyl
     ODSError
 
 The exception OpenDocumentSpreadsheets throws for its own errors: an invalid reference, a missing sheet, a
-file that is not an ODF spreadsheet, and so on. It is the shared core's `SheetCoreError`
-(D-021), so one type covers errors from both.
+file that is not an ODF spreadsheet, and so on. It is the shared core's `SheetCoreError`,
+so one type covers errors from both.
 """
 const ODSError = SheetCoreError
 

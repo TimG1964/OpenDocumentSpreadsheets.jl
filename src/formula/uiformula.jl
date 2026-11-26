@@ -131,8 +131,8 @@ _is_name_char(c::Char) = isletter(c) || isdigit(c) || c == '_' || c == '.' || c 
     ui_to_openformula(f::AbstractString) -> String
 
 A formula in LibreOffice's UI notation (en-US separators), such as
-`"=SUM(A1:B2,'My sheet'.C3)"`, as stored OpenFormula: `"of:=SUM([.A1:.B2];['My sheet'.C3])"`
-(D-025). Function names get their ODFF names (experiment 010); `,` separates arguments and
+`"=SUM(A1:B2,'My sheet'.C3)"`, as stored OpenFormula: `"of:=SUM([.A1:.B2];['My sheet'.C3])"`.
+Function names get their ODFF names (experiment 010); `,` separates arguments and
 array columns, `;` array rows.
 """
 function ui_to_openformula(f::AbstractString)

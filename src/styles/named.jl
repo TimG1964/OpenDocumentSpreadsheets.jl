@@ -18,7 +18,7 @@ _ncname_char(c::Char, start::Bool) =
 """
     encode_style_name(display) -> String
 
-The `style:name` LibreOffice writes for a style shown as `display` (F-040): every character
+The `style:name` LibreOffice writes for a style shown as `display`: every character
 an XML NCName can't hold, and every `_`, becomes `_xx_` (the lower-case hex of its UTF-16
 code units).
 """

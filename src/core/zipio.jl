@@ -49,7 +49,7 @@ prefix to keep, or `nothing` to go on. The whole part is returned (with its leng
 checked, as `readentry_string` does) if `stop` never asks to stop; a prefix can't be
 checked against the CRC, which covers the whole part.
 
-New in SheetCore (phase 3): a reader of one sheet among several in one part (ODS keeps all
+New in SheetCore: a reader of one sheet among several in one part (ODS keeps all
 sheets in content.xml) can stop inflating after that sheet.
 """
 function readentry_prefix(stop, zr::ZipArchives.ZipReader, name::AbstractString)::String

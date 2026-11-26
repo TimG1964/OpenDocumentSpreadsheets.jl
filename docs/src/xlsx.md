@@ -18,8 +18,7 @@ indexing, `getcell`, `getcellrange`, `eachrow`, `iserror`, `geterror`, `setdata!
 `writetable`, `writetable!`, `addsheet!`, `writerow!`, `writerows!` and the Tables.jl
 interface.
 
-The formatting functions work as in XLSX.jl too, with the differences listed in
-[Formatting](guide/formatting.md):
+The formatting functions work as in XLSX.jl too, with the differences listed below:
 - `setFont`, `setFill`, `setBorder`, `setAlignment`, `setFormat` and their getters
 - the `setUniform*` variants and `setOutsideBorder`
 - `getText`
@@ -40,11 +39,24 @@ The formatting functions work as in XLSX.jl too, with the differences listed in
 - **Error codes** are the text LibreOffice shows, including its own `Err:NNN`.
 - **Saving an edited file** keeps everything not edited, rather than rewriting the file.
 - **`display_text=false`** (no XLSX.jl counterpart) writes smaller files; see
-  [Saving and writing](@ref).
-- **Formatting** works on ODF's styles: setters return a style name, getters work on
-  read-only files, and empty cells and whole columns are formatted as LibreOffice formats
-  them. OpenDocumentSpreadsheets also has named cell styles ([`setCellStyle`](@ref), [`addCellStyle!`](@ref)),
-  which XLSX.jl lacks. See [Formatting](guide/formatting.md).
+  [Saving and large files](@ref).
+- **Formatting** works on ODF's styles:
+  - **Styles, not tables.** ODF has no font, fill or border tables: a cell has a style, derived
+    from its current one (named styles stay its parent). Setters return the new style's name for
+    a single cell, and getters report what the cell's style resolves to, also on read-only files.
+  - **Empty cells are formatted**, as in LibreOffice, and whole columns and rows are formatted to
+    the end of the sheet, not only up to the used area.
+  - **What ODF can't hold:** superscript and subscript (`vertAlign`) are refused in cell formats
+    (use rich text); pattern fills are blended into one colour, as LibreOffice does when it opens
+    an xlsx file.
+  - **Number formats** are ODF data styles, in the form LibreOffice writes for the same code, and
+    `getText` shows a value as LibreOffice shows it, which differs from Excel in places (General
+    shows up to 15 significant digits, for example).
+  - **Column widths** in characters are the widths LibreOffice gives an XLSX.jl file's, so a width
+    looks the same in both; `getColumnWidth` reports them as XLSX.jl does.
+  - **Merged cells** are an anchor cell and covered cells, as LibreOffice writes them.
+  - **Named cell styles** ([`setCellStyle`](@ref), [`addCellStyle!`](@ref)) are LibreOffice's,
+    which XLSX.jl lacks.
 - **Inserting and deleting rows and columns** ([`insertRows`](@ref), [`insertColumns`](@ref),
   [`deleteRows`](@ref), [`deleteColumns`](@ref)) take XLSX.jl's arguments and behave as
   LibreOffice does: a deleted reference is stored as `#REF!` without its sheet, 3-D references
@@ -98,6 +110,17 @@ The formatting functions work as in XLSX.jl too, with the differences listed in
   `Manager`), which `getCustomProperties` leaves out. Custom numbers are ODF's floats (a whole one
   is read back as an `Int64`), and custom properties are kept in name order, as LibreOffice keeps
   them. `getCustomProperties` gives a `Vector` of pairs, not an `OrderedDict`.
+- **Hyperlinks** ([`addHyperlink`](@ref) and the rest) take XLSX.jl's arguments. A text cell gets a
+  link round its text and a number or formula a link of the cell itself, as LibreOffice's import
+  gives XLSX.jl's links. LibreOffice has no tooltips, so `tooltip` is an error.
+- **Notes** ([`addComment`](@ref)) are LibreOffice's comments. **Threaded comments** are kept as
+  LibreOffice keeps Excel's: inside a note, which shows the thread's text where threads aren't
+  supported.
+- **Pictures** ([`addImage`](@ref)) are anchored in their first cell and resize with their cells, as
+  LibreOffice's import places XLSX.jl's. LibreOffice has no pictures inside cells, so `inCell=true`
+  is an error.
+- **Data validation** ([`addDataValidation`](@ref)) is LibreOffice's Data ▸ Validity, stored as its
+  import stores XLSX.jl's. A cell has one rule.
 - **Tables** ([`addtable!`](@ref), [`settotals!`](@ref), [`appendtable!`](@ref), [`table`](@ref),
   `readtable(…; table_name)`, `writetable(…; as_table)` and the rest) are LibreOffice's database
   ranges. LibreOffice has no table styles (`style` is an error) and keeps no totals settings: a
@@ -114,8 +137,8 @@ The formatting functions work as in XLSX.jl too, with the differences listed in
   rows in LibreOffice's order (numbers and logicals, text, errors; blanks last), and moves formats,
   validations, notes, links, pictures and hidden rows with them; formulas move as copied and are
   saved without a value. Merged cells (with formats) and array formulas are refused.
-- **LibreOffice's own options** are keywords and fields of the XLSX.jl functions they belong with
-  (D-076): a validation's `caseSensitive` and `sortEntries`, cell protection's `hideAll` and
+- **LibreOffice's own options** are keywords and fields of the XLSX.jl functions they belong with:
+  a validation's `caseSensitive` and `sortEntries`, cell protection's `hideAll` and
   `hidePrint`, a note's `date`, a picture's `alt` and `description`, any paper size
   (`paperWidth`, `paperHeight`), `scaleToPages`, six more print options, a table's
   `has_header_row` and `filterButtons`, a filter's `caseSensitive`, `noDuplicates` and regular
@@ -135,7 +158,7 @@ The formatting functions work as in XLSX.jl too, with the differences listed in
   - **LibreOffice's own options:** this, last and next year, its smiley icon sets, and a bar's
     `minLength` and `maxLength`.
 - **Charts** (`XLSX.Charts`'s functions, in `OpenDocumentSpreadsheets.Charts`) are LibreOffice's
-  chart objects. See [Charts and sparklines](guide/charts.md).
+  chart objects. See [Charts](charts/overview.md).
   - **Look:** new charts take LibreOffice's own.
   - **Data:** values are read from their cells.
   - **References:** a chart's references follow edits and sheet operations as LibreOffice moves

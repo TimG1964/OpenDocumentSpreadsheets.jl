@@ -388,12 +388,12 @@ _link_block(g::CellRange) = row_number(g.start):row_number(g.stop), column_numbe
     addHyperlink(sheet, ref; url=nothing, location=nothing, display=nothing) -> NamedTuple
     addHyperlink(sheet, row, col; kw...) -> NamedTuple
 
-Make a cell, or each cell of a range (`"A1:C3"`), a hyperlink, as LibreOffice's import of
-XLSX.jl's links does (F-058, D-072). Give exactly one of:
+Make a cell, or each cell of a range (`"A1:C3"`), a hyperlink: a link round a text cell's text, or a
+link of the cell itself for a number or formula. Give exactly one of:
 
 - `url`: an address outside the workbook (`"https://julialang.org"`,
   `"mailto:team@example.com"`), or a file relative to the document's folder (`"report.pdf"`)
-- `location`: a place in the workbook: a cell or range (`"Sheet2.A1"` or XLSX.jl's
+- `location`: a place in the workbook: a cell or range (`"Sheet2.A1"` or
   `"Sheet2!A1"`, `"'My Sheet'.C3"`), a sheet, or a defined name
 
 LibreOffice has two kinds of link. An empty cell, or a text cell, gets a URL field around its
@@ -402,7 +402,7 @@ its text. A number, a formula, and every cell of a range after the first get a c
 value is unchanged, and a click on the cell follows it. A cell's previous links are replaced.
 Writing a new value into a cell drops its URL field, as in LibreOffice; its cell link stays.
 
-A URL is kept as LibreOffice keeps it once loaded (F-065): its scheme in lower case, and for
+A URL is kept as LibreOffice keeps it once loaded: its scheme in lower case, and for
 `http`, `https` and `ftp` a `/` after a host with no path and spaces as `%20`
 (`"https://julialang.org"` becomes `"https://julialang.org/"`). A relative file is written as
 the file's format needs it: `../report.pdf` in a zipped `.ods`, whose links are relative to the
@@ -490,7 +490,7 @@ deleteHyperlink(ws::Worksheet, row::Integer, col::Integer) = deleteHyperlink(ws,
     getHyperlink(sheet, row, col) -> Union{Nothing, NamedTuple}
 
 The hyperlink of a cell, as `(sheet, ref, url, location, display, tooltip)`, or `nothing`:
-its first URL field, else its cell link (F-058). `url` is set for a link outside the workbook
+its first URL field, else its cell link. `url` is set for a link outside the workbook
 (a file relative to the document's folder as such), `location` for a place in it, in
 LibreOffice's notation (`Sheet2.A1`). `display` is a URL field's text (`nothing` for a cell
 link), and `tooltip` is always `nothing`: LibreOffice has none.

@@ -24,7 +24,7 @@ A defined name, as [`getDefinedNames`](@ref) and [`getAllDefinedNames`](@ref) re
   constant; or the formula, as a string starting with `=` (in LibreOffice's notation)
 - `absolute::Union{Bool,Vector{Bool}}`: whether the reference is absolute (`\$A\$1`, not
   `A1`); one entry per area for a `NonContiguousRange`; `false` for anything else
-- `hidden::Bool`: always `false` (ODF has no hidden names), kept for XLSX.jl's sake
+- `hidden::Bool`: always `false`: ODF has no hidden names
 
 `addDefinedName(x, dn.name, dn.value; absolute = dn.absolute)` makes the name again. It is a
 snapshot: later edits to the file don't change it.
@@ -88,7 +88,7 @@ _name_char(c::Char) = isletter(c) || isnumeric(c) || c == '_' || c == '?'
 """
     _check_defined_name(name)
 
-Throws unless LibreOffice accepts `name` as a defined name (experiment 028, F-050): it starts with
+Throws unless LibreOffice accepts `name` as a defined name (experiment 028): it starts with
 a letter or `_`, goes on with letters, digits, `_` and `?`, and doesn't read as a reference: not
 a cell in A1 notation (`A1`, `XFD1048576`; `XFE1` and `A1048577` are names), nor in R1C1 notation
 (`R`, `C`, `RC`, `R1C1`, `RC1`, and anything starting with `R` or `C` and a digit).
@@ -364,7 +364,7 @@ formula using the name then refers to the cells at the same offset from its own 
 reference is from `A1`. Its sheet stays the one named. Give a vector, one entry per area, for a
 `NonContiguousRange`.
 
-Names follow LibreOffice's rules (F-050): a letter or `_` first, then letters, digits, `_`
+Names follow LibreOffice's rules: a letter or `_` first, then letters, digits, `_`
 and `?`, and nothing that reads as a cell reference (`A1`, `R1C1`, `R`, `C1x`). They are
 unique without regard to case within a file, or within a sheet; a sheet's name may be the
 same as a file's name, and then hides it on that sheet.
@@ -427,7 +427,7 @@ argument). Names match without regard to case. Every name is checked before any 
 name that isn't there, or is given twice, is an error and nothing is deleted.
 
 Formulas that use a deleted name are left as they are: LibreOffice shows `#NAME?` for them.
-`force` is accepted for XLSX.jl's sake and changes nothing: ODF files have no names the
+`force` is accepted and changes nothing: ODF files have no names the
 application keeps for itself.
 
 See also [`deleteAllDefinedNames`](@ref), [`addDefinedName`](@ref).
@@ -469,7 +469,7 @@ The file's own defined names, or a sheet's, sorted by name (without regard to ca
 are only those that belong to it, not the file's names its formulas can use too. The result
 can be given to [`deleteDefinedName`](@ref) with the same first argument.
 
-`include_system` is accepted for XLSX.jl's sake and changes nothing: ODF keeps print ranges
+`include_system` is accepted and changes nothing: ODF keeps print ranges
 and filters in their own elements, not in names.
 
 See also [`getAllDefinedNames`](@ref), [`DefinedName`](@ref).

@@ -20,9 +20,8 @@
 """
     TableStyleInfo
 
-XLSX.jl's table style: a name and four stripe and column flags. LibreOffice has no table styles
-(F-062), so a [`Table`](@ref)'s `style` is always `nothing`; the type is kept for code written
-for XLSX.jl.
+A table style: a name and four stripe and column flags. LibreOffice has no styles for database
+ranges, so a [`Table`](@ref)'s `style` is always `nothing`.
 """
 struct TableStyleInfo
     name::Union{String,Nothing}
@@ -36,7 +35,7 @@ end
     Table
 
 A table: a named range of a sheet whose first row holds the column labels (LibreOffice's database
-range, Data ▸ Define Range; an Excel table in XLSX.jl). Obtain one with [`table`](@ref) or
+range, Data ▸ Define Range). Obtain one with [`table`](@ref) or
 [`tables`](@ref), make one with [`addtable!`](@ref). A `Table` is a Tables.jl table of its data
 rows (`DataFrame(t)`), as [`gettable`](@ref) reads them.
 
@@ -52,7 +51,7 @@ rows (`DataFrame(t)`), as [`gettable`](@ref) reads them.
 - `has_totals_row::Bool`: whether the last row holds the totals (*Contains totals row*)
 - `style`: always `nothing` (LibreOffice has no table styles)
 - `sheet`: the `Worksheet`
-- `filterButtons::Bool`: whether the header shows filter buttons (LibreOffice's, D-076)
+- `filterButtons::Bool`: whether the header shows filter buttons (LibreOffice's)
 
 A `Table` is a snapshot: the functions that change a table return a new one.
 """
@@ -393,9 +392,9 @@ end
               filterButtons=true) -> Table
 
 Make the cells `ref` (`"A1:C10"`) a table, as LibreOffice's Data ▸ Define Range makes a database
-range, stored as LibreOffice's import stores XLSX.jl's tables (F-062, D-077). The cells are not
+range. The cells are not
 changed: the first row must already hold the column labels, each given and none repeated
-(ignoring case), as in XLSX.jl.
+(ignoring case).
 
 `name` is LibreOffice's: formed as a defined name's, and unique among the workbook's tables
 ignoring case (it may be a defined name's too, as LibreOffice allows); `""` gives the first free
@@ -403,9 +402,9 @@ ignoring case (it may be a defined name's too, as LibreOffice allows); `""` give
 its cells are left as they are. LibreOffice has no table styles: `style` other than `nothing` or
 `"None"` is an error.
 
-LibreOffice's own options (D-076): `has_header_row=false` makes a table whose first row is data
+LibreOffice's own options: `has_header_row=false` makes a table whose first row is data
 (its columns are then named `"Column A"`, …), and `filterButtons=false` hides the header's filter
-buttons, which a table shows by default, as LibreOffice's import gives Excel's.
+buttons, which a table shows by default.
 
 As in LibreOffice, tables may overlap each other and merged cells, and a table may be its header
 row alone. The file must be writable.
@@ -439,8 +438,8 @@ end
     deletetable!(t::Table)
     deletetable!(sheet, name) / deletetable!(sheet, id::Integer)
 
-Remove a table (LibreOffice's database range), leaving its cells as they are, as Excel's *Convert to
-Range* and LibreOffice's Define Range ▸ Delete do. Totals formulas already refer to the cells
+Remove a table (LibreOffice's database range), leaving its cells as they are, as LibreOffice's
+Define Range ▸ Delete does. Totals formulas already refer to the cells
 (LibreOffice stores no table references), so they are unchanged. The file must be writable.
 """
 deletetable!(t::Table) = _deletetable!(t)
@@ -573,7 +572,7 @@ end
     settotals!(t::Table; kwargs...) -> Table
     settotals!(sheet, name | id, settings::Pair...) / settotals!(sheet, name | id; kwargs...)
 
-Set a table's totals, as XLSX.jl does: each setting is `"column" => value` (or `column = value`),
+Set a table's totals: each setting is `"column" => value` (or `column = value`),
 where `value` is a totals function (`:sum`, `:average`, `:count`, `:countnums`, `:max`, `:min`,
 `:stddev`, `:var`), `(:custom, formula)`, a text label, or `:none` to clear the column's cell.
 Columns not given are left as they are. A table without a totals row gets one: the row after its
@@ -581,7 +580,7 @@ last, which must be empty, and the table grows by it (LibreOffice's *Contains to
 `calcext:contains-footer`).
 
 A function is written as LibreOffice's import writes it, `SUBTOTAL(109,…)` over the column's data
-rows as an absolute range (LibreOffice saves structured references so, F-070). A custom formula is
+rows as an absolute range (LibreOffice saves structured references so). A custom formula is
 in LibreOffice's notation; structured references to the table in it (`Sales[Revenue]`,
 `Sales[[#All],[Revenue]]`) are written as ranges too. The file must be writable.
 """
@@ -698,7 +697,7 @@ end
     appendtable!(t::Table, data; check_empty=true) -> Table
     appendtable!(sheet, name | id, data; check_empty=true) -> Table
 
-Add rows to the end of a table, as XLSX.jl does: `data` is a Tables.jl table (its columns matched
+Add rows to the end of a table: `data` is a Tables.jl table (its columns matched
 by name), a matrix or a vector of rows (matched by position). The table grows over them. A totals
 row moves down to stay last: its functions are written again over the new data rows, its labels
 kept, and its custom formulas' references to the old data rows made to reach the new ones. The
@@ -810,7 +809,7 @@ end
     gettable(t::Table; infer_eltypes=true, normalizenames=false, missing_strings=nothing) -> DataTable
 
 A table's data rows (without its header and totals rows) as a `DataTable`, labelled by its
-columns, as XLSX.jl reads an Excel table: its range is the table's, so empty rows inside it are
+columns: its range is the table's, so empty rows inside it are
 data. `normalizenames`, `missing_strings` and `infer_eltypes` are as for
 [`gettable(sheet)`](@ref gettable).
 """

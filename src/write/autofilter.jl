@@ -516,7 +516,7 @@ end
     setAutoFilter(xf, "Sheet1.A1:D20"; kw...)
 
 Add filter buttons to the first row of `rng`, as LibreOffice's Data ▸ AutoFilter does, stored as
-LibreOffice stores a sheet's AutoFilter: the sheet's anonymous database range (F-062, D-078). `rng`
+LibreOffice stores a sheet's AutoFilter: the sheet's anonymous database range. `rng`
 is a range of cells (`"A1:D20"`), a defined name, or `:` for the sheet's used range. Its first row
 is the header row.
 
@@ -544,7 +544,7 @@ it meets the criteria of every filtered column. A criterion is one of:
 - a regular expression, `r"^a.*z\$"` or `"!=" => r"…"` (LibreOffice's own; it must match the whole
   cell's text).
 
-Criteria are applied as LibreOffice's Refresh Range applies them (F-071), which differs from Excel:
+Criteria are applied as LibreOffice's Refresh Range applies them:
 - Text that LibreOffice reads as a number (`"10"`, `"1,000"`, `"(1)"`, `"2026-11-23 15:00"`) is compared
   with numbers as that number, and with text as text; other text is compared with the text a number
   shows (`"50%"`, `"TRUE"`). A number is compared only with numbers.
@@ -557,7 +557,7 @@ Criteria are applied as LibreOffice's Refresh Range applies them (F-071), which 
 LibreOffice has no above- or below-average or relative-date filters (`:aboveAverage`, `:today`,
 `:Q1`, …): they are errors.
 
-LibreOffice's own options (D-076): `caseSensitive=true` compares text in its case, and
+LibreOffice's own options: `caseSensitive=true` compares text in its case, and
 `noDuplicates=true` hides rows that show the same as a row above them (always comparing case), as
 LibreOffice's *No duplications*. `noDuplicates` applies to the criteria given, so it needs `filters`,
 and LibreOffice applies it only with at least one criterion.
@@ -568,7 +568,7 @@ and LibreOffice applies it only with at least one criterion.
 
 `sort` gives a column, `column => :ascending` or `column => :descending`, or a vector of these, the
 first sorting first. The rows below the header are put in that order, as LibreOffice's Data ▸ Sort
-puts them (F-072, D-079), and the sort is stored with the range:
+puts them, and the sort is stored with the range:
 - ascending: numbers and dates, with `FALSE` and `TRUE` as 0 and 1; then text, in LibreOffice's
   alphabetical order (ignoring case, and accents but where they alone differ); then errors. Descending
   reverses this. Empty cells are last either way, and rows that compare equal keep their order.
@@ -580,7 +580,7 @@ puts them (F-072, D-079), and the sort is stored with the range:
 - a range with merged cells is refused (LibreOffice sorts it only without formats), and so is one with
   an array formula.
 
-LibreOffice's own options (D-076): `caseSensitive=true` (shared with the criteria) puts lower case
+LibreOffice's own options: `caseSensitive=true` (shared with the criteria) puts lower case
 before upper case where text is otherwise equal; `naturalSort=true` compares the numbers within text
 by value (`"a2"` before `"a10"`); `includeFormats=false` leaves the formats and validations where they
 are and moves only the values, notes, links and pictures (which allows merged cells).
@@ -696,7 +696,7 @@ end
     removeAutoFilter(sheet) -> Bool
 
 Remove the sheet's AutoFilter and its criteria, as turning off LibreOffice's Data ▸ AutoFilter
-does (F-071): every row below the header is shown, those hidden by hand too, and the sheet keeps
+does: every row below the header is shown, those hidden by hand too, and the sheet keeps
 its anonymous database range without filter buttons or criteria. Returns `false` if the sheet had
 no AutoFilter.
 

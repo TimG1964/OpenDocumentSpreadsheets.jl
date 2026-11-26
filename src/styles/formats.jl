@@ -30,7 +30,7 @@ end
 `count` rows from `row` (`table:table-row`): their row style name (`""` for none), default
 cell style id (-1 for none; LibreOffice misreads these and never writes them, F-035, so
 OpenDocumentSpreadsheets only reads them), `table:visibility`, and the number of columns their cells cover.
-A column's default cell style reaches only those columns (F-035).
+A column's default cell style reaches only those columns.
 """
 struct RowFormat
     row::Int32
@@ -60,7 +60,7 @@ _isblank(r::RowFormat) = isempty(r.style) && r.default < 0 && r.visibility == _V
 
 A group of rows or columns: the lines `first:last`, its nesting depth (1 for a group no other
 holds; LibreOffice allows 7), and whether it is expanded (`table:display`, false when collapsed).
-Groups of a sheet nest: two either don't meet, or one holds the other (F-052).
+Groups of a sheet nest: two either don't meet, or one holds the other.
 """
 struct LineGroup
     first::Int
@@ -77,7 +77,7 @@ The formats of a sheet that the value store leaves out:
 - `cells`: the cells without a value or formula that have a style of their own (`style >= 0`),
   or are covered or span a merge (`CK_EMPTY` data; `style == -1` when they have no style)
 - `cols`, `rows`: the column and row runs, from column / row 1, as the sheet defines them
-- what changed since the sheet was read, for saving by patching (D-023): whether the columns
+- what changed since the sheet was read, for saving by patching: whether the columns
   changed (`cols_touched`), the rows whose attributes changed (`rows_touched`), and the
   blocks of cells restyled (`rects`, rows × columns)
 """

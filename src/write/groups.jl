@@ -150,7 +150,7 @@ Group the rows `rows` (given as for [`setRowHidden`](@ref); each run of adjacent
 group), as LibreOffice's *Data → Group and Outline → Group* does:
 - the group goes inside the deepest group that holds it, and around the groups it holds, which
   go one level deeper; grouping a group's rows again makes a group within it
-- groups next to each other stay separate groups, as in LibreOffice (Excel joins them)
+- groups next to each other stay separate groups, as in LibreOffice
 - a range that crosses a group (overlaps it without holding it), or that would nest groups more
   than 7 deep, is an error: LibreOffice refuses both
 

@@ -4,7 +4,7 @@ CurrentModule = OpenDocumentSpreadsheets
 
 # API reference: sheets and settings
 
-Row and column inserts and deletes, sheet operations, names, visibility, panes, protection, printing and document properties (phase 5).
+Row and column inserts and deletes, sheet operations, names, visibility, panes, protection, printing and document properties.
 
 ## Rows and columns
 

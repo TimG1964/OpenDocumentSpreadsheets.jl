@@ -18,7 +18,7 @@
 
 The Julia types a cell value can have: `String`, `Missing`, `Float64`, `Int64`, `Bool`,
 `Dates.Date`, `Dates.Time`, `Dates.DateTime` and `Dates.CompoundPeriod` (a duration of 24
-hours or more, or a negative one, which ODF time cells can hold; D-017). `Int64` rather
+hours or more, or a negative one, which ODF time cells can hold). `Int64` rather
 than `Int`, so that the set does not depend on the host word size.
 """
 const CellConcreteType = Union{String, Missing, Float64, Int64, Bool, Dates.Date, Dates.Time, Dates.DateTime, Dates.CompoundPeriod}

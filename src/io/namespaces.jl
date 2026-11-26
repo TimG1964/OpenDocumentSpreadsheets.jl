@@ -151,7 +151,7 @@ end
     _ns_canonical(xml::String) -> String
 
 `xml` itself when its prefixes are the usual ones ([`_ns_usual`](@ref)); otherwise the same
-document with every name in a known namespace written with its usual prefix (D-067).
+document with every name in a known namespace written with its usual prefix.
 """
 _ns_canonical(xml::String) = _ns_usual(xml) ? xml : _ns_rewrite(xml)
 

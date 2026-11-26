@@ -4,8 +4,7 @@ CurrentModule = OpenDocumentSpreadsheets.Charts
 
 # API reference: charts
 
-Charts are LibreOffice's embedded chart objects (phase 8). As in XLSX.jl, the chart functions are
-in a submodule:
+Charts are LibreOffice's embedded chart objects. The chart functions are in a submodule:
 
 ```julia
 using OpenDocumentSpreadsheets.Charts
@@ -36,9 +35,8 @@ deleteChart
 
 ## Histograms and chart sheets
 
-Of XLSX.jl's chartex kinds LibreOffice has the histogram, which `addChartEx` makes as LibreOffice's
-own; the other six are errors. A chart sheet is LibreOffice's form of one: an ordinary sheet holding
-one chart anchored to the page.
+`addChartEx` makes LibreOffice's histogram; the other "chartex" kinds, which LibreOffice lacks, are
+errors. A chart sheet is an ordinary sheet holding one chart anchored to the page.
 
 ```@docs
 addChartEx
@@ -53,12 +51,11 @@ ChartExBinning
 
 ## Changing formatting
 
-XLSX.jl's setters, on LibreOffice's chart styles: for charts added here and for a zipped file's own
-charts. Each returns the chart, and `:inherit` removes a setting. What LibreOffice can't store is an
-error (D-084): compound lines, joins and miter limits; a marker's own fill or border; bubble-size labels;
+The setters change LibreOffice's chart styles, for charts added here and for a file's own charts.
+Each returns the chart, and `:inherit` removes a setting. What LibreOffice can't store is an error: compound lines, joins and miter limits; a marker's own fill or border; bubble-size labels;
 text capitals, kerning sizes and outlines; a minor unit that doesn't divide the major one. Theme colours
-are resolved against the document's theme, as LibreOffice's import resolves them: LibreOffice keeps no
-theme reference in a chart. A line, XY or radar series has one colour, its line's and its symbols'.
+are resolved against the document's theme: LibreOffice keeps colours in a chart, not links to the
+theme. A line, XY or radar series has one colour, its line's and its symbols'.
 
 ```@docs
 setSeriesFill
@@ -77,8 +74,7 @@ SchemeColor
 
 ### LibreOffice's own
 
-Trendlines and error bars (which XLSX.jl reads but can't set), explosion and axis label arrangement
-(D-076). `addChart`'s own options (stock charts, interpolation, empty and hidden cells, the data table,
+Trendlines and error bars, explosion and axis label arrangement. `addChart`'s own options (stock charts, interpolation, empty and hidden cells, the data table,
 the chart wizard's `data` and `seriesIn`) are under [`addChart`](@ref).
 
 ```@docs
@@ -111,8 +107,8 @@ iserror(::ChartRef)
 
 ## Reading formatting
 
-A chart's formatting is read from LibreOffice's styles, in XLSX.jl's DrawingML-shaped types. Fields ODF
-has no value for are `nothing`.
+A chart's formatting is read from LibreOffice's chart styles into the types the setters take. Fields
+LibreOffice has no value for are `nothing`.
 
 ### Titles, legend and chart
 
@@ -208,9 +204,9 @@ FormatSite
 
 ## Sparklines
 
-Sparklines are LibreOffice's sparkline groups. As in XLSX.jl, the functions are bound at the top level
+Sparklines are LibreOffice's sparkline groups. The functions are in the main module
 (`addSparklines`, not `Charts.addSparklines`). A sparkline follows its cell through inserts and deletes,
-and its data moves as a chart's does. LibreOffice itself leaves both where they were.
+and its data moves as a chart's does.
 
 ```@docs
 addSparklines

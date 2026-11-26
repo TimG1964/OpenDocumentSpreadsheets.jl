@@ -23,7 +23,7 @@ The operations to replay (`xf.ops`) on the text of `src` (content.xml or the fla
 - `hits`: where in `src` the start tags with registered attributes are, found by one regex pass
   (sorted), so that any piece of `src` is copied in one write when it holds none
 - `cf`: the rewritten conditional-format conditions found in the document ((condition body, base) →
-  (new body, new base)), which the `style:map`s that duplicate them take (D-050)
+  (new body, new base)), which the `style:map`s that duplicate them take
 """
 struct RefRewriter
     ops::Vector{Any}
@@ -346,7 +346,7 @@ end
     cf_rewrites(rw, content) -> Dict
 
 The conditional formats of a document (`calcext:conditional-format` and their conditions), with their
-conditions and bases replayed: for the `style:map`s that duplicate them (D-050).
+conditions and bases replayed: for the `style:map`s that duplicate them.
 """
 function cf_rewrites!(rw::RefRewriter, s::String)
     i = 1

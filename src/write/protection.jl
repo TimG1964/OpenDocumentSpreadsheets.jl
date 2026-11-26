@@ -88,15 +88,14 @@ changed in LibreOffice. Every cell is locked unless its format says otherwise
 ([`setCellProtection`](@ref)).
 
 `password`, if given, must be typed to unprotect the sheet. It is stored as LibreOffice stores it:
-SHA-1 of the password (any text), in Base64 (F-054). An empty password is no password, as in
+SHA-1 of the password (any text), in Base64. An empty password is no password, as in
 LibreOffice. Protection guards against mistakes, not against anyone determined to change the sheet.
 
-The other keywords are XLSX.jl's permissions, each a `Bool`. LibreOffice has these:
+The other keywords are permissions, each a `Bool`. LibreOffice has these:
 `selectLockedCells` and `selectUnlockedCells` (default `true`), `insertColumns`, `insertRows`,
 `deleteColumns`, `deleteRows`, `autoFilter` and `pivotTables` (default `false`). It has no
 counterpart for `formatCells`, `formatColumns`, `formatRows`, `insertHyperlinks`, `sort`,
-`objects` and `scenarios`: they can only be `false` (an error otherwise; LibreOffice's xlsx import
-drops them).
+`objects` and `scenarios`: they can only be `false` (an error otherwise).
 
 Protecting a protected sheet replaces its settings. OpenDocumentSpreadsheets reads and edits protected sheets as
 any other.
@@ -312,12 +311,12 @@ end
     setCellProtection(sheet, row, col; …) / setCellProtection(xf, "Sheet1.B2:D10"; …)
 
 Set whether cells are locked, and whether their formulas are hidden, on a protected sheet, as the
-*Cell Protection* tab of LibreOffice's *Format Cells* does (`style:cell-protect`, F-054). Every
+*Cell Protection* tab of LibreOffice's *Format Cells* does (`style:cell-protect`). Every
 cell is locked unless its format says otherwise. Only the keywords given change, and the cells'
 other formatting is kept. Address forms as [`setFont`](@ref); as with the other format setters,
-whole columns and rows are formatted as such (D-033), not only up to the used range.
+whole columns and rows are formatted as such, not only up to the used range.
 
-Two options are LibreOffice's own, with no XLSX.jl counterpart (D-076): `hideAll` (LibreOffice's
+Two options are LibreOffice's own: `hideAll` (LibreOffice's
 *Hide all*: on a protected sheet the cell shows nothing, and is locked; while it is set, `locked`
 and `hidden` change nothing) and `hidePrint` (*Hide when printing*, `style:print-content`).
 """
@@ -330,7 +329,7 @@ setCellProtection(x::Union{Worksheet,ODSFile}, ref...; kw...) =
 
 `(locked, hidden, hideAll, hidePrint)` for one cell: locked and not hidden unless its format says
 otherwise. LibreOffice's *Hide all* (`hideAll`) also reads as locked and hidden; `hidePrint` is
-LibreOffice's *Hide when printing* (D-076). Works on read-only files.
+LibreOffice's *Hide when printing*. Works on read-only files.
 """
 function getCellProtection(x::Union{Worksheet,ODSFile}, ref...)
     ws, r, c = format_cell(x, ref...)

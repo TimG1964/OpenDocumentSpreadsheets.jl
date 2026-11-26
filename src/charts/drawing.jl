@@ -7,7 +7,7 @@
     DrawingColor
 
 A colour as read: `kind` is `:srgb`, or `:scheme` for a colour that follows the document's theme
-(LibreOffice's `loext:theme-type`, F-082); `val` is `"RRGGBB"` or the theme slot (`"accent1"`);
+(LibreOffice's `loext:theme-type`); `val` is `"RRGGBB"` or the theme slot (`"accent1"`);
 `transforms` are a theme colour's (`:lumMod => 60000`…, thousandths of a percent); `rgb` the colour as
 drawn, `"RRGGBB"`; `alpha` its opacity, 0 to 1.
 """
@@ -47,7 +47,7 @@ DrawingFill(kind::Symbol; fgcolor = nothing, bgcolor = nothing, preset = nothing
 
 A line: `fill` its colour (`kind === :none` for no line), `width` in points, `dash` (`"solid"` or the
 name of LibreOffice's dash), `cap` (`"rnd"`, `"sq"`, `"flat"`), `join` (`"round"`, `"bevel"`,
-`"miter"`). ODF has no compound lines or miter limits (F-081): `compound` and `miter_limit` are
+`"miter"`). ODF has no compound lines or miter limits: `compound` and `miter_limit` are
 `nothing`.
 """
 struct DrawingLine
@@ -82,7 +82,7 @@ end
     DrawingRunProps
 
 Character properties, from `style:text-properties`: `lang` (`"de-DE"`), `size` (points), `bold`,
-`italic`, `under` and `strike` (XLSX.jl's names: `"sng"`, `"dbl"`, `"wavy"`…, `"sngStrike"`…), `caps`
+`italic`, `under` and `strike` (DrawingML's names: `"sng"`, `"dbl"`, `"wavy"`…, `"sngStrike"`…), `caps`
 (`"small"`, `"all"`), `baseline` (a fraction of the size), `spacing` (points), `fill` (the colour),
 `line` (a text outline; LibreOffice's has no colour), and the fonts `latin`, `ea` and `cs`. ODF has no
 kerning size: `kern` is `nothing`.

@@ -74,7 +74,7 @@ new_styles_xml(version, named::AbstractString = "", ns::AbstractString = "", fac
     used_styles(xf) -> Union{UsedStyles, Nothing}
 
 The cell, column and row styles the loaded sheets refer to, so that only the added styles in
-use are written (D-046). `nothing` when OpenDocumentSpreadsheets added none: then nothing is scanned. A
+use are written. `nothing` when OpenDocumentSpreadsheets added none: then nothing is scanned. A
 sheet that was never loaded can't refer to an added style; its text is copied as it is.
 """
 function used_styles(xf::ODSFile)
@@ -267,13 +267,13 @@ Write `xf` to `dest`, a file path or an `IO`.
 
 - The format follows the extension of a path: `.ods`, `.ots` (a template) or `.fods` (flat
   XML). Writing to an `IO` keeps the format the file was read in (`.ods` for a new one).
-- A file that was read is written by patching it (D-023): what OpenDocumentSpreadsheets does not edit is
+- A file that was read is written by patching it: what OpenDocumentSpreadsheets does not edit is
   kept exactly as it was. It can be written as a template or a document, but not converted
   between zipped and flat XML yet.
-- A new file is written in ODF 1.4, or 1.3 with `version="1.3"` (D-006).
+- A new file is written in ODF 1.4, or 1.3 with `version="1.3"`.
 - `display_text=false` leaves out the display text (`text:p`) of the number, date, time and
   boolean cells that OpenDocumentSpreadsheets writes; readers recompute it from the value. Files are then
-  smaller (about half, for numeric data) and faster to write (D-029).
+  smaller (about half, for numeric data) and faster to write.
 - An existing file at `dest` is only replaced with `overwrite=true`.
 
 A path becomes the file's new `source` (for [`saveods`](@ref)). Returns the absolute path,

@@ -64,7 +64,7 @@ Zipped (`.ods`/`.ots`) and flat (`.fods`) documents are both detected from their
 not from the file extension.
 
 The media type is taken from the `mimetype` entry. LibreOffice also accepts files without
-one (F-002), so the media type in the manifest's root entry is used as a fallback.
+one, so the media type in the manifest's root entry is used as a fallback.
 Throws `ArgumentError` for anything that is not an ODF spreadsheet or template.
 """
 open_container(path::AbstractString) = open_container(read(path))
@@ -175,7 +175,7 @@ A flat document keeps every part in one `office:document`, so the whole document
 returned for any part. Readers look for the elements they need (for example `office:body`
 or `office:styles`) inside it.
 
-The text has the usual namespace prefixes ([`_ns_canonical`](@ref), D-067).
+The text has the usual namespace prefixes ([`_ns_canonical`](@ref)).
 """
 function read_xml(c::ODFContainer, part::Symbol)
     name = part === :content  ? "content.xml"  :
@@ -190,7 +190,7 @@ end
 """
     read_part_text(c::ODFContainer, name) -> String
 
-A zipped XML part's text, with the usual namespace prefixes (D-067).
+A zipped XML part's text, with the usual namespace prefixes.
 """
 read_part_text(c::ODFContainer, name::AbstractString) = _ns_canonical(readentry_string(c.zip, name))
 

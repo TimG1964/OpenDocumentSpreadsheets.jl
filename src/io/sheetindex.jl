@@ -75,8 +75,8 @@ end
 
 An incremental walk over the children of `office:spreadsheet`: each `next_body_item!` gives
 the next sheet, named-expressions or calculation-settings element, skipping each element
-whole. Reading the first sheet thus never scans the ones after it (phase 3), and an item is
-skipped only when the next one is asked for, so that finding a sheet doesn't scan it (D-047).
+whole. Reading the first sheet thus never scans the ones after it, and an item is
+skipped only when the next one is asked for, so that finding a sheet doesn't scan it.
 """
 mutable struct BodyScanner
     c::XML.Cursor{String}

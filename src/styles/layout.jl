@@ -81,9 +81,8 @@ end
 Set the width of the columns `ref` names (a cell, range, column range, defined name, or rows
 and columns as integers, ranges, vectors or `:`; only the columns are used).
 
-`width` is in XLSX.jl's character units by default: it is stored as LibreOffice stores the
-width of a file XLSX.jl wrote with the same `width` (0.2152 cm × (width + 0.7109375),
-D-034). With `unit = :cm`, `:mm`, `:in` or `:pt`, `width` is a length. A width may be 0.
+`width` is in characters by default, stored as LibreOffice stores a width given in characters by
+other spreadsheet programs: 0.2152 cm × (width + 0.7109375). With `unit = :cm`, `:mm`, `:in` or `:pt`, `width` is a length. A width may be 0.
 """
 function setColumnWidth(x::Union{Worksheet,ODSFile}, ref...; width::Union{Nothing,Real} = nothing, unit::Symbol = :chars)
     width === nothing && return 0
@@ -103,7 +102,7 @@ setColumnWidth(ws::Worksheet, col::Union{Integer,AbstractVector{<:Integer}}; kw.
     getColumnWidth(sheet, row, col; unit=:chars)
 
 The width of the column of one cell, or `nothing` if its column style gives none. In
-characters by default, as XLSX.jl's getter gives them (the width set, plus 0.7109375);
+characters by default (the width set, plus 0.7109375);
 with `unit`, as a length. Works on read-only files.
 """
 function getColumnWidth(x::Union{Worksheet,ODSFile}, ref...; unit::Symbol = :chars)
@@ -140,7 +139,7 @@ setRowHeight(ws::Worksheet, row::Union{Integer,AbstractVector{<:Integer}}; kw...
     getRowHeight(sheet, ref) -> Union{Nothing, Float64}
     getRowHeight(sheet, row, col)
 
-The height of the row of one cell, as XLSX.jl's getter gives it: in points, plus 0.2109375.
+The height of the row of one cell, in points plus 0.2109375 (the height set, plus padding).
 `nothing` if its row style gives no height, -1 if the sheet has no such row. Works on
 read-only files.
 """
@@ -183,7 +182,7 @@ const LO_AUTOFIT_PADDING_PT = 7.9
 
 Set the width of columns to fit the text their cells show ([`getText`](@ref OpenDocumentSpreadsheets.getText)),
 as LibreOffice's optimal column width does: the widest text, in each cell's font, size and
-boldness, plus 7.9 pt (F-034). `cols` is `:` (every column with something in it), a column
+boldness, plus 7.9 pt. `cols` is `:` (every column with something in it), a column
 number, a range or vector of numbers, or letters such as `"B"`, `"B:D"` or `"A,C:E"`.
 
 Widths are in characters, as [`setColumnWidth`](@ref) takes them, kept between `min_width`

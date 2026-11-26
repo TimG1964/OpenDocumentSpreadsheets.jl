@@ -459,14 +459,14 @@ end
     addComment(sheet, ref, text; author="", width=144, height=79, visible=false, date=now) -> NamedTuple
     addComment(sheet, row, col, text; kw...) -> NamedTuple
 
-Attach a note (LibreOffice's comment, an annotation) to one cell, replacing any it has (F-059,
-D-073). `text` may hold line breaks (`\\n`). `author` is shown with the note; `width` and
+Attach a note (LibreOffice's comment, an annotation) to one cell, replacing any it has.
+`text` may hold line breaks (`\\n`). `author` is shown with the note; `width` and
 `height` are its size in pixels (LibreOffice sizes a note's width from its text, and takes the
 height as a minimum); `visible=true` shows it always, not only when the mouse is over the cell.
 A cell with a threaded comment is refused.
 
-`date` (a `Date` or `DateTime`; the time of the call, in UTC, if not given) is LibreOffice's own
-(D-076): it shows a note's date with its author.
+`date` (a `Date` or `DateTime`; the time of the call, in UTC, if not given) is LibreOffice's own:
+it shows a note's date with its author.
 
 Returns `(sheet, ref, author, text, date)`. The file must be writable.
 """
@@ -490,8 +490,8 @@ addComment(ws::Worksheet, row::Integer, col::Integer, text::AbstractString; kw..
     getComment(sheet, row, col) -> Union{Nothing, NamedTuple}
 
 The note of a cell, as `(sheet, ref, author, text, date)`, or `nothing`. `date` is LibreOffice's
-(a `DateTime`, D-076), `nothing` for a note without one. For a cell with a threaded
-comment, the note kept with it (Excel's text for versions without threads); read the thread with
+(a `DateTime`), `nothing` for a note without one. For a cell with a threaded
+comment, the note kept with it (the text shown by versions without threads); read the thread with
 [`getThreadedComment`](@ref).
 """
 function getComment(ws::Worksheet, ref::Union{AbstractString,CellRef})
@@ -545,9 +545,8 @@ _copy_note(n::NoteData) = NoteData(n.author, n.text, n.date, n.visible, n.width,
     addThreadedComment(sheet, ref, text; author, date=now(UTC)) -> NamedTuple
     addThreadedComment(sheet, row, col, text; kw...) -> NamedTuple
 
-Start a threaded comment on one cell, as LibreOffice keeps Excel's (F-059, D-073): a
-`loext:threaded-comment` inside the cell's note, whose text is the one Excel shows in versions
-without threads. `author` is the name shown (one of the workbook's people, shared by every
+Start a threaded comment on one cell: a `loext:threaded-comment` inside the cell's note, whose
+text is the one shown by versions without threads. `author` is the name shown (one of the workbook's people, shared by every
 comment with that name); `date` is when it was written, in UTC. A cell with a note or a thread
 is refused: add to a thread with [`addThreadedReply`](@ref).
 

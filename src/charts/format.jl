@@ -170,7 +170,7 @@ getChartTitleTextProps(c::AbstractChart) = (doc = _doc(c); _txpr(doc, _title_nod
     getChartTitleRange(c) -> Nothing
     getAutoTitleDeleted(c) -> Nothing
 
-Always `nothing`: LibreOffice's titles can't follow a cell, and it has no automatic titles (F-081).
+Always `nothing`: LibreOffice's titles can't follow a cell, and it has no automatic titles.
 """
 getChartTitleRef(::AbstractChart) = nothing
 getChartTitleRange(::AbstractChart) = nothing
@@ -191,7 +191,7 @@ const _LEGEND_POS = Dict("bottom" => :b, "top" => :t, "start" => :l, "end" => :r
 
 `:b`, `:t`, `:l`, `:r` or `:tr`, and the other corners `:tl`, `:bl`, `:br`; `nothing` without a legend.
 LibreOffice keeps a corner as a custom position (`style:legend-expansion="custom"` with `svg:x` and
-`svg:y`, as its import writes `:tr`, F-081): the corner is the quarter of the chart the legend is in.
+`svg:y`, as its import writes `:tr`): the corner is the quarter of the chart the legend is in.
 """
 getLegendPos(c::AbstractChart) = _maybe(_legend_node(_doc(c))) do n
     if _get(n, "style:legend-expansion") == "custom"
@@ -225,7 +225,7 @@ end
 """
     getLegendOverlay(c) -> Union{Nothing,Bool}
 
-Whether the legend may overlap the plot area (LibreOffice's `loext:overlay`, F-082).
+Whether the legend may overlap the plot area (LibreOffice's `loext:overlay`).
 """
 getLegendOverlay(c::AbstractChart) = _maybe(n -> _get(n, "loext:overlay") == "true", _legend_node(_doc(c)))
 
@@ -481,7 +481,7 @@ const _REG = Dict("linear" => :linear, "logarithmic" => :log, "exponential" => :
     getSeriesTrendlines(c, i) -> Vector{ChartTrendline}
     getTrendlineShapeProps(c, t) / getTrendlineLabelText(c, t) / getTrendlineLabelTextProps(c, t) / getTrendlineLabelShapeProps(c, t)
 
-Series `i`'s trendlines (`chart:regression-curve`, F-082), their line, and their equation's text and
+Series `i`'s trendlines (`chart:regression-curve`), their line, and their equation's text and
 formatting.
 """
 function getSeriesTrendlines(c::Chart, i::Integer)
@@ -516,7 +516,7 @@ const _ERRCAT = Dict("constant" => "fixedVal", "percentage" => "percentage", "st
     getErrorBarsShapeProps(c, e) -> Union{Nothing,DrawingShapeProps}
     getErrorBarsCustomRefs(c, e) -> (plus, minus)
 
-Series `i`'s error bars (`chart:error-indicator`, F-082), their line, and the cells of error bars from
+Series `i`'s error bars (`chart:error-indicator`), their line, and the cells of error bars from
 cell ranges (as [`ChartRef`](@ref)s).
 """
 function getSeriesErrorBars(c::Chart, i::Integer)
@@ -550,7 +550,7 @@ end
     getGroupDropLines(c, g) / getGroupHiLowLines(c, g) / getGroupSeriesLines(c, g) -> Nothing
 
 Always `nothing`: LibreOffice has no drop lines or series lines, and a stock chart's high-low lines are
-its series' (F-080).
+its series'.
 """
 getGroupDropLines(::Chart, ::ChartGroup) = nothing
 getGroupHiLowLines(::Chart, ::ChartGroup) = nothing

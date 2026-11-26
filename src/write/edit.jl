@@ -107,14 +107,13 @@ Write `value` into a cell, or into every cell of a range. The file must be writa
   one-row or one-column range.
 - `ref` takes the forms of [`getdata`](@ref): `"B2"`, `"B2:D4"`, `"Sheet1.B2"`, `"Sheet1!B2"`,
   integers and ranges, or a defined name that refers to cells on the sheet.
-- With `:` for the rows or columns, as in XLSX.jl: `ws[3, :] = [1, 2, 3]` writes a vector
+- With `:` for the rows or columns: `ws[3, :] = [1, 2, 3]` writes a vector
   along row 3 from column A, and `ws[:, 2] = v` down column B from row 1. Any other value
   fills the cells addressed, where `:` stands for the sheet's used columns or rows
   (`ws[3, :] = 0`, `ws[:, 2:3] = missing`, `ws[:] = 1`).
 
 A cell keeps its style when that style's format fits the new value. Otherwise dates,
-date-times, times and booleans get ISO formats, and numbers and text the `Default` style
-(D-024, D-027).
+date-times, times and booleans get ISO formats, and numbers and text the `Default` style.
 """
 function setdata!(ws::Worksheet, ref::CellRef, value)
     _require_writable(ws, "write to a cell")
@@ -265,11 +264,11 @@ Base.setindex!(ws::Worksheet, v, ::Colon) = setdata!(ws, :, v)
 
 Write a formula into a cell, or into every cell of a range (the same formula in each).
 `val` is in LibreOffice's notation, as [`getFormula`](@ref) gives it:
-`"=SUM(B1:B3,'My sheet'.A1)"`. It is stored as OpenFormula (`of:=SUM([.B1:.B3];['My sheet'.A1])`)
-(D-025). With `raw=true`, `val` is stored as given, and must be a stored formula such as
+`"=SUM(B1:B3,'My sheet'.A1)"`. It is stored as OpenFormula (`of:=SUM([.B1:.B3];['My sheet'.A1])`).
+With `raw=true`, `val` is stored as given, and must be a stored formula such as
 `"of:=[.A1]*2"`.
 
-The cell's value is left empty: LibreOffice computes it when it opens the file (F-028).
+The cell's value is left empty: LibreOffice computes it when it opens the file.
 """
 function setFormula(ws::Worksheet, ref::CellRef; val::AbstractString, raw::Bool = false)
     _require_writable(ws, "write a formula")

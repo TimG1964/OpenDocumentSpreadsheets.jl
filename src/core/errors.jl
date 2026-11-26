@@ -21,7 +21,7 @@ Base.showerror(io::IO, e::SheetCoreError) = print(io, "SheetCoreError: ", e.msg)
     MAX_ROWS, MAX_COLS
 
 The largest sheet: 1,048,576 rows by 16,384 columns (A to XFD). This is Excel's size, and
-LibreOffice's since version 7.4, the size its 26.8 release writes (experiment 004, F-007).
+LibreOffice's since version 7.4, the size its 26.8 release writes (experiment 004).
 """
 const MAX_ROWS = 1_048_576
 const MAX_COLS = 16_384

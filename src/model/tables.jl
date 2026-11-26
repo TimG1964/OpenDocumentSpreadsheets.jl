@@ -80,7 +80,7 @@ the workbook. The table's range is its own, so `columns`, `first_row`, `header`,
 `stop_in_empty_row`, `stop_in_row_function` and `keep_empty_rows` don't apply (`columns` with
 `table_name` is an error).
 
-`enable_cache` is accepted for compatibility with XLSX.jl and ignored.
+`enable_cache` is accepted and ignored.
 """
 function readtable(source::Union{AbstractString,IO}, sheet::Union{AbstractString,Integer},
                    cols::Union{ColumnRange,AbstractString}; enable_cache::Bool = false,

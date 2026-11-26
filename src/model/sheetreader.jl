@@ -239,7 +239,7 @@ const _NO_ATTR = SubString("", 1, 0)
     CellAttrs
 
 The attributes of a `table:table-cell` that the reader uses, as read by the cursor walk or
-the byte scanner; values are as XML.jl reports them (D-047).
+the byte scanner; values are as XML.jl reports them.
 """
 struct CellAttrs
     count::Int

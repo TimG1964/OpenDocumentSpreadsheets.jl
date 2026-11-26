@@ -35,8 +35,8 @@ end
 
 An `IO` that passes everything to `dest` and notes in `seen` the first path segment of every
 `xlink:href="./…"` it sees (`Object 1` for `./Object 1` and `./ObjectReplacements/Object 1`): the
-objects a written content.xml still embeds. It is given the large chunks content.xml is written in
-(D-048), so it searches each byte once.
+objects a written content.xml still embeds. It is given the large chunks content.xml is written in,
+so it searches each byte once.
 """
 mutable struct _HrefScan{T<:IO} <: IO
     dest::T

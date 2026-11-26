@@ -100,7 +100,7 @@ whole document when that can't be told (a flat document, or a sheet not found by
 name).
 
 The walk matches `table:table` as written. When the prefix read has a namespace prefix other
-than the usual ones (D-067), it may have stopped in the wrong place, and the whole part is
+than the usual ones, it may have stopped in the wrong place, and the whole part is
 read instead, with the usual prefixes.
 """
 function content_through_sheet(c::ODFContainer, sheet::Union{AbstractString,Integer})

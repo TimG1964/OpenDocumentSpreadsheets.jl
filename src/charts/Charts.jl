@@ -1,8 +1,8 @@
 """
     OpenDocumentSpreadsheets.Charts
 
-Charts: LibreOffice's embedded chart objects (phase 8, D-085), with XLSX.jl's `XLSX.Charts` API
-(names, call forms, return shapes) and LibreOffice's behaviour.
+Charts: LibreOffice's embedded chart objects. Make, format and read a file's charts, with
+LibreOffice's behaviour.
 
     using OpenDocumentSpreadsheets.Charts
 

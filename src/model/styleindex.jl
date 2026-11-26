@@ -67,7 +67,7 @@ LineStyles(family::AbstractString) = LineStyles(String(family), Dict{String,Prop
 """
     StyleSheet
 
-The full cell styles of a document (phase 4), built from its XML the first time formatting
+The full cell styles of a document, built from its XML the first time formatting
 needs them (`stylesheet`, styles/stylesheet.jl):
 
 - `cells[id + 1]`: the `CellStyle` of each style id of the `StyleIndex`
@@ -76,14 +76,14 @@ needs them (`stylesheet`, styles/stylesheet.jl):
 - `dedup`: the automatic styles by their properties, so that equal styles are shared
 - `added` / `added_data`: the cell and data styles OpenDocumentSpreadsheets added, in order, written to
   `office:automatic-styles` on save
-- `retyped`: derived styles already made for a style and a value kind (D-037)
+- `retyped`: derived styles already made for a style and a value kind
 - `data_dedup`: the added data styles by their XML
 - `lines[1]` / `lines[2]`: the column and row styles (`LineStyles` of the `table-column` and
   `table-row` families)
 - `default_cell`: the document's default cell properties (`style:default-style`)
 - `faces` / `added_faces`: the font faces declared, and those OpenDocumentSpreadsheets added
 - `display`: the named cell styles, by the name LibreOffice shows; `added_named`: those
-  OpenDocumentSpreadsheets added (D-045), written to styles.xml
+  OpenDocumentSpreadsheets added, written to styles.xml
 """
 mutable struct StyleSheet
     cells::Vector{CellStyle}

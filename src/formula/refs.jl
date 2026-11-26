@@ -222,7 +222,7 @@ end
     SheetCopy(src, dst, all, order)
 
 Applied to the text of `dst`, a copy of `src`; `order` is the sheets' order after the copy. As
-LibreOffice keeps them (F-047): a reference written with a relative sheet keeps its distance in the
+LibreOffice keeps them: a reference written with a relative sheet keeps its distance in the
 sheet order, so one to `src` moves to `dst`, and one to the sheet before `src` goes to the sheet
 before `dst` (`#REF!` past the ends). With `all` (the copy's local names), references to `src` with
 an absolute sheet move to `dst` too.
@@ -241,11 +241,11 @@ Where the text being rewritten lives:
 - `sheet`: the sheet that unqualified references (`[.A1]`) mean
 - `row`, `col`: the formula's cell, or 0 (the end-of-sheet quirk of F-043 moves relative parts with it)
 - `names`: the text is a name's: its relative coordinates are offsets from the base, and are not
-  shifted (F-044)
+  shifted
 - `marked`: a reference that loses its sheet or cells becomes `#REF!`. When false (chart series,
-  shapes' end cells, names' bases: F-043, F-047), a reference whose lines are all deleted is left as
+  shapes' end cells, names' bases), a reference whose lines are all deleted is left as
   it was, and a deleted sheet is replaced by the sheet before it
-- `expand`: lines inserted just after the range grow it (conditional formats' targets, F-043)
+- `expand`: lines inserted just after the range grow it (conditional formats' targets)
 """
 struct RefContext
     sheet::String
@@ -444,7 +444,7 @@ end
 
 A formula (or any formula-grammar text: a named expression, a validation or conditional-format
 condition) with its bracketed references rewritten by `op`. The text is returned unchanged (the same
-string) when no reference changes. A reference that becomes invalid is written `[#REF!]` (F-043).
+string) when no reference changes. A reference that becomes invalid is written `[#REF!]`.
 """
 function rewrite_formula(text::AbstractString, op::RefOp, ctx::RefContext)
     s = String(text)
@@ -536,7 +536,7 @@ end
 
 A conditional format's condition (`formula-is([.A5]>[.A6])`), whose relative references are taken
 from `base` (`Data.A1`), on the cells of `target` (a range list, `Data.B5:Data.B8`), after `op`
-(applied to the target too). As LibreOffice does (F-044):
+(applied to the target too). As LibreOffice does:
 - the new base is the new target's top-left cell
 - each relative reference keeps its meaning for every cell of the target: it is written as seen
   from the old top-left cell, shifted by `op`, and then read from the new base

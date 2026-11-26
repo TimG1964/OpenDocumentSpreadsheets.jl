@@ -175,14 +175,14 @@ end
 """
     getConditionalFormats(sheet) -> Vector{Pair}
 
-The sheet's conditional formats, as XLSX.jl gives them: each rule as `range => (type = "cellIs",
+The sheet's conditional formats: each rule as `range => (type = "cellIs",
 priority = 1)`, `range` a `CellRange`, or a `NonContiguousRange` for several areas. `type` is
-XLSX.jl's name for the rule (`"cellIs"`, `"top10"`, `"aboveAverage"`, `"containsText"`,
+the rule's name (`"cellIs"`, `"top10"`, `"aboveAverage"`, `"containsText"`,
 `"notContainsText"`, `"beginsWith"`, `"endsWith"`, `"timePeriod"`, `"containsErrors"`,
 `"notContainsErrors"`, `"containsBlanks"`, `"notContainsBlanks"`, `"uniqueValues"`,
 `"duplicateValues"`, `"expression"`, `"dataBar"`, `"colorScale"`, `"iconSet"`).
 
-Rules are in LibreOffice's order, which is their priority (D-081): a range's rules in the order they
+Rules are in LibreOffice's order, which is their priority: a range's rules in the order they
 were set, and the ranges in the order they were first given rules. `priority` counts from 1 through
 the sheet. LibreOffice's own rules and the rules of an imported workbook are read as they are stored.
 """
@@ -206,8 +206,8 @@ end
     clearConditionalFormats(sheet, :) -> Int
 
 Remove every conditional format whose range lies entirely within `rng` (a cell, a range, whole
-columns `"B:D"` or rows `"2:5"`, several of these separated by commas, or a `CellRange`), as
-XLSX.jl does, and return the number of rules removed. A format spanning a wider range is left alone,
+columns `"B:D"` or rows `"2:5"`, several of these separated by commas, or a `CellRange`), and
+return the number of rules removed. A format spanning a wider range is left alone,
 even where it overlaps. With `:`, every rule on the sheet goes. The file must be writable.
 """
 function clearConditionalFormats(ws::Worksheet, rng)

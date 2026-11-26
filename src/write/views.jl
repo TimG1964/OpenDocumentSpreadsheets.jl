@@ -204,7 +204,7 @@ column A). The view goes back to the top left, and the cursor to the first cell 
 LibreOffice shows an Excel file with frozen panes. Calling it again replaces the panes.
 
 The panes are LibreOffice's view settings for the sheet (settings.xml), which LibreOffice keeps
-where they are when rows or columns are inserted or deleted (F-053).
+where they are when rows or columns are inserted or deleted.
 
 See also [`splitPanes`](@ref), [`removePanes`](@ref), [`setSheetView`](@ref).
 """
@@ -255,7 +255,7 @@ _view_cellref(c, k::Symbol) = (c isa AbstractString && is_valid_cellname(c)) ? C
                  topLeftCell, activeCell, selection)
 
 Set how a sheet looks when LibreOffice opens it. Only the keywords given change. As LibreOffice
-keeps them (F-053):
+keeps them:
 - `zoom`: the sheet's zoom, in percent (20 to 600, LibreOffice's range), for the view it is in
 - `view`: `:normal` or `:pageBreakPreview`, **for the whole file** (LibreOffice's page-break view
   is the window's). LibreOffice Calc has no page layout view: `:pageLayout` is an error.

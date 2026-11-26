@@ -683,23 +683,22 @@ end
     addDataValidation(xf, "Sheet1.B2:B20"; kw...)
 
 Restrict what may be typed into the cells of `rng` (a cell, range, whole columns `"B:B"` or rows,
-a list of ranges `"A1:A5,C1:C5"`, or a defined name), as LibreOffice's Data ▸ Validity does,
-stored as LibreOffice's import stores XLSX.jl's validations (F-061, D-075).
+a list of ranges `"A1:A5,C1:C5"`, or a defined name), as LibreOffice's Data ▸ Validity does.
 
 `type` is `:list`, `:whole`, `:decimal`, `:date`, `:time`, `:textLength`, `:custom` or `:any`
 (`:list` when `values` is given). For the number, date, time and length types, `operator` is
 `:between` (the default), `:notBetween`, `:equal`, `:notEqual`, `:greaterThan`, `:lessThan`,
 `:greaterThanOrEqual` or `:lessThanOrEqual`, with `formula1` (and `formula2` for the two between
 forms). `formula1` and `formula2` are numbers, a `Date`, `Time` or `DateTime`, or a reference or
-formula in LibreOffice's notation (`"\$D\$1:\$D\$3"`, `"Lists.\$A\$1:\$A\$9"`, or XLSX.jl's
+formula in LibreOffice's notation (`"\$D\$1:\$D\$3"`, `"Lists.\$A\$1:\$A\$9"`, or
 `"Lists!\$A\$1:\$A\$9"`; `"=ISNUMBER(B2)"`). A list's items may be given as `values`.
 
 `allowBlank`, `dropdown` (a list's drop-down), `showInputMessage` with `prompt` and `promptTitle`,
 and `showErrorMessage` with `error`, `errorTitle` and `errorStyle` (`:stop`, `:warning`,
-`:information`) are as in XLSX.jl. As in LibreOffice, a cell has one validation: a new one replaces
+`:information`) set the input help and error alert. As in LibreOffice, a cell has one validation: a new one replaces
 the validation of the cells it covers. Identical validations share one rule.
 
-Two options are LibreOffice's own, with no XLSX.jl counterpart (D-076): `caseSensitive`
+Two options are LibreOffice's own: `caseSensitive`
 (`table:case-sensitive`: lists and comparisons with text tell upper and lower case apart) and
 `sortEntries` (a `:list`'s drop-down shows its items sorted ascending).
 
@@ -813,7 +812,7 @@ end
     getDataValidations(sheet) -> Vector{NamedTuple}
     getDataValidations(xf::ODSFile) -> Vector{NamedTuple}
 
-Every validation of a sheet, or of every sheet, as XLSX.jl gives them: `(sheet, range, type,
+Every validation of a sheet, or of every sheet: `(sheet, range, type,
 operator, formula1, formula2, allowBlank, dropdown, showInputMessage, promptTitle, prompt,
 showErrorMessage, errorTitle, error, errorStyle)`, followed by LibreOffice's own `caseSensitive` and
 `sortEntries` (see [`addDataValidation`](@ref)). `range` is a `CellRange`, or a

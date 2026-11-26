@@ -303,7 +303,7 @@ general_data_style!(styles::StyleIndex) = add_data_style!(styles, _GENERAL_DATA_
 
 What a document's sheets refer to when it is written: cell style ids (cells, empty formatted
 cells, column defaults), and column and row style names. Added styles outside it are not
-written (D-046).
+written.
 """
 struct UsedStyles
     ids::BitSet
@@ -330,10 +330,10 @@ end
 """
     added_styles_xml(styles::StyleIndex, used=nothing) -> String
 
-The automatic styles OpenDocumentSpreadsheets added to the document: its typed styles (D-024), then the
+The automatic styles OpenDocumentSpreadsheets added to the document: its typed styles, then the
 column, row, data and cell styles added by formatting. With `used` (`UsedStyles`), only
 the added cell, column and row styles the sheets refer to are written, with the data
-styles those need (D-046): styles left behind by successive setters are dropped.
+styles those need: styles left behind by successive setters are dropped.
 """
 function added_styles_xml(styles::StyleIndex, used::Union{Nothing,UsedStyles} = nothing)
     typed = typed_styles_xml(styles) * text_styles_xml(styles)        # with rich text's text styles (D-088)
@@ -363,9 +363,9 @@ end
     retyped_style(styles, old::Int32, kind) -> Int32
 
 The style for a value needing `kind` (`:date`, `:datetime`, `:time`, `:boolean`, or `nothing`
-for numbers and text) written into a cell of style `old`, whose number format doesn't fit it
-(D-037). A style that says nothing but its number format gives way to OpenDocumentSpreadsheets's typed style
-(or `Default`), as before (D-027). Any other style is kept, with only its number format
+for numbers and text) written into a cell of style `old`, whose number format doesn't fit it.
+A style that says nothing but its number format gives way to OpenDocumentSpreadsheets's typed style
+(or `Default`), as before. Any other style is kept, with only its number format
 replaced, so that fonts, fills and the rest stay.
 """
 function retyped_style(styles::StyleIndex, old::Int32, kind::Union{Nothing,Symbol})

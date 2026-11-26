@@ -668,11 +668,11 @@ Insert `count` empty rows before row `at` (an integer, or a string such as `"5"`
 `at` down move down, and everything that refers to them follows, as in LibreOffice: formulas on
 every sheet, defined names, merged cells, conditional formats, validations, database ranges, print
 ranges, charts and anchored shapes. A range that the new rows fall inside, or whose last row is at
-`at`, grows (D-050).
+`at`, grows.
 
 The new rows take the cell formats of the row above, and its height when that height was set, and
-are not hidden (D-051). Inserting at row 1 gives unformatted rows. An insert that would push a cell
-with content or formatting off the sheet is an error, as it is in LibreOffice (D-052).
+are not hidden. Inserting at row 1 gives unformatted rows. An insert that would push a cell
+with content or formatting off the sheet is an error, as it is in LibreOffice.
 """
 function insertRows(ws::Worksheet, at::Union{Integer,AbstractString}; count::Integer = 1)
     _insert_lines!(ws, 1, at isa Integer ? at : _one_line(1, at), count, "rows")
@@ -686,7 +686,7 @@ insertRows(xf::ODSFile, ref::AbstractString; count::Integer = 1) =
 
 Insert `count` empty columns before column `at` (an integer, or a column such as `"C"`). As
 [`insertRows`](@ref), along the other axis. The new columns take the cell formats and default cell
-style of the column to their left, and the width of the column they push to the right (D-051).
+style of the column to their left, and the width of the column they push to the right.
 """
 function insertColumns(ws::Worksheet, at::Union{Integer,AbstractString}; count::Integer = 1)
     _insert_lines!(ws, 2, at isa Integer ? at : _one_line(2, at), count, "columns")
@@ -700,13 +700,13 @@ insertColumns(xf::ODSFile, ref::AbstractString; count::Integer = 1) =
 
 Delete rows: an integer, a range, a vector of row numbers, or a string (`"3"`, `"3:5"`,
 `"3:5,9"` or `"3:5~9"`; a cell or range gives its rows, a defined name its range's rows). The rows
-below move up, and everything that refers to them follows, as in LibreOffice (D-050): a reference
+below move up, and everything that refers to them follows, as in LibreOffice: a reference
 to a deleted cell becomes `#REF!`, and a range that loses some of its rows shrinks. Merges whose
 first row is deleted are undone; validations, conditional formats and annotations on deleted cells
 go with them.
 
 As in LibreOffice, a picture or shape lying wholly in the deleted cells goes with them, and one
-reaching beyond them stays where it is, anchored in the cell now at its place (F-060). Not yet
+reaching beyond them stays where it is, anchored in the cell now at its place. Not yet
 as LibreOffice does it: a validation that no cell uses any more stays in the file, unused
 (LibreOffice drops it).
 """

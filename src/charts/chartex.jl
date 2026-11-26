@@ -10,10 +10,10 @@ const _CHARTSHEET_CM = (25.821, 16.856)
 """
     ChartExDimension, ChartExData, ChartExBinning
 
-A chartex series' data and a histogram's binning, as XLSX.jl's types. LibreOffice's histogram has one
+A chartex series' data and a histogram's binning. LibreOffice's histogram has one
 dimension, its values (`kind` `:num`, `type` `:val`, `formula` the ODF range, `range` its
 [`ChartRange`](@ref)); its binning is a bin width or a bin count (`intervalClosed`, `underflow` and
-`overflow` are always `nothing`: LibreOffice has none, D-086).
+`overflow` are always `nothing`: LibreOffice has none).
 """
 struct ChartExDimension
     kind::Symbol
@@ -67,13 +67,13 @@ end
                name_ref = nothing, title = nothing) -> ChartEx
     addChartEx(xf::ODSFile, kind::Symbol, values; sheetname = "", …) -> ChartEx
 
-A chartex chart of `kind` plotting `values`, on a sheet or on a new chart sheet, as XLSX.jl's. Of its
-kinds LibreOffice has `:histogram` (F-080), made as LibreOffice's own histogram; `:waterfall`,
+A chartex chart of `kind` plotting `values`, on a sheet or on a new chart sheet. Of the
+chartex kinds LibreOffice has `:histogram`, made as LibreOffice's own histogram; `:waterfall`,
 `:funnel`, `:treemap`, `:sunburst`, `:pareto` and `:boxWhisker` are errors: LibreOffice reads them without
-a diagram (D-086). A histogram takes no `categories`, and LibreOffice draws its bins from its values
+a diagram. A histogram takes no `categories`, and LibreOffice draws its bins from its values
 (set them with `setSeriesBinning`, under [`setSeriesName`](@ref)).
 
-A chart sheet is LibreOffice's form of one (F-081): an ordinary sheet, named `sheetname` (by default
+A chart sheet is LibreOffice's form of one: an ordinary sheet, named `sheetname` (by default
 `Chart1`, `Chart2`, …), holding the chart anchored to the page. Its references name their sheet
 (`"Data!B2:B7"`), since the chart sheet's cells hold nothing.
 """
@@ -100,7 +100,7 @@ end
     addChart(xf::ODSFile, kind::Symbol; sheetname = "", title = nothing, xtitle = nothing, ytitle = nothing,
              kw...) -> Chart
 
-A chart on a new chart sheet, as XLSX.jl's: LibreOffice's form of one (F-081, D-086), an ordinary sheet
+A chart on a new chart sheet: LibreOffice's form of one, an ordinary sheet
 named `sheetname` (by default `Chart1`, `Chart2`, …) holding the chart anchored to the page, after the
 other sheets. Add its series with [`addSeries`](@ref), naming their sheet (`"Data!B2:B7"`). The other
 keywords are [`addChart`](@ref)'s, but `data` (whose cells would be the chart sheet's).
@@ -167,8 +167,7 @@ _no_pareto(pareto::Bool) = pareto && throw(ODSError("LibreOffice has no pareto c
     getSeriesHidden(c::ChartEx, i) / getSeriesAxisIds(c::ChartEx, i) / getChartAxisIds(c::ChartEx)
     getLabelPosition(c::ChartEx, i) / getSeriesBinning(c::ChartEx, i)
 
-A histogram's series, as XLSX.jl's ChartEx getters: its layout is `:clusteredColumn` (Excel's
-histogram's), its data one dimension of values (data blocks numbered from 0, one per series), its axes
+A histogram's series: its layout is `:clusteredColumn`, its data one dimension of values (data blocks numbered from 0, one per series), its axes
 `[0, 1]`; it is never hidden. Its binning is LibreOffice's: a width or a count, or `:auto` for both
 when LibreOffice chooses. `pareto = true` is an error: LibreOffice has no pareto charts.
 """
@@ -205,7 +204,7 @@ end
 
 A histogram's series name (text), and its bins: a width (`binSize`) or a count (`binCount`), or
 `:auto` (LibreOffice chooses); `:inherit` is `:auto`. LibreOffice's bins have no closed side, underflow
-or overflow bin: those are errors (D-086). The other ChartEx setters (`setSeriesSubtotals`,
+or overflow bin: those are errors. The other ChartEx setters (`setSeriesSubtotals`,
 `setSeriesAggregation`, `setSeriesQuartileMethod`, `setSeriesParentLabelLayout`, `setSeriesLayoutFlag`)
 are for kinds LibreOffice lacks: errors.
 """
@@ -260,7 +259,7 @@ addSeries(c::ChartEx, values; kw...) = throw(ODSError("A histogram has one serie
     getSeriesSubtotals(c::ChartEx, i) / getSeriesAggregation(c::ChartEx, i) / getSeriesQuartileMethod(c::ChartEx, i)
     getSeriesParentLabelLayout(c::ChartEx, i) / getSeriesLayoutFlag(c::ChartEx, i, flag)
 
-XLSX.jl's getters of the chartex kinds LibreOffice lacks: a histogram has none of them, so `nothing`.
+Getters of the chartex kinds LibreOffice lacks (waterfall, box and whisker, treemap): a histogram has none of them, so `nothing`.
 """
 getSeriesSubtotals(c::ChartEx, i::Integer) = (_cx_series(c, i); nothing)
 getSeriesAggregation(c::ChartEx, i::Integer) = (_cx_series(c, i); nothing)

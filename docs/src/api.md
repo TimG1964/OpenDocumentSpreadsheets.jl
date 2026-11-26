@@ -78,7 +78,7 @@ writerows!
 ## The shared core
 
 The format-independent parts of OpenDocumentSpreadsheets (references, tables, number formats, dates) live in
-a submodule meant to be shared with XLSX.jl in future. It is not part of the public API.
+a submodule of their own. It is not part of the public API.
 
 ```@docs
 OpenDocumentSpreadsheets.SheetCore

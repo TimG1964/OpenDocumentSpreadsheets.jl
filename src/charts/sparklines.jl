@@ -19,14 +19,14 @@ const _SPARK_KEYWORDS = (:type, :emptyCells, :lineWeight, :min, :max, :dateRange
 """
     addSparklines(ws::Worksheet, location, data; type = :line, kw...)
 
-A group of sparklines, small charts each in one cell, as XLSX.jl's: `location` is the cell, or the row
+A group of sparklines, small charts each in one cell: `location` is the cell, or the row
 or column of cells, to hold them, and `data` the cells they chart, on this sheet or another
 (`"Data!B2:M13"`, `"Data.B2:M13"`):
 - one cell: one sparkline of a row or column of data;
 - a column of cells: one sparkline for each row of `data` (as many rows), or each column;
 - a row of cells: one sparkline for each column of `data`, or each row.
 
-A sparkline already in one of the cells is replaced. The group's options, as XLSX.jl's: `type`
+A sparkline already in one of the cells is replaced. The group's options: `type`
 (`:line`, `:column`, `:winloss`, which LibreOffice calls stacked), `markers`, `high`, `low`, `first`,
 `last`, `negative` (`true` by default for `:winloss`), `axis`, `emptyCells` (`:gap`, `:zero`, `:span`),
 `showHidden`, `lineWeight` (points, 0.75), `min` and `max` (`:individual`, `:group` or a number),
@@ -34,9 +34,9 @@ A sparkline already in one of the cells is replaced. The group's options, as XLS
 `firstColor`, `lastColor`, `highColor`, `lowColor` (hex, a colour name, a theme colour or a
 `SchemeColor`, resolved against the document's theme).
 
-LibreOffice keeps no date range: `dateRange` is an error (D-086). A sparkline follows its cell through
-inserts and deletes, and its data moves as a chart's (Q-029, D-086); LibreOffice itself leaves both
-where they were (F-084).
+LibreOffice keeps no date range: `dateRange` is an error. A sparkline follows its cell through
+inserts and deletes, and its data moves as a chart's; LibreOffice itself leaves both
+where they were.
 """
 function addSparklines(ws::Worksheet, location, data; kw...)
     xf = get_odsfile(ws)
@@ -169,7 +169,7 @@ end
 """
     getSparklines(ws::Worksheet) -> Vector{NamedTuple}
 
-A sheet's sparkline groups as XLSX.jl gives them: `sparklines`, each sparkline's cell and data
+A sheet's sparkline groups: `sparklines`, each sparkline's cell and data
 (`"F2" => "Data.A2:E2"`, in this package's notation); `type`, `markers`, `high`, `low`, `first`, `last`,
 `negative`, `axis`, `emptyCells`, `showHidden`, `lineWeight`, `min`, `max`, `rightToLeft`, `dateRange`
 (always `nothing`: LibreOffice keeps none) and `colors` (`seriesColor` …, each `"FFRRGGBB"`), as they
@@ -218,7 +218,7 @@ end
     deleteSparklines(ws::Worksheet, ref; group = false) -> Bool
 
 Deletes the sparklines in the cells of `ref` (a cell or a range), or with `group = true` every group
-with a sparkline there, as XLSX.jl's. `false` if there were none.
+with a sparkline there. `false` if there were none.
 """
 function deleteSparklines(ws::Worksheet, ref; group::Bool = false)
     xf = get_odsfile(ws)

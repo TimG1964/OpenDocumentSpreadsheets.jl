@@ -227,7 +227,7 @@ _pages_edited(xf::ODSFile) = !isempty(xf.pageedits.pages)
 """
     setPageSetup(sheet; orientation, paperSize, scale, fitToWidth, fitToHeight)
 
-Set how a sheet is printed, as LibreOffice keeps it in the sheet's page style (F-055). Only the
+Set how a sheet is printed, as LibreOffice keeps it in the sheet's page style. Only the
 keywords given change.
 - `orientation`: `:portrait` or `:landscape` (the page's width and height swap)
 - `paperSize`: one of $(join((":$k" for k in keys(PAPER_SIZES)), ", ")), or Excel's number for
@@ -236,7 +236,7 @@ keywords given change.
 - `fitToWidth`, `fitToHeight`: the pages to fit the sheet on, across and down (0: as many as
   needed). `scale` and fitting are alternatives: giving one turns the other off.
 
-LibreOffice's own settings, with no XLSX.jl counterpart (D-076):
+LibreOffice's own settings:
 - `paperWidth`, `paperHeight`: any paper size, in `unit`s (`:cm`, the default, `:mm`, `:in` or
   `:pt`), instead of `paperSize`. Without `orientation`, the page is landscape when it is wider
   than high, as LibreOffice's page dialog makes it; with it, the two are swapped to suit.
@@ -321,7 +321,7 @@ end
 `(orientation, paperSize, scale, fitToWidth, fitToHeight, paperWidth, paperHeight, scaleToPages)`,
 each `nothing` where the page style doesn't say: the paper is Excel's number for the page's size,
 if it is one LibreOffice's import knows; `scale` is given only when it isn't 100% and the sheet
-isn't fitted to pages. The last three are LibreOffice's (D-076): the page's width and height as
+isn't fitted to pages. The last three are LibreOffice's: the page's width and height as
 it is printed (turned when landscape), in `unit`s, and the pages to fit the sheet on in all.
 Works on read-only files.
 """
@@ -363,7 +363,7 @@ const _PAGE_MARGINS = (left = 0.7, right = 0.7, top = 0.75, bottom = 0.75, heade
 
 Set the printed margins, in inches, as Excel's: `top` and `bottom` are the distances to the
 sheet's cells, `header` and `footer` those to the header and footer. They are stored as
-LibreOffice's xlsx import stores them (F-055): with a header shown, the page's top margin is the
+LibreOffice's xlsx import stores them: with a header shown, the page's top margin is the
 header's distance, and the header's height the rest of the top margin (less 1/6 inch of spacing).
 Only the keywords given change.
 """
@@ -409,7 +409,7 @@ Choose what is printed with a sheet, as LibreOffice keeps it in the page style: 
 `headings` (row and column headers) join `style:print`, the centring is `style:table-centering`.
 Each keyword is a `Bool`; only those given change.
 
-The rest are LibreOffice's own (its page style's *Sheet* tab; D-076), also in `style:print`:
+The rest are LibreOffice's own (its page style's *Sheet* tab), also in `style:print`:
 `comments`, `formulas` (formulas instead of their results), `zeroValues`, `charts`, `drawings`
 (drawing objects) and `objects` (pictures and other objects). LibreOffice prints charts, drawings,
 objects and zero values unless told not to.
@@ -607,8 +607,8 @@ end
 """
     headerFooterFont(; name, bold, italic, under, strike, size, color, vertAlign) -> String
 
-The codes that change the font of the text that follows them in a header or footer, as XLSX.jl
-writes them (`&"Arial,Bold"&14`). OpenDocumentSpreadsheets writes the text after them in a text style with that
+The codes that change the font of the text that follows them in a header or footer
+(`&"Arial,Bold"&14`). OpenDocumentSpreadsheets writes the text after them in a text style with that
 font. `color` takes OpenDocumentSpreadsheets' colour forms (not theme colours).
 """
 function headerFooterFont(; name::Union{Nothing,AbstractString} = nothing, bold::Bool = false, italic::Bool = false,
@@ -994,10 +994,10 @@ end
     setHeaderFooter(sheet; header, footer, firstHeader, firstFooter, evenHeader, evenFooter,
                     differentFirst, differentOddEven)
 
-Set the headers and footers printed on a sheet's pages, with XLSX.jl's arguments: a string (centred)
-or a `NamedTuple` of `left`, `center` and `right` sections, with Excel's codes (`&P` page, `&N`
+Set the headers and footers printed on a sheet's pages: a string (centred) or a `NamedTuple` of
+`left`, `center` and `right` sections, with codes (`&P` page, `&N`
 pages, `&D`, `&T`, `&F`, `&Z`, `&A`, fonts from [`headerFooterFont`](@ref), `&&` for `&`). They
-are written as LibreOffice's xlsx import writes them (F-055): ODF fields, sections as regions, fonts
+are written as ODF fields, sections as regions, fonts
 as text styles; first-page and even-page headers are `style:header-first` and `style:header-left`.
 `""` removes one. Giving `firstHeader`/`firstFooter` turns `differentFirst` on, and
 `evenHeader`/`evenFooter` `differentOddEven`.

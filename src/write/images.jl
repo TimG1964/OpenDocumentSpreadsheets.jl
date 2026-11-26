@@ -314,15 +314,15 @@ _frame_edit!(ws::Worksheet, r::Int, c::Int) =
     addImage(sheet, row, col, image; kw...) -> NamedTuple
 
 Insert a picture (PNG, JPEG or GIF, from a file path or an `IOBuffer`, which is left unchanged)
-over the cells from `ref`, as LibreOffice's import places XLSX.jl's (F-060, D-074): anchored in
+over the cells from `ref`: anchored in
 the first cell and resizing with its cells up to the last. For a cell, the picture covers one cell
 per 64 pixels of its width and per 20 of its height (its own size, or `size = (width, height)` in
-pixels), as in XLSX.jl; for a range (`"B2:D6"`), the range. The picture is stored once in the file,
+pixels); for a range (`"B2:D6"`), the range. The picture is stored once in the file,
 however many times it is shown.
 
 LibreOffice has no pictures in cells: `inCell=true` is an error. `alt` is the picture's alt text,
 which LibreOffice keeps for every picture (its *Text Alternative*, `svg:title`), and `description`
-its longer description (`svg:desc`), LibreOffice's own (D-076).
+its longer description (`svg:desc`), LibreOffice's own.
 
 Returns `(sheet, media_name, from, to, alt, description)`. The file must be writable.
 """

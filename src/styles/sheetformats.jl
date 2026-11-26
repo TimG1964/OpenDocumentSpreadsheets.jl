@@ -233,7 +233,7 @@ end
     restyle_cells!(m, ws, rows, cols) -> ws
 
 Give every cell of the block `rows × cols` the style `m(id)`, where `id` is the style it
-shows now: cells with a value or formula, and empty ones (D-033), which become formatted
+shows now: cells with a value or formula, and empty ones, which become formatted
 empty cells. `m` is called once per distinct style.
 """
 function restyle_cells!(m::Function, ws::Worksheet, rows::UnitRange{Int}, cols::UnitRange{Int})
@@ -283,7 +283,7 @@ end
 """
     restyle_columns!(m, ws, cols) -> ws
 
-Format whole columns, as LibreOffice does (D-033, F-035): their default cell style becomes
+Format whole columns, as LibreOffice does: their default cell style becomes
 `m(the default they had, or Default)`, the cells of every row with a value or a style of
 their own are restyled, and every row's cells are made to reach the last column, so that
 the column default reaches the empty ones.
@@ -338,8 +338,8 @@ end
 
 Set the row style name (`""`: none) or visibility of the rows `rows` (`nothing` leaves an
 attribute as it is), and make their cells cover at least `cover` columns, so that the
-default cell styles of those columns reach them (F-035). Rows get no default cell style:
-LibreOffice misreads those (F-035).
+default cell styles of those columns reach them. Rows get no default cell style:
+LibreOffice misreads those.
 """
 function set_row_formats!(ws::Worksheet, rows::UnitRange{Int}; style::Union{Nothing,AbstractString} = nothing,
                           visibility::Union{Nothing,AbstractString} = nothing, cover::Integer = 0)

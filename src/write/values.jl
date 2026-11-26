@@ -94,7 +94,7 @@ end
 """
     choose_style(styles, old_style, value) -> Int32
 
-The style a cell written with `value` gets (D-027): its current style if that style's data
+The style a cell written with `value` gets: its current style if that style's data
 format fits the value. Otherwise a style that is only a number format gives way to
 OpenDocumentSpreadsheets's typed style for dates, times and booleans, or `Default` for numbers and text; any
 other style is kept with only its number format replaced (D-037, `retyped_style`).
@@ -123,9 +123,9 @@ end
     encode_value(value, style::Int32; colspan=1, rowspan=1, covered=false) -> Union{CellData, Nothing}
 
 The stored form of a Julia value: `nothing` (remove the cell) for `missing` and `nothing`.
-Integers are stored as whole numbers, other reals as Float64 (D-026), except `NaN`, `Inf`
+Integers are stored as whole numbers, other reals as Float64, except `NaN`, `Inf`
 and `-Inf`, which ODF can't hold as numbers: they are stored as the text `"NaN"`, `"Inf"`
-and `"-Inf"`, as XLSX.jl does (D-043); dates, date-times,
+and `"-Inf"`; dates, date-times,
 times and durations, booleans and strings as their ODF types.
 """
 function encode_value(v, style::Int32; colspan::Integer = 1, rowspan::Integer = 1, covered::Bool = false)

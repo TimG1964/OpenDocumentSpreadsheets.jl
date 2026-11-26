@@ -73,10 +73,10 @@ _overlaps(a::CellRange, b::CellRange) =
     mergeCells(sheet, row, col) / mergeCells(xf, "Sheet1.A1:C2")
 
 Merge the cells of a range. The merged cell shows the value of the range's first (top-left)
-cell; the other cells are emptied, as XLSX.jl and Excel do, and become covered cells
+cell; the other cells are emptied, and become covered cells
 (`table:covered-table-cell`). Their formatting is kept. A list of ranges merges each range;
-whole columns or rows are taken to the used area, as in XLSX.jl. A range may not be a single
-cell, nor overlap a merged range. Unlike XLSX.jl, a range may reach past the used area.
+whole columns or rows are taken to the used area. A range may not be a single cell, nor overlap
+a merged range, but it may reach past the used area.
 """
 function mergeCells(x::Union{Worksheet,ODSFile}, ref...)
     for (ws, rows, cols) in _merge_blocks(x, ref)
