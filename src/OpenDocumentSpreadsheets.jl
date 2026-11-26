@@ -21,29 +21,11 @@ using Base64: base64encode
 # The format-independent core, shared in future with XLSX.jl (D-001). OpenDocumentSpreadsheets uses it by
 # qualified name (`SheetCore.CellRef`), or through the names imported below.
 include("core/SheetCore.jl")
-using .SheetCore: SheetCoreError, readentry_string, readentry_prefix, CellRef, CellRange, ColumnRange, RowRange,
-    row_number, column_number, is_valid_cellname, is_valid_cellrange, is_valid_column_range,
-    is_valid_row_range, DataTable, TableRow, TableRowIterator
-# functions the back end adds methods to
-import .SheetCore: getdata, gettable, eachtablerow
-
-# Sheet-qualified references in OpenDocumentSpreadsheets are always in LibreOffice's notation (D-015):
-# they print as `Sheet1.A1`, and parse that form as well as Excel's `Sheet1!A1`.
-const SheetCellRef       = SheetCore.SheetCellRef{SheetCore.ODFStyle}
-const SheetCellRange     = SheetCore.SheetCellRange{SheetCore.ODFStyle}
-const SheetColumnRange   = SheetCore.SheetColumnRange{SheetCore.ODFStyle}
-const SheetRowRange      = SheetCore.SheetRowRange{SheetCore.ODFStyle}
-const NonContiguousRange = SheetCore.NonContiguousRange{SheetCore.ODFStyle}
-parse_sheet_ref(s::AbstractString) = SheetCore.parse_sheet_ref(SheetCore.ODFStyle, s)
-
-"""
-    ODSError
-
-The exception OpenDocumentSpreadsheets throws for its own errors: an invalid reference, a missing sheet, a
-file that is not an ODF spreadsheet, and so on. It is the shared core's `SheetCoreError`,
-so one type covers errors from both.
-"""
-const ODSError = SheetCoreError
+using .SheetCore: SheetCoreError, readentry_string, readentry_prefix, CellRange, ColumnRange, RowRange,
+    is_valid_cellname, is_valid_cellrange, is_valid_column_range, is_valid_row_range
+# The core's public names (CellRef, getdata, DataTable, SheetCellRef, ODSError, …), bound here with
+# this package's own documentation (D-091).
+include("corenames.jl")
 
 # Errors show as `ODSError: …`, the name users catch.
 __init__() = (SheetCore.ERROR_NAME[] = "ODSError"; nothing)

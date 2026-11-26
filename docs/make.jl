@@ -66,6 +66,9 @@ makedocs(
         ],
     ],
     checkdocs = :public,
+    # The shared core is internal: its public names are bound in OpenDocumentSpreadsheets with
+    # docstrings of their own (src/corenames.jl), and the core's own docstrings aren't shown.
+    checkdocs_ignored_modules = [OpenDocumentSpreadsheets.SheetCore],
     # External links are checked only when asked, as they depend on other sites being up:
     # the CI job "Documentation links" sets DOCUMENTER_LINKCHECK=true.
     linkcheck = get(ENV, "DOCUMENTER_LINKCHECK", "false") == "true",

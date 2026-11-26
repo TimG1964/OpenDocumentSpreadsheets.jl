@@ -68,19 +68,25 @@ end
               [infer_eltypes], [stop_in_empty_row], [stop_in_row_function],
               [keep_empty_rows], [normalizenames], [missing_strings]) -> DataTable
 
-Read a table from a file path or `IO` without keeping the sheet in memory: [`gettable`](@ref)
-on `sheet` (a name or number; the first sheet if not given) of the file opened with
-`enable_cache=false`.
+Read a table, a block of rows under a header row, from a file path or `IO`: the table on `sheet` (a
+name or number; the first sheet if not given), as [`gettable`](@ref) reads it. The sheet is read
+row by row and not kept in memory.
+
+```julia
+using DataFrames
+df = DataFrame(readtable("budget.ods", "Income"))
+readtable("budget.ods", "Income", "A:B")          # only columns A and B
+```
 
 $TABLE_READ_KEYWORDS_DOC
 
-`table_name` reads a table (see [`table`](@ref)) instead: its data rows, without its header and
-totals rows, as [`gettable`](@ref) reads a [`Table`](@ref), from `sheet` or, if none is given, from
-the workbook. The table's range is its own, so `columns`, `first_row`, `header`, `column_labels`,
-`stop_in_empty_row`, `stop_in_row_function` and `keep_empty_rows` don't apply (`columns` with
-`table_name` is an error).
+`table_name` reads a database range (see [`table`](@ref)) instead: its data rows, without its
+header and totals rows, as [`gettable`](@ref) reads a [`Table`](@ref), from `sheet` or, if none is
+given, from the whole file. The range's cells are its own, so `columns`, `first_row`, `header`,
+`column_labels`, `stop_in_empty_row`, `stop_in_row_function` and `keep_empty_rows` don't apply
+(`columns` with `table_name` is an error).
 
-`enable_cache` is accepted and ignored.
+An `enable_cache` keyword is accepted, and has no effect.
 """
 function readtable(source::Union{AbstractString,IO}, sheet::Union{AbstractString,Integer},
                    cols::Union{ColumnRange,AbstractString}; enable_cache::Bool = false,
@@ -113,7 +119,7 @@ end
     readto(source, [sheet, [columns]], sink; kw...)
 
 Read a table with [`readtable`](@ref) and pass it to the Tables.jl `sink`, such as
-`DataFrame`: `readto("data.ods", "Sheet1", DataFrame)`.
+`DataFrame`: `readto("budget.ods", "Income", DataFrame)`.
 """
 readto(source::Union{AbstractString,IO}, sink; kw...) = sink(Tables.CopiedColumns(readtable(source; kw...)))
 readto(source::Union{AbstractString,IO}, sheet::Union{AbstractString,Integer}, sink; kw...) =

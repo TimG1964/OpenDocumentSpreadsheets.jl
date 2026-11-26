@@ -24,15 +24,22 @@ const _RECORD_IDS = r"\b[DFQ]-\d{3}\b|\b[Pp]hase \d"
         rel = replace(relpath(p, DOCS), '\\' => '/')
         text = read(p, String)
         @test (rel, occursin(_RECORD_IDS, text)) == (rel, false)
+        # the shared core is an implementation detail, not part of the docs (D-091)
+        @test (rel, occursin("SheetCore", text)) == (rel, false)
         rel in ("index.md", "xlsx.md") && continue
         @test (rel, occursin("XLSX", text)) == (rel, false)
     end
     # The docstrings of public names, which the API pages show. `@doc` without REPL loaded gives the
-    # docstring object, whose printed form holds its text.
+    # docstring object, whose printed form holds its text. A name bound from the shared core has its
+    # own docstrings here, not the core's (D-091). On Julia 1.11+ the printed form also holds each
+    # method's signature, where the core's types are `OpenDocumentSpreadsheets.SheetCore.ColumnRange`:
+    # only other mentions are wording.
+    _core_words = r"(?<!OpenDocumentSpreadsheets\.)SheetCore|shared core|back end"
     for m in (OpenDocumentSpreadsheets, OpenDocumentSpreadsheets.Charts), n in names(m)   # the public names
         isdefined(m, n) || continue
         s = string(Core.eval(@__MODULE__, :(@doc $m.$n)))
-        @test (m, n, occursin("XLSX", s), occursin(_RECORD_IDS, s)) == (m, n, false, false)
+        @test (m, n, occursin("XLSX", s), occursin(_RECORD_IDS, s), occursin(_core_words, s)) ==
+              (m, n, false, false, false)
     end
 end
 

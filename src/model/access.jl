@@ -173,9 +173,8 @@ Values from a worksheet: a scalar for a single cell, a `Matrix{Any}` for a recta
 range, or a vector of matrices for a list of ranges. Empty cells, empty strings and errors
 read as `missing`.
 
-`ref` is a cell or range (`"A1"`, `"A1:C4"`, `"A:B"`, `"1:4"`, `"A1:A4,C1"`), a
-sheet-qualified one in LibreOffice's or Excel's notation (`"Sheet1.A1:C4"`,
-`"Sheet1!A1:C4"`), or a defined name. Rows and columns can also be integers, unit ranges,
+`ref` is a cell or range (`"A1"`, `"A1:C4"`, `"A:B"`, `"1:4"`, `"A1:A4,C1"`), one with its
+sheet named (`"Sheet1.A1:C4"`; `"Sheet1!A1:C4"` also works), or a named range. Rows and columns can also be integers, unit ranges,
 step ranges, vectors or `:`. For whole columns or rows, the other extent is the sheet's
 [`get_dimension`](@ref).
 

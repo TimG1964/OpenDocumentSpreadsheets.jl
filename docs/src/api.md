@@ -74,12 +74,3 @@ StreamSheet
 writerow!
 writerows!
 ```
-
-## The shared core
-
-The format-independent parts of OpenDocumentSpreadsheets (references, tables, number formats, dates) live in
-a submodule of their own. It is not part of the public API.
-
-```@docs
-OpenDocumentSpreadsheets.SheetCore
-```
