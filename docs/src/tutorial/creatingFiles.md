@@ -4,37 +4,13 @@ CurrentModule = OpenDocumentSpreadsheets
 
 # Creating and editing files
 
-## Opening a file
-
-| | |
-|---|---|
-| `readods(path)`, `openods(path)` | read only |
-| `openods(path; mode="rw")` | read and edit; save with [`saveods`](@ref) or [`writeods`](@ref) |
-| `openods(path; mode="w")`, [`newods`](@ref) | a new, empty file |
-
-With the do-block form of [`openods`](@ref), a file opened for writing is saved when the block ends
-(but not if the block throws):
-
-```julia
-openods("budget.ods"; mode = "rw") do xf
-    xf["Costs"]["B7"] = 1250.0
-end
-```
-
-Without it, save explicitly:
-
-```julia
-xf = openods("budget.ods"; mode = "rw")
-xf["Costs"]["B8"] = 980.0
-saveods(xf)                                   # back to budget.ods
-writeods("budget-copy.ods", xf)               # or to another file
-```
-
 ## A new file
 
 [`newods`](@ref) makes a file with one sheet, named as you choose. [`addsheet!`](@ref) adds more:
 
 ```julia
+using OpenDocumentSpreadsheets
+
 xf = newods("Plan")
 plan = xf["Plan"]
 plan["A1"] = "Task"; plan["B1"] = "Days"
@@ -43,7 +19,7 @@ setFormula(plan, "B5"; val = "=SUM(B2:B4)")
 
 memo = addsheet!(xf, "Notes")
 memo["A1"] = "Estimates agreed on 18 November."
-writeods("plan.ods", xf)
+writeods("plan.ods", xf; overwrite = true)
 ```
 
 <!-- shot: creating_new cells=4x6 -->
@@ -52,17 +28,46 @@ writeods("plan.ods", xf)
 A sheet is addressed by name or by position (`xf["Plan"]`, `xf[1]`), and [`sheetnames`](@ref)
 lists them in order.
 
+## Opening a file
+
+| To | Use |
+|---|---|
+| read a file | `readods(path)`, or `openods(path)`, which is the same |
+| read and edit a file | `openods(path; mode="rw")`; save with [`saveods`](@ref) or [`writeods`](@ref) |
+| start a new, empty file | [`newods`](@ref), or `openods(path; mode="w")` |
+
+With the do-block form of [`openods`](@ref), a file opened for writing is saved when the block ends
+(but not if the block throws). This edits the `plan.ods` made above:
+
+```julia
+openods("plan.ods"; mode = "rw") do xf
+    xf["Plan"]["B3"] = 14                    # Build takes longer
+end
+```
+
+Without it, save explicitly:
+
+```julia
+xf = openods("plan.ods"; mode = "rw")
+xf["Plan"]["B4"] = 5
+saveods(xf)                                       # back to plan.ods
+writeods("plan-copy.ods", xf; overwrite = true)   # or to another file
+```
+
 ## Writing a table
 
 [`writetable`](@ref) writes any Tables.jl source (a DataFrame, a named tuple of vectors, …) with its
 column names as a header row. [`writetable!`](@ref) writes one into a sheet of an open file:
 
 ```julia
-writetable("people.ods", df; sheetname = "People")
-writetable("all.ods", "People" => df, "Notes" => notes)    # several sheets
+people = (Name = ["Ann", "Bob"], Team = ["North", "South"])
+notes = (Note = ["Teams agreed on 18 November."],)
+
+writetable("people.ods", people; sheetname = "People", overwrite = true)
+writetable("all.ods", "People" => people, "Notes" => notes; overwrite = true)   # several sheets
 
 xf = openods("plan.ods"; mode = "rw")
-writetable!(addsheet!(xf, "People"), df; anchor_cell = "B2")
+writetable!(addsheet!(xf, "People"), people; anchor_cell = "B2")
 saveods(xf)
 ```
 

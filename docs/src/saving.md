@@ -22,9 +22,18 @@ its value and as the text shown in the cell. Spreadsheet programs work out the s
 value, so it can be left out:
 
 ```julia
-writetable("big.ods", df; display_text = false)
-writeods("out.ods", xf; display_text = false)
-streamods(f, "rows.ods"; display_text = false)
+using OpenDocumentSpreadsheets
+
+squares = (n = collect(1:1000), square = collect(1:1000) .^ 2)
+writetable("squares.ods", squares; display_text = false, overwrite = true)
+
+xf = newods("Data")
+xf["Data"]["A1:B2"] = [1 2; 3 4]
+writeods("small.ods", xf; display_text = false, overwrite = true)
+
+streamods("rows.ods"; display_text = false, overwrite = true) do s
+    writerow!(addsheet!(s, "rows"), (1, 2))
+end
 ```
 
 For numeric data the files are then about half the size, and faster to write. Tools that read only
@@ -36,7 +45,7 @@ the shown text would see such cells as empty.
   bounded memory:
 
 ```julia
-streamods("big.ods") do s
+streamods("big.ods"; overwrite = true) do s
     sh = addsheet!(s, "data"; columns = ["n", "square"])
     for n in 1:1_000_000
         writerow!(sh, (n, n^2))

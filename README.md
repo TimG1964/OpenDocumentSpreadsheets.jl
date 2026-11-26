@@ -3,8 +3,10 @@
 [![CI](https://github.com/TimG1964/OpenDocumentSpreadsheets.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/TimG1964/OpenDocumentSpreadsheets.jl/actions/workflows/CI.yml)
 [![Docs](https://img.shields.io/badge/docs-dev-blue.svg)](https://TimG1964.github.io/OpenDocumentSpreadsheets.jl/dev)
 
-Read and write OpenDocument spreadsheets (`.ods`, `.fods`, `.ots`) in Julia, with an API
-modelled on [XLSX.jl](https://github.com/JuliaData/XLSX.jl).
+Read, write and edit OpenDocument spreadsheets (`.ods`, `.fods`, `.ots`), the format of
+LibreOffice Calc, in pure Julia. No LibreOffice installation is needed, and editing a file keeps
+everything you didn't change exactly as it was. Tables go straight to and from DataFrames and any
+other Tables.jl source.
 
 ## Features
 
@@ -15,14 +17,14 @@ modelled on [XLSX.jl](https://github.com/JuliaData/XLSX.jl).
   widths, heights, and conditional formats.
 - **Sheets and settings:**
   - row and column inserts and deletes, with references following;
-  - sheet operations, defined names, hiding, grouping, panes, protection, printing and document
+  - sheet operations, named ranges, hiding, grouping, panes, protection, printing and document
     properties.
-- **Objects:** hyperlinks, notes and threaded comments, pictures, validation, tables (database
-  ranges) and AutoFilters.
-- **Charts and sparklines:** XLSX.jl's chart API in a `Charts` submodule, and its sparklines.
+- **Objects:** hyperlinks, notes and threaded comments, pictures, validity rules, database ranges
+  and AutoFilters.
+- **Charts and sparklines:** create, read and format LibreOffice's charts (22 kinds, stock charts,
+  histograms and chart sheets) and sparklines.
 
-Everything is stored as LibreOffice stores it, and behaves as LibreOffice behaves where Excel and
-LibreOffice differ.
+Everything is stored as LibreOffice stores it, and behaves as it does in LibreOffice Calc.
 
 ## Installation
 
@@ -48,6 +50,13 @@ writetable("out.ods", "Results" => (a = [1, 2, 3], b = ["x", "y", "z"]))
 ```
 
 See the [documentation](https://TimG1964.github.io/OpenDocumentSpreadsheets.jl/dev) for more.
+
+## Coming from XLSX.jl?
+
+The functions have XLSX.jl's names and arguments, with `ods` in place of `xlsx` (`readods`,
+`openods`, `writeods`, …).
+[Coming from XLSX.jl](https://TimG1964.github.io/OpenDocumentSpreadsheets.jl/dev/xlsx/) lists the
+differences.
 
 ## Licence
 

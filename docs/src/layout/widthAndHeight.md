@@ -33,5 +33,7 @@ each cell's text as LibreOffice shows it, in the cell's font. With no columns gi
 [`writetable`](@ref) takes widths and number formats for its columns, also when streaming:
 
 ```julia
-writetable("out.ods", df; column_widths = [12, 30], column_formats = Dict("price" => "#,##0.00"))
+prices = (item = ["Tea", "Cake"], price = [3.5, 4.25])     # or a DataFrame
+writetable("prices.ods", prices; column_widths = [12, 30], column_formats = Dict("price" => "#,##0.00"),
+           overwrite = true)
 ```

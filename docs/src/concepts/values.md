@@ -51,7 +51,9 @@ time it saves. OpenDocumentSpreadsheets gives them ISO formats (`2026-11-18`, `2
 ## Errors
 
 A formula whose result is an error reads as `missing`. [`iserror`](@ref) and [`geterror`](@ref) tell
-the two apart, with the text LibreOffice shows:
+the two apart, with the text LibreOffice shows. A formula written by OpenDocumentSpreadsheets has no
+result until LibreOffice calculates it, so take a file LibreOffice has saved, whose sheet `sh` has
+`=1/0` in C2:
 
 ```julia
 iserror(sh, "C2")      # true
@@ -61,12 +63,12 @@ geterror(sh, "C2")     # "#DIV/0!", or LibreOffice's own codes such as "Err:502"
 ## Cells
 
 [`getcell`](@ref) gives the whole cell: its value type, value, formula, style name, currency, error
-text and merge spans. It is public but not exported:
+text and merge spans. It is public but not exported, so import it by name:
 
 ```julia
 using OpenDocumentSpreadsheets: getcell
 
-c = getcell(sh, "B2")
+c = getcell(t, "B2")       # 3.14159, on the Types sheet above
 c.datatype     # :float, :percentage, :currency, :date, :time, :boolean, :string, :error, :empty
 c.value
 c.style        # the name of its cell style

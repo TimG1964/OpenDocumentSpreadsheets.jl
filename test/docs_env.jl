@@ -1,12 +1,13 @@
 # The docs' examples, as a harness shared by `test_docs.jl` (which runs them) and
 # `docs/screenshots/make_screenshots.jl` (which runs them and captures LibreOffice showing the results).
 #
-# Every ```julia block of every page runs, in order, one module per page, against freshly made versions
-# of the files the docs talk about (`budget.ods`, `data.ods`, `report.ods`, `big.ods`, two pictures), with
-# the variables the prose describes (`sh`, a sheet with values and an error; `df` and `notes`, tables; `f`,
-# a function for `streamods`). A block that needs a package the tests don't have (DataFrames) is skipped,
-# and a million rows become a thousand. Outputs in comments aren't checked: the point is that what the
-# docs show works.
+# Every ```julia block of every page runs, in order, one module per page, as a reader would run them.
+# A page that reads `budget.ods` without making it first (the home page) gets the one the Tutorial's
+# first example makes; a file a page wrote itself is never replaced, so the Tutorial's examples run on
+# the file as its earlier examples left it. Two pictures are there too. The variables some reference
+# pages' prose describes are defined (`sh`, a sheet with values and an error; `xf`, its file). A block
+# that needs a package the tests don't have (DataFrames) is skipped, and a million rows become a
+# thousand. Outputs in comments aren't checked: the point is that what the docs show works.
 #
 # A screenshot marker after a block, `<!-- shot: NAME key=value … flag … -->`, names the image of what the
 # block made (see `docs/screenshots/README.md`).
@@ -16,72 +17,37 @@ import Dates
 
 const DOCS = joinpath(dirname(@__DIR__), "docs", "src")
 
-# The files the docs open (budget, data, report, big): made again before each block that reads one;
-# a file a block writes is removed first. Other files (one an earlier example wrote, `sales.ods`) stay.
-const _DOCS_INPUTS = ("budget.ods", "data.ods", "report.ods", "big.ods")
+# The files the docs read without making them: only `budget.ods`, made by the Tutorial's first example.
+# It is made before a block that reads it, unless the page wrote it itself (`written`), and a file a
+# block writes is removed first. Other files (one an earlier example wrote, `sales.ods`) stay.
+const _DOCS_INPUTS = ("budget.ods",)
 const _DOCS_READ = r"(?:readods|openods|readtable|readdata)\(\"([^\"]+)\""
-const _DOCS_WRITE = r"(?:writeods|writetable|streamods)\((?:f, )?\"([^\"]+)\""
-function _docs_files(dir, block::AbstractString)
+const _DOCS_WRITE = r"(?:writeods|writetable|streamods)\(\"([^\"]+)\""
+function _docs_files(dir, block::AbstractString, written::Set{String})
     reads = Set(String(m.captures[1]) for m in eachmatch(_DOCS_READ, block))
     writes = Set(String(m.captures[1]) for m in eachmatch(_DOCS_WRITE, block))
-    need = intersect(reads, _DOCS_INPUTS)
+    need = setdiff(intersect(reads, _DOCS_INPUTS), written)
     cd(dir) do
         for f in union(setdiff(writes, reads), need)
             isfile(f) && rm(f)
         end
-        isempty(need) || _docs_inputs(need)
+        isempty(need) || _docs_budget()
     end
+    union!(written, writes)
+    return nothing
 end
 
-function _docs_inputs(need)
-    begin
-        months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-        # budget.ods: Income and Costs (a month, an amount, a status), a Sheet1 and hidden-to-be Notes
-        xf = newods("Income")
-        inc = xf["Income"]
-        inc[1, 1] = "Month"; inc[1, 2] = "Amount"; inc[1, 3] = "Source"; inc[1, 4] = "Note"
-        for i in 1:79
-            inc[i+1, 1] = months[mod1(i, 12)]; inc[i+1, 2] = 100.0 * i; inc[i+1, 3] = "Sales"; inc[i+1, 4] = ""
-        end
-        costs = addsheet!(xf, "Costs")
-        costs[1, 1] = "Month"; costs[1, 2] = "Amount"; costs[1, 3] = "Status"
-        for i in 1:12
-            costs[i+1, 1] = months[i]; costs[i+1, 2] = 50.0 * i; costs[i+1, 3] = "Open"; costs[i+1, 4] = 10i
-        end
-        setFormula(costs, "B14"; val = "=SUM(B2:B13)")
-        s1 = addsheet!(xf, "Sheet1")
-        for i in 1:13, j in 1:3
-            s1[i, j] = i * j
-        end
-        addsheet!(xf, "Notes")["A1"] = "notes"
-        "budget.ods" in need && writeods("budget.ods", xf)
-        # data.ods: a table on Sheet1
-        xf = newods("Sheet1")
-        d = xf["Sheet1"]
-        d[1, 1] = "Name"; d[1, 2] = "Score"; d[1, 3] = "When"; d[1, 4] = "Value"
-        for i in 2:6
-            d[i, 1] = "P$i"; d[i, 2] = 1.5i; d[i, 3] = Dates.Date(2026, 1, i); d[i, 4] = i^2
-        end
-        "data.ods" in need && writeods("data.ods", xf)
-        # report.ods: a Summary with a Region/Revenue table, its Data and Lists
-        xf = newods("Summary")
-        s = xf["Summary"]
-        s[1, 1] = "Region"; s[1, 2] = "Revenue"; s[1, 3] = "Checked"; s[1, 4] = "Owner"
-        for i in 2:50
-            s[i, 1] = ["North", "South", "East", "West"][mod1(i, 4)]; s[i, 2] = 100i; s[i, 3] = "yes"; s[i, 4] = "Ann"
-        end
-        dd = addsheet!(xf, "Data"); dd["B10"] = 1
-        l = addsheet!(xf, "Lists")
-        for i in 1:9; l[i, 1] = "item $i"; end
-        "report.ods" in need && writeods("report.ods", xf)
-        # big.ods: one sheet of rows
-        xf = newods("data")
-        for i in 1:100; xf["data"][i, 1] = i; end
-        "big.ods" in need && writeods("big.ods", xf)
-    end
+# budget.ods, made by the Tutorial's first example itself, so that the two can't drift apart.
+function _docs_budget()
+    first_block = docs_blocks(read(joinpath(DOCS, "tutorial", "tutorial.md"), String))[1][1]
+    occursin("writeods(\"budget.ods\"", first_block) ||
+        error("the Tutorial's first example no longer makes budget.ods")
+    Base.include_string(Module(:budget), first_block, "tutorial.md example 1")
+    return nothing
 end
 
-# The variables the guide's prose assumes.
+# The variables the prose of some reference pages describes (`xf`, `sh`, the names on the Addressing
+# page, and an error result in C2 as if LibreOffice had saved it).
 const _DOCS_PRELUDE = """
 using OpenDocumentSpreadsheets, Dates
 xf = newods("Sheet1")
@@ -93,9 +59,7 @@ addsheet!(xf, "My sheet")["A1"] = "x"
 addsheet!(xf, "Data")["B2"] = 1
 addDefinedName(xf, "Totals", "Sheet1.A1:A4")
 addDefinedName(sh, "LocalRange", "Sheet1.B1:B2")
-df = (name = ["Ann", "Bob"], price = [9.5, 7.0])
-notes = (note = ["checked"],)
-f = s -> (t = addsheet!(s, "rows"); writerow!(t, (1, 2)))
+df = (Month = ["Jan", "Feb"], Amount = [1025.0, 1050.0], Source = ["Sales", "Grants"])   # as the Tutorial reads it
 """
 
 
@@ -133,6 +97,7 @@ function run_docs_page(p::AbstractString, dir::AbstractString; after = (m, k, sh
     results = Tuple{Int,Bool,Any}[]
     isempty(blocks) && return results
     m = Module(Symbol(basename(p)))
+    written = Set{String}()                    # the files this page's examples wrote
     for f in readdir(dir)                      # a page starts without another page's files
         f in ("logo.png", "chart.jpg") || rm(joinpath(dir, f); recursive = true)
     end
@@ -143,7 +108,7 @@ function run_docs_page(p::AbstractString, dir::AbstractString; after = (m, k, sh
     for (k, (b, shots)) in enumerate(blocks)
         (occursin("Pkg.add", b) || occursin("using DataFrames", b)) && continue
         b = replace(b, "1_000_000" => "1_000")      # the streaming example, scaled down
-        _docs_files(dir, b)
+        _docs_files(dir, b, written)
         err = nothing
         try
             # what an example prints (the tutorial's rows) stays out of the test output (issue #2)

@@ -4,6 +4,9 @@ CurrentModule = OpenDocumentSpreadsheets
 
 # Addressing cells and ranges
 
+In the examples, `xf` is an open file (`xf = readods("budget.ods")`) and `sh` is one of its sheets
+(`sh = xf["Costs"]`).
+
 ## Within a sheet
 
 References within a sheet are the ones LibreOffice uses: `"B2"`, `"A1:C3"`, whole columns `"A:C"`

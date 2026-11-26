@@ -27,18 +27,20 @@ OpenDocumentSpreadsheets supports Julia 1.10 and later.
 
 ## A first look
 
+The [Tutorial](tutorial/tutorial.md) makes this `budget.ods` in its first step.
+
 ```julia
 using OpenDocumentSpreadsheets
 
 xf = readods("budget.ods")        # open a file
-sheetnames(xf)                    # ["Income", "Costs", ...]
+sheetnames(xf)                    # ["Income", "Costs"]
 sh = xf["Costs"]
 sh["B3"]                          # one value
 sh["A1:C10"]                      # a matrix of values
 
 dt = readtable("budget.ods", "Costs")   # a table, for DataFrames or any Tables.jl sink
 
-writetable("out.ods", dt; sheetname = "Costs")   # write it back
+writetable("costs.ods", dt; sheetname = "Costs", overwrite = true)   # write it to a new file
 ```
 
 ## Where to go next

@@ -5,9 +5,15 @@ CurrentModule = OpenDocumentSpreadsheets
 # Database ranges
 
 A database range is LibreOffice's named block of rows under a header row (Data ▸ Define Range), with
-filter buttons on its header. OpenDocumentSpreadsheets calls one a table. A file must be open for
-writing (`mode="rw"`, or made by [`newods`](@ref)); [`table`](@ref) and the readers also work on
-files opened for reading.
+filter buttons on its header. The functions for database ranges call one a *table*: [`addtable!`](@ref),
+[`table`](@ref), [`settotals!`](@ref) and the type [`Table`](@ref).
+
+This is a narrower sense than [`readtable`](@ref)'s, which reads any block of rows under a header
+row, whether it is a database range or not (see the [Tutorial](../tutorial/tutorial.md#Reading-a-table)).
+Given `table_name`, `readtable` reads a database range by its name instead.
+
+Adding or changing a database range needs a file open for writing (`mode="rw"`, or made by
+[`newods`](@ref)); [`table`](@ref) and the readers also work on files opened for reading.
 
 ```julia
 using OpenDocumentSpreadsheets
@@ -39,7 +45,9 @@ OpenDocumentSpreadsheets.table(xf, "Sales")     # the range, by name
 writeods("sales.ods", xf; overwrite = true)
 
 readtable("sales.ods", "Sales"; table_name = "Sales")         # read it by name
-writetable("people.ods", df; sheetname = "People", as_table = true, table_name = "People")
+people = (Name = ["Ann", "Bob"], Team = ["North", "South"])     # or a DataFrame
+writetable("people.ods", people; sheetname = "People", as_table = true, table_name = "People",
+           overwrite = true)
 deletetable!(t)
 ```
 
