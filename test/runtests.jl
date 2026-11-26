@@ -24,100 +24,100 @@ const _LO_VERSION = Dict{String,VersionNumber}()
 lo_version(soffice) = get!(() -> _lo_vnum(try read(`$soffice --version`, String) catch; "" end), _LO_VERSION, soffice)
 const LO_FIXTURE_VERSION = _lo_vnum(read(joinpath(DATA, "lo-version.txt"), String))
 
-@testset "OpenDocumentSpreadsheets" begin
-    @testset "SheetCore" begin
-        @testset "references" begin
-            include("core/test_references.jl")
-        end
-        @testset "ranges" begin
-            include("core/test_ranges.jl")
-        end
-        @testset "reference styles" begin
-            include("core/test_refstyles.jl")
-        end
-        @testset "number formats" begin
-            include("core/test_numfmt.jl")
-        end
-        @testset "tables, colours, widths" begin
-            include("core/test_misc.jl")
-        end
+# The suite, in groups by function (issue #2). A passing run lists each group and each file in it; a
+# file's own testsets show only when something in them fails.
+#
+# To run some groups only, name them (their keys below):
+#     julia --project -e 'using Pkg; Pkg.test(test_args = ["charts", "styles"])'
+#     julia --project test/runtests.jl charts styles
+const _GROUPS = ("core", "container", "read", "formulas", "write", "charts", "styles", "display", "speed", "docs", "api", "aqua")
+for g in ARGS
+    g in _GROUPS || error("Unknown test group `$g`: use one of " * join(_GROUPS, ", ") * ".")
+end
+_rungroup(g) = isempty(ARGS) || g in ARGS
+
+# Each file in a testset of its own, named for what it tests.
+macro testfile(name, file)
+    esc(:(@testset $name begin include($file) end))
+end
+
+@testset verbose = true "OpenDocumentSpreadsheets" begin
+    _rungroup("core") && @testset verbose = true "SheetCore" begin
+        @testfile "references" "core/test_references.jl"
+        @testfile "ranges" "core/test_ranges.jl"
+        @testfile "reference styles" "core/test_refstyles.jl"
+        @testfile "number formats" "core/test_numfmt.jl"
+        @testfile "tables, colours, widths" "core/test_misc.jl"
     end
-    @testset "container" begin
-        include("test_container.jl")
-        @testset "namespace prefixes" begin
-            include("test_namespaces.jl")
-        end
+    _rungroup("container") && @testset verbose = true "container" begin
+        @testfile "reading and writing packages" "test_container.jl"
+        @testfile "namespace prefixes" "test_namespaces.jl"
     end
-    @testset "read model" begin
-        @testset "values" begin
-            include("model/test_values.jl")
-        end
-        @testset "workbook" begin
-            include("model/test_workbook.jl")
-        end
-        @testset "tables" begin
-            include("model/test_tables.jl")
-        end
-        @testset "byte scanner" begin
-            include("model/test_sheetscan.jl")
-        end
+    _rungroup("read") && @testset verbose = true "read model" begin
+        @testfile "values" "model/test_values.jl"
+        @testfile "workbook" "model/test_workbook.jl"
+        @testfile "tables" "model/test_tables.jl"
+        @testfile "byte scanner" "model/test_sheetscan.jl"
     end
-    @testset "formulas" begin
-        include("formula/test_openformula.jl")
-        include("formula/test_refs.jl")
+    _rungroup("formulas") && @testset verbose = true "formulas" begin
+        @testfile "OpenFormula" "formula/test_openformula.jl"
+        @testfile "references" "formula/test_refs.jl"
     end
-    @testset "write" begin
-        include("write/test_write.jl")
-        include("write/test_lines.jl")
-        include("write/test_sheetops.jl")
-        include("write/test_names.jl")
-        include("write/test_sheetprops.jl")
-        include("write/test_groups.jl")
-        include("write/test_views.jl")
-        include("write/test_protection.jl")
-        include("write/test_printing.jl")
-        include("write/test_docprops.jl")
-        include("write/test_extras.jl")
-        include("write/test_hyperlinks.jl")
-        include("write/test_richtext.jl")
-        include("write/test_notes.jl")
-        include("write/test_images.jl")
-        include("write/test_validation.jl")
-        include("write/test_lo_options.jl")
-        include("write/test_dbtables.jl")
-        include("write/test_autofilter.jl")
-        include("write/test_sort.jl")
-        include("write/test_conditional.jl")
-        include("write/test_cfrules.jl")
-        include("write/test_chartobjects.jl")
+    _rungroup("write") && @testset verbose = true "write" begin
+        @testfile "writing" "write/test_write.jl"
+        @testfile "row and column edits" "write/test_lines.jl"
+        @testfile "sheet operations" "write/test_sheetops.jl"
+        @testfile "defined names" "write/test_names.jl"
+        @testfile "hidden lines, sheets, tab colours" "write/test_sheetprops.jl"
+        @testfile "groups" "write/test_groups.jl"
+        @testfile "panes and views" "write/test_views.jl"
+        @testfile "protection" "write/test_protection.jl"
+        @testfile "printing" "write/test_printing.jl"
+        @testfile "document properties" "write/test_docprops.jl"
+        @testfile "cell extras" "write/test_extras.jl"
+        @testfile "hyperlinks" "write/test_hyperlinks.jl"
+        @testfile "rich text" "write/test_richtext.jl"
+        @testfile "comments" "write/test_notes.jl"
+        @testfile "pictures" "write/test_images.jl"
+        @testfile "data validation" "write/test_validation.jl"
+        @testfile "LibreOffice's options" "write/test_lo_options.jl"
+        @testfile "tables (database ranges)" "write/test_dbtables.jl"
+        @testfile "AutoFilter" "write/test_autofilter.jl"
+        @testfile "sort" "write/test_sort.jl"
+        @testfile "conditional formats" "write/test_conditional.jl"
+        @testfile "conditional format rules" "write/test_cfrules.jl"
+        @testfile "chart objects" "write/test_chartobjects.jl"
     end
-    @testset "charts" begin
-        include("charts/test_reading.jl")
-        include("charts/test_format.jl")
-        include("charts/test_create.jl")
-        include("charts/test_setters.jl")
-        include("charts/test_chartex.jl")
-        include("charts/test_sparklines.jl")
+    _rungroup("charts") && @testset verbose = true "charts" begin
+        @testfile "reading" "charts/test_reading.jl"
+        @testfile "formatting getters" "charts/test_format.jl"
+        @testfile "creating" "charts/test_create.jl"
+        @testfile "formatting setters" "charts/test_setters.jl"
+        @testfile "histograms and chart sheets" "charts/test_chartex.jl"
+        @testfile "sparklines" "charts/test_sparklines.jl"
     end
-    @testset "styles" begin
-        include("styles/test_stylesheet.jl")
-        include("styles/test_formats.jl")
-        include("styles/test_cellformat.jl")
-        include("styles/test_numberformat.jl")
-        include("styles/test_merge.jl")
-        include("styles/test_layout.jl")
-        include("styles/test_namedstyles.jl")
+    _rungroup("styles") && @testset verbose = true "styles" begin
+        @testfile "style sheet" "styles/test_stylesheet.jl"
+        @testfile "row and column formats" "styles/test_formats.jl"
+        @testfile "fonts, fills, borders, alignment" "styles/test_cellformat.jl"
+        @testfile "number formats" "styles/test_numberformat.jl"
+        @testfile "merged cells" "styles/test_merge.jl"
+        @testfile "widths and heights" "styles/test_layout.jl"
+        @testfile "named styles" "styles/test_namedstyles.jl"
     end
-    @testset "phase 3 (speed)" begin
-        include("test_phase3.jl")
+    _rungroup("display") && @testset verbose = true "REPL display" begin
+        @testfile "sizes, rows, formats, charts" "test_display.jl"
     end
-    @testset "docs" begin
-        include("test_docs.jl")             # the docs' examples run (phase 9)
+    _rungroup("speed") && @testset verbose = true "speed paths" begin
+        @testfile "lazy reading, parsing, writing" "test_phase3.jl"
     end
-    @testset "public API only" begin
-        include("test_public_api.jl")
+    _rungroup("docs") && @testset verbose = true "docs" begin
+        @testfile "examples, wording, pictures" "test_docs.jl"
     end
-    @testset "Aqua" begin
-        include("test_aqua.jl")
+    _rungroup("api") && @testset verbose = true "public API only" begin
+        @testfile "no internals used" "test_public_api.jl"
+    end
+    _rungroup("aqua") && @testset verbose = true "Aqua" begin
+        @testfile "package quality" "test_aqua.jl"
     end
 end

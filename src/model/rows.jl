@@ -73,6 +73,8 @@ struct WorksheetRows
     store::SheetStore
 end
 
+Base.show(io::IO, it::WorksheetRows) = print(io, "WorksheetRows(", repr(it.sheet.name), ", ", length(it), " rows)")
+
 Base.eltype(::Type{WorksheetRows}) = SheetRow
 Base.IteratorSize(::Type{WorksheetRows}) = Base.HasLength()
 Base.length(it::WorksheetRows) = sum(Int(rd.count) for rd in it.store.rows; init = 0)
@@ -95,6 +97,8 @@ cache off. Each iteration from the start reads the sheet again.
 struct SheetRowStreamIterator
     sheet::Worksheet
 end
+
+Base.show(io::IO, it::SheetRowStreamIterator) = print(io, "SheetRowStreamIterator(", repr(it.sheet.name), ")")
 
 Base.eltype(::Type{SheetRowStreamIterator}) = SheetRow
 Base.IteratorSize(::Type{SheetRowStreamIterator}) = Base.SizeUnknown()

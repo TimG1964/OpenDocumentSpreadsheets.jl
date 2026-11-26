@@ -448,6 +448,17 @@ function Tables.columns(tr::TableRowIterator)
     return map(v -> typed_column(Vector{Any}(v)), cols)
 end
 
+# Displays that read nothing: an iterator shows its columns, not its source's contents (issue #1's audit).
+function Base.show(io::IO, it::TableRowIterator)
+    print(io, "TableRowIterator(", length(it.index.column_labels), " columns: ")
+    join(io, (repr(l) for l in it.index.column_labels), ", ")
+    print(io, "; data from row ", it.first_data_row, ")")
+end
+function Base.show(io::IO, r::TableRow)
+    print(io, "TableRow ", r.row, ": ")
+    show(io, NamedTuple{Tuple(r.index.column_labels)}(Tuple(r.cell_values)))
+end
+
 Base.show(io::IO, dt::DataTable) = Base.show(io, MIME"text/plain"(), dt)
 Base.show(io::IO, ::MIME"text/plain", dt::DataTable) =
     print(io, "DataTable with $(length(dt.data)) columns and $(isempty(dt.data) ? 0 : length(dt.data[1])) rows.")

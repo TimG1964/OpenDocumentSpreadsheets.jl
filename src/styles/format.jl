@@ -216,3 +216,10 @@ function getText(x::Union{Worksheet,ODSFile}, ref...)
     ws, r, c = format_cell(x, ref...)
     return cell_text(ws, r, c)
 end
+
+# `CellFormat(General)`, or the code and its data style's id (issue #1's audit).
+function Base.show(io::IO, f::CellFormat)
+    nf = get(f.format, "numFmt", nothing)
+    code = nf === nothing ? "General" : get(nf, "formatCode", "General")
+    print(io, "CellFormat(", repr(code), f.numFmtId == 0 ? "" : ", id $(f.numFmtId)", ")")
+end

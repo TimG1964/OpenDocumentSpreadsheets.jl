@@ -15,7 +15,12 @@ struct SheetCoreError <: Exception
     msg::String
 end
 
-Base.showerror(io::IO, e::SheetCoreError) = print(io, "SheetCoreError: ", e.msg)
+# The name the error shows under: a back end sets its own (OpenDocumentSpreadsheets: `ODSError`, in its
+# `__init__`), so its users read the name they catch (issue #1's audit; records/core-migration.md).
+const ERROR_NAME = Ref("SheetCoreError")
+
+Base.showerror(io::IO, e::SheetCoreError) = print(io, ERROR_NAME[], ": ", e.msg)
+Base.show(io::IO, e::SheetCoreError) = print(io, ERROR_NAME[], "(", repr(e.msg), ")")
 
 """
     MAX_ROWS, MAX_COLS

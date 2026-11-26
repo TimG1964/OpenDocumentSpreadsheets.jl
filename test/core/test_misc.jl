@@ -90,7 +90,8 @@ end
 
 @testset "errors and limits" begin
     @test SheetCore.MAX_ROWS == 1_048_576 && SheetCore.MAX_COLS == 16_384
-    @test sprint(showerror, SheetCore.SheetCoreError("boom")) == "SheetCoreError: boom"
+    @test sprint(showerror, SheetCore.SheetCoreError("boom")) == "ODSError: boom"     # the name the package sets
+    @test sprint(show, OpenDocumentSpreadsheets.ODSError("boom")) == "ODSError(\"boom\")"
     @test string(SheetCore.CellRef(SheetCore.MAX_ROWS, SheetCore.MAX_COLS)) == "XFD1048576"
 end
 

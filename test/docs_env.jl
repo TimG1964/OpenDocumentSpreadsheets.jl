@@ -146,7 +146,10 @@ function run_docs_page(p::AbstractString, dir::AbstractString; after = (m, k, sh
         _docs_files(dir, b)
         err = nothing
         try
-            cd(() -> Base.include_string(m, b, "$(basename(p)) example $k"), dir)
+            # what an example prints (the tutorial's rows) stays out of the test output (issue #2)
+            redirect_stdout(devnull) do
+                cd(() -> Base.include_string(m, b, "$(basename(p)) example $k"), dir)
+            end
         catch e
             err = (e, catch_backtrace())
         end

@@ -44,17 +44,23 @@ end
     @test_throws ODSError xf[0]
     @test_throws ODSError getsheet(xf, "Nope")
     @test isvisible(xf["Table"]) && !isvisible(xf["Hidden"])
-    # show: sizes appear once a sheet has been read
+    # show: sizes appear before a sheet is used, as show reads it (issue #1)
     s = sprint(show, xf)
-    @test occursin("ODSFile(\"", s) && occursin("containing 6 Worksheets", s) && occursin("size unknown", s)
-    @test occursin("(hidden)", s)
+    @test occursin("ODSFile(\"", s) && occursin("containing 6 Worksheets", s) && !occursin("size unknown", s)
+    @test occursin("(hidden)", s) && occursin("8x7", s) && occursin("B2:H9", s)
     ws = xf["Table"]
-    @test sprint(show, ws) == "OpenDocumentSpreadsheets.Worksheet: [\"Table\"]"
-    @test size(ws) == (8, 7)
     @test sprint(show, ws) == "8×7 OpenDocumentSpreadsheets.Worksheet: [\"Table\"](B2:H9)"
-    @test occursin("8x7", sprint(show, xf)) && occursin("B2:H9", sprint(show, xf))
-    @test sprint(show, xf["Hidden"]) == "OpenDocumentSpreadsheets.Worksheet: [\"Hidden\"] (hidden)"
+    @test size(ws) == (8, 7)
+    @test sprint(show, openods(TABLES)["Table"]) == "8×7 OpenDocumentSpreadsheets.Worksheet: [\"Table\"](B2:H9)"
+    @test sprint(show, openods(TABLES; enable_cache = false)["Table"]) == "8×7 OpenDocumentSpreadsheets.Worksheet: [\"Table\"](B2:H9)"
+    @test occursin("8x7", sprint(show, openods(TABLES; enable_cache = false)))
+    @test sprint(show, xf["Hidden"]) == "1×1 OpenDocumentSpreadsheets.Worksheet: [\"Hidden\"](A1:A1) (hidden)"
     @test startswith(sprint(show, readods(IOBuffer(read(TABLES)))), "ODSFile(IOBuffer)")
+    # an empty sheet shows as empty; get_dimension and size keep A1:A1 and (1, 1)
+    nf = newods()
+    @test occursin(r"Sheet1 empty$", sprint(show, nf))
+    @test sprint(show, nf[1]) == "OpenDocumentSpreadsheets.Worksheet: [\"Sheet1\"] (empty)"
+    @test get_dimension(nf[1]) == SheetCore.CellRange("A1:A1") && size(nf[1]) == (1, 1)
     @test get_dimension(readods(TABLES)["Names"]; allow_load = false) == SheetCore.CellRange("A1:A1")
     @test get_dimension(xf["Names"]) == SheetCore.CellRange("A1:C2")
 end

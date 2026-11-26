@@ -33,6 +33,7 @@ include("create.jl")
 include("setters.jl")
 include("chartex.jl")
 include("sparklines.jl")
+include("show.jl")
 include("docrefs.jl")
 
 export

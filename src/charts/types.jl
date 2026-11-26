@@ -58,8 +58,9 @@ const ChartRange = Union{Nothing,SheetCellRef,SheetCellRange,SheetRowRange,Sheet
 """
     ChartRanges
 
-What [`getChartRanges`](@ref) gives for one series: `idx`, `name`, and its `categories`, `values` and
-`bubble_sizes` ranges.
+The fields of what [`getChartRanges`](@ref) gives for one series: `idx`, `name`, and its `categories`, `values` and
+`bubble_sizes` ranges. Each row is a `NamedTuple` typed by its own values (a `name` of `nothing` is
+`Nothing`), which `ChartRanges` describes.
 """
 const ChartRanges = @NamedTuple{idx::Int, name::Union{Nothing,String}, categories::ChartRange,
                                 values::ChartRange, bubble_sizes::ChartRange}

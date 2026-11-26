@@ -217,9 +217,9 @@ and bubble sizes, read from the cells now.
 getChartSeries(c::AbstractChart) = _series(c.package, _doc(c))
 
 """
-    getChartRanges(c::AbstractChart) -> Vector{ChartRanges}
-    getChartRanges(x::Union{Worksheet,ODSFile}, name) -> Vector{ChartRanges}
-    getChartRanges(x::Union{Worksheet,ODSFile}) -> Vector{Tuple{String,Vector{ChartRanges}}}
+    getChartRanges(c::AbstractChart) -> Vector{NamedTuple}
+    getChartRanges(x::Union{Worksheet,ODSFile}, name) -> Vector{NamedTuple}
+    getChartRanges(x::Union{Worksheet,ODSFile}) -> Vector{Tuple{String,Vector{NamedTuple}}}
 
 The ranges of each series: `idx`, `name`, `categories`, `values` and `bubble_sizes`, each a
 [`ChartRange`](@ref). Without a name, every chart's: `(chart name, ranges)`.
@@ -228,7 +228,7 @@ LibreOffice keeps a chart's references even when their cells are deleted: they n
 `#REF!`.
 """
 getChartRanges(c::AbstractChart) =
-    ChartRanges[(idx = i - 1, name = _series_name(c.package, a)[1], categories = _chart_range(a.categories),
+    NamedTuple[(idx = i - 1, name = _series_name(c.package, a)[1], categories = _chart_range(a.categories),
                  values = _chart_range(a.values), bubble_sizes = _chart_range(a.sizes))
                 for (i, a) in enumerate(_series_addrs(_doc(c)))]
 getChartRanges(x::Union{Worksheet,ODSFile}, name::AbstractString) = getChartRanges(getChart(x, name))

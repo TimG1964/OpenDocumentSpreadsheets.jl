@@ -418,13 +418,13 @@ function _all_notes(ws::Worksheet)
 end
 
 _cellname(r::Int, c::Int) = string(SheetCore.encode_column_number(c), r)
-_comment_info(ws::Worksheet, r::Int, c::Int, nd::NoteData) = CommentInfo((ws.name, _cellname(r, c), nd.author, nd.text,
+_comment_info(ws::Worksheet, r::Int, c::Int, nd::NoteData) = _info_row(CommentInfo, (ws.name, _cellname(r, c), nd.author, nd.text,
                                                                               nd.date === nothing ? nothing : _parse_thread_date(nd.date)))
 function _thread_info(ws::Worksheet, r::Int, c::Int, nd::NoteData)
     t = nd.thread
     e1 = t[1]
-    replies = ThreadedReply[ThreadedReply((e.author, e.text, e.date)) for e in t[2:end]]
-    return ThreadedCommentInfo((ws.name, _cellname(r, c), e1.author, e1.text, e1.date, nd.resolved, replies))
+    replies = NamedTuple[_info_row(ThreadedReply, (e.author, e.text, e.date)) for e in t[2:end]]
+    return _info_row(ThreadedCommentInfo, (ws.name, _cellname(r, c), e1.author, e1.text, e1.date, nd.resolved, replies))
 end
 
 #
@@ -508,8 +508,8 @@ getComment(ws::Worksheet, row::Integer, col::Integer) = getComment(ws, CellRef(r
 Every note of a sheet, or of every sheet, as [`getComment`](@ref) gives them, by row and then
 column.
 """
-getComments(ws::Worksheet) = CommentInfo[_comment_info(ws, r, c, nd) for ((r, c), nd) in _all_notes(ws)]
-getComments(xf::ODSFile) = reduce(vcat, (getComments(ws) for ws in _sheets(xf)); init = CommentInfo[])
+getComments(ws::Worksheet) = NamedTuple[_comment_info(ws, r, c, nd) for ((r, c), nd) in _all_notes(ws)]
+getComments(xf::ODSFile) = reduce(vcat, (getComments(ws) for ws in _sheets(xf)); init = NamedTuple[])
 
 """
     deleteComment(sheet, ref) -> Bool
@@ -650,5 +650,5 @@ Every threaded comment of a sheet, or of every sheet, as [`getThreadedComment`](
 them, by row and then column.
 """
 getThreadedComments(ws::Worksheet) =
-    ThreadedCommentInfo[_thread_info(ws, r, c, nd) for ((r, c), nd) in _all_notes(ws) if nd.thread !== nothing]
-getThreadedComments(xf::ODSFile) = reduce(vcat, (getThreadedComments(ws) for ws in _sheets(xf)); init = ThreadedCommentInfo[])
+    NamedTuple[_thread_info(ws, r, c, nd) for ((r, c), nd) in _all_notes(ws) if nd.thread !== nothing]
+getThreadedComments(xf::ODSFile) = reduce(vcat, (getThreadedComments(ws) for ws in _sheets(xf)); init = NamedTuple[])

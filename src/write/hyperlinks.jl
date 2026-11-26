@@ -80,7 +80,7 @@ end
 
 _link_info(ws::Worksheet, r::Int, c::Int, href::AbstractString, display) =
     (t = _href_target(href, _links_flat(get_odsfile(ws)));
-     HyperlinkInfo((ws.name, string(SheetCore.encode_column_number(c), r), t[1], t[2], display, nothing)))
+     _info_row(HyperlinkInfo, (ws.name, string(SheetCore.encode_column_number(c), r), t[1], t[2], display, nothing)))
 
 # A new document's relative hrefs in a flat file's form or a zipped package's, for the file being
 # written (F-065). Its links are all OpenDocumentSpreadsheets's: its URL fields and added styles.
@@ -346,7 +346,7 @@ _fields_kept(d::Union{Nothing,CellData}, run::FileLinkRun) =
 #
 
 function _cell_links(ws::Worksheet, r::Int, c::Int)
-    out = HyperlinkInfo[]
+    out = NamedTuple[]
     st = get_odsfile(ws).styles
     d = cell_data(_cached_store(ws), r, c)
     if d !== nothing && (d.flags & F_RICH) != 0
@@ -557,10 +557,10 @@ function getHyperlinks(ws::Worksheet)
             end
         end
     end
-    out = HyperlinkInfo[]
+    out = NamedTuple[]
     for (r, c) in sort!(collect(cells))
         append!(out, _cell_links(ws, r, c))
     end
     return out
 end
-getHyperlinks(xf::ODSFile) = reduce(vcat, (getHyperlinks(ws) for ws in _sheets(xf)); init = HyperlinkInfo[])
+getHyperlinks(xf::ODSFile) = reduce(vcat, (getHyperlinks(ws) for ws in _sheets(xf)); init = NamedTuple[])

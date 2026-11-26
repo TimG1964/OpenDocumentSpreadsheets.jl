@@ -45,6 +45,9 @@ so one type covers errors from both.
 """
 const ODSError = SheetCoreError
 
+# Errors show as `ODSError: …`, the name users catch.
+__init__() = (SheetCore.ERROR_NAME[] = "ODSError"; nothing)
+
 # container I/O (phase 0)
 include("io/namespaces.jl")
 include("io/container.jl")

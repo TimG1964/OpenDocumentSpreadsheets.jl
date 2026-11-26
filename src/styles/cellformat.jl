@@ -825,3 +825,46 @@ function setUniformStyle(x::Union{Worksheet,ODSFile}, ref...)
     end
     return style_name(_styles_of(x), id)
 end
+
+# How the cell format types show (issue #1's audit): their style and the attributes set, not the Dict.
+# One line: `CellFont("Default": name = Liberation Sans, sz = 10)`; `text/plain`, one attribute a line.
+# A `nothing` attribute is a flag that is on in a font (`"b" => nothing`, bold) and an unset side in a border.
+function _attr_items(d::Dict{String,Union{Nothing,Dict{String,String}}}, flags::Bool)
+    items = String[]
+    for k in sort!(collect(keys(d)))
+        v = d[k]
+        if v === nothing
+            flags && push!(items, k)
+        elseif length(v) == 1 && haskey(v, "val")
+            push!(items, "$k = $(v["val"])")
+        elseif isempty(v)
+            continue
+        else
+            push!(items, k == _only_key(d) ? join(("$a = $(v[a])" for a in sort!(collect(keys(v)))), ", ") :
+                         "$k(" * join(("$a = $(v[a])" for a in sort!(collect(keys(v)))), ", ") * ")")
+        end
+    end
+    return items
+end
+# A Dict whose one key only names the group (`"alignment"`, `"numFmt"`, `"patternFill"`): its attributes
+# show without it.
+_only_key(d) = length(d) == 1 ? first(keys(d)) : nothing
+
+_format_parts(f::CellFont) = (f.fontId, f.font)
+_format_parts(f::CellFill) = (f.fillId, f.fill)
+_format_parts(f::CellBorder) = (f.borderId, f.border)
+_format_parts(f::CellAlignment) = (nothing, f.alignment)
+
+function _show_cell_format(io::IO, x, multiline::Bool)
+    id, d = _format_parts(x)
+    items = _attr_items(d, x isa CellFont)
+    print(io, nameof(typeof(x)), "(", id === nothing ? "" : repr(id) * (multiline ? ")" : ": "))
+    if multiline
+        id === nothing && print(io, ")")
+        isempty(items) ? print(io, "\n  (nothing set)") : foreach(s -> print(io, "\n  ", s), items)
+    else
+        print(io, isempty(items) ? "nothing set" : join(items, ", "), ")")
+    end
+end
+Base.show(io::IO, x::Union{CellFont,CellFill,CellBorder,CellAlignment}) = _show_cell_format(io, x, false)
+Base.show(io::IO, ::MIME"text/plain", x::Union{CellFont,CellFill,CellBorder,CellAlignment}) = _show_cell_format(io, x, true)

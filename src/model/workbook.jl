@@ -224,6 +224,10 @@ struct FileFrame
     xml::String                       # the element, as written
 end
 
+# A getter's row (a comment, a link, a rule…) with the fields of `T`, typed by its values: a row typed `T`
+# itself, whose fields are `Union{Nothing,…}`, shows at the REPL as `@NamedTuple{…}((…))` (D-090).
+_info_row(::Type{<:NamedTuple{N}}, vals::Tuple) where {N} = NamedTuple{N}(vals)
+
 # Data validation (phase 6 step 6, D-075). A rule, as XLSX.jl's `DataValidationInfo` gives its fields (but
 # its sheet and cells), and its base cell (`table:base-cell-address`, as written).
 struct ValRule
@@ -817,31 +821,40 @@ defined_names(ws::Worksheet) = copy(_local_names(ws))
 
 The smallest range holding every cell with a value or formula. ODS files do not record it,
 so it is computed from the sheet (the cache, or a scan without the cache). An empty sheet
-gives `A1:A1`. With `allow_load=false`, an unread sheet gives `A1:A1`
-without being read.
+gives `A1:A1` (shown as `empty` when the sheet or its file is displayed). With
+`allow_load=false`, an unread sheet gives `A1:A1` without being read.
 """
 function get_dimension(ws::Worksheet; allow_load::Bool = true)::CellRange
     fallback = CellRange(CellRef(1, 1), CellRef(1, 1))
     if !allow_load && ws.store === nothing
         return fallback
     end
-    dim = store_dimension(is_cache_enabled(ws) ? _cached_store(ws) : _store_for(ws))
-    return something(dim, fallback)
+    return something(_sheet_dimension(ws), fallback)
 end
 
-# The dimension if it is known without reading the sheet.
-_known_dimension(ws::Worksheet) = ws.store === nothing ? nothing : store_dimension(ws.store)
+# The dimension, `nothing` for an empty sheet: the sheet is read if it hasn't been (into the cache,
+# or scanned without it).
+_sheet_dimension(ws::Worksheet) = store_dimension(is_cache_enabled(ws) ? _cached_store(ws) : _store_for(ws))
+
+# The dimension for display (issue #1): `show` reads an unread sheet, as ODS records no used range.
+# A sheet that can't be read shows no size rather than making `show` throw; using it shows the error.
+_display_dimension(ws::Worksheet) = try
+    (_sheet_dimension(ws), true)
+catch e
+    e isa InterruptException && rethrow()
+    (nothing, false)
+end
 
 Base.size(ws::Worksheet) = size(get_dimension(ws))
 
 function Base.show(io::IO, ws::Worksheet)
     hidden = ws.visible ? "" : " (hidden)"
-    rg = _known_dimension(ws)
+    rg, ok = _display_dimension(ws)
     if rg !== nothing
         nrow, ncol = size(rg)
         print(io, nrow, "×", ncol, " OpenDocumentSpreadsheets.Worksheet: [\"", ws.name, "\"](", rg, ")", hidden)
     else
-        print(io, "OpenDocumentSpreadsheets.Worksheet: [\"", ws.name, "\"]", hidden)
+        print(io, "OpenDocumentSpreadsheets.Worksheet: [\"", ws.name, "\"]", ok ? " (empty)" : "", hidden)
     end
 end
 
@@ -854,9 +867,9 @@ function Base.show(io::IO, xf::ODSFile)
     for s in _sheets(xf)
         println(io)
         name = length(s.name) > 20 ? first(s.name, 19) * "…" : s.name
-        rg = _known_dimension(s)
+        rg, ok = _display_dimension(s)
         if rg === nothing
-            @printf(io, "%21s %s", name, s.store === nothing ? "size unknown" : "empty")
+            @printf(io, "%21s %s", name, ok ? "empty" : "size unknown")
         else
             sz = size(rg)
             @printf(io, "%21s %-13s %-13s", name, string(sz[1], "x", sz[2]), string(rg))

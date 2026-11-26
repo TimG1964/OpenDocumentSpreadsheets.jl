@@ -333,6 +333,18 @@ function _db_of(t::Table)
     throw(KeyError(t.name))
 end
 
+# XLSX.jl's compact form (`table.jl`).
+function Base.show(io::IO, s::TableStyleInfo)
+    print(io, "TableStyleInfo(", something(s.name, "none"))
+    flags = String[]
+    s.show_first_column && push!(flags, "first")
+    s.show_last_column && push!(flags, "last")
+    s.show_row_stripes && push!(flags, "rows")
+    s.show_column_stripes && push!(flags, "cols")
+    isempty(flags) || print(io, ", ", join(flags, "+"))
+    print(io, ")")
+end
+
 function Base.show(io::IO, t::Table)
     n = max(0, _last_data_row(t) - _first_data_row(t) + 1)
     print(io, n, "x", length(t.columns), " Table (id=", t.id, ", \"", t.name, "\", ", t.ref)

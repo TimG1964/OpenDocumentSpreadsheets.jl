@@ -425,7 +425,7 @@ function _dv_info(ws::Worksheet, name::String, areas::Vector{_Area})
     r = _rule_named(get_odsfile(ws), name)
     rngs = [CellRange(first(a[1]), first(a[2]), last(a[1]), last(a[2])) for a in areas]
     range = length(rngs) == 1 ? rngs[1] : NonContiguousRange(ws.name, Union{CellRef,CellRange}[rngs...])
-    return DataValidationInfo((ws.name, range, r.type, r.operator, _dv_ui(r.formula1), _dv_ui(r.formula2), r.allowBlank,
+    return _info_row(DataValidationInfo, (ws.name, range, r.type, r.operator, _dv_ui(r.formula1), _dv_ui(r.formula2), r.allowBlank,
                                r.type === :list && r.dropdown, r.showInputMessage, r.promptTitle, r.prompt, r.showErrorMessage,
                                r.errorTitle, r.error, r.errorStyle, r.caseSensitive, r.type === :list && r.dropdown && r.sortEntries))
 end
@@ -819,8 +819,8 @@ showErrorMessage, errorTitle, error, errorStyle)`, followed by LibreOffice's own
 `NonContiguousRange` for several areas; formulas are in LibreOffice's notation, without `=` (a list's
 items as `"a","b"`); `operator` is `nothing` for `:list`, `:custom` and `:any`. In the file's order.
 """
-getDataValidations(ws::Worksheet) = DataValidationInfo[_dv_info(ws, n, a) for (n, a) in _sheet_rules(ws)]
-getDataValidations(xf::ODSFile) = reduce(vcat, (getDataValidations(ws) for ws in _sheets(xf)); init = DataValidationInfo[])
+getDataValidations(ws::Worksheet) = NamedTuple[_dv_info(ws, n, a) for (n, a) in _sheet_rules(ws)]
+getDataValidations(xf::ODSFile) = reduce(vcat, (getDataValidations(ws) for ws in _sheets(xf)); init = NamedTuple[])
 
 """
     getDataValidation(sheet, ref) -> Union{Nothing, NamedTuple}
