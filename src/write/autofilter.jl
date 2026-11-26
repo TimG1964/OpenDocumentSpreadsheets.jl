@@ -541,8 +541,7 @@ it meets the criteria of every filtered column. A criterion is one of:
 - two conditions joined by `:and` or `:or`: `(">=" => 10, :and, "<" => 20)`.
 - `(:top, n)` or `(:bottom, n)` for the `n` largest or smallest numbers, or `(:top, n, :percent)` and
   `(:bottom, n, :percent)` for a percentage of the cells.
-- a regular expression, `r"^a.*z\$"` or `"!=" => r"…"` (LibreOffice's own; it must match the whole
-  cell's text).
+- a regular expression, `r"^a.*z\$"` or `"!=" => r"…"` (it must match the whole cell's text).
 
 Criteria are applied as LibreOffice's Refresh Range applies them:
 - Text that LibreOffice reads as a number (`"10"`, `"1,000"`, `"(1)"`, `"2026-11-23 15:00"`) is compared
@@ -557,7 +556,7 @@ Criteria are applied as LibreOffice's Refresh Range applies them:
 LibreOffice has no above- or below-average or relative-date filters (`:aboveAverage`, `:today`,
 `:Q1`, …): they are errors.
 
-LibreOffice's own options: `caseSensitive=true` compares text in its case, and
+Options: `caseSensitive=true` compares text in its case, and
 `noDuplicates=true` hides rows that show the same as a row above them (always comparing case), as
 LibreOffice's *No duplications*. `noDuplicates` applies to the criteria given, so it needs `filters`,
 and LibreOffice applies it only with at least one criterion.
@@ -580,7 +579,7 @@ puts them, and the sort is stored with the range:
 - a range with merged cells is refused (LibreOffice sorts it only without formats), and so is one with
   an array formula.
 
-LibreOffice's own options: `caseSensitive=true` (shared with the criteria) puts lower case
+Options: `caseSensitive=true` (shared with the criteria) puts lower case
 before upper case where text is otherwise equal; `naturalSort=true` compares the numbers within text
 by value (`"a2"` before `"a10"`); `includeFormats=false` leaves the formats and validations where they
 are and moves only the values, notes, links and pictures (which allows merged cells).

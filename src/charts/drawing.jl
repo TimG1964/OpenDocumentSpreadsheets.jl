@@ -233,7 +233,7 @@ end
     ChartMarker
 
 A series' (or point's) symbol: `symbol` (`:circle`, `:square`, `:diamond`, `:triangle`, `:x`, `:plus`,
-`:star`, `:dash`, `:dot`, `:none`, `:auto`, and LibreOffice's own `:arrowDown`, `:arrowLeft`,
+`:star`, `:dash`, `:dot`, `:none`, `:auto`, `:arrowDown`, `:arrowLeft`,
 `:bowTie`, `:hourglass`, `:loStar`, `:vBar`), `size` in points, `shape` its fill and line (LibreOffice
 draws a symbol in its series' colours).
 """

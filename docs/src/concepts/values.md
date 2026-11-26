@@ -57,7 +57,7 @@ result until LibreOffice calculates it, so take a file LibreOffice has saved, wh
 
 ```julia
 iserror(sh, "C2")      # true
-geterror(sh, "C2")     # "#DIV/0!", or LibreOffice's own codes such as "Err:502"
+geterror(sh, "C2")     # "#DIV/0!", or a code such as "Err:502"
 ```
 
 ## Cells
@@ -100,5 +100,5 @@ cell, and a line break starts a new paragraph.
 
 A string of one run is written as plain text, with the run's attributes given to the cell's font,
 except for a superscript or subscript, which a cell style can't hold. `getRichTextString` reads
-LibreOffice's own rich text too, and gives `nothing` for a cell with no formatted runs. Writing a new
+rich text made in LibreOffice too, and gives `nothing` for a cell with no formatted runs. Writing a new
 value to the cell drops its runs, as LibreOffice does.

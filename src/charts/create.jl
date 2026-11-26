@@ -228,7 +228,7 @@ _points_of(addr::AbstractString) = sum(length(r) * length(c) for (_, r, c) in _r
 
 A new chart of `kind` over the cells of `anchor` (`"F2:M18"`), with no series yet (add them with
 [`addSeries`](@ref)): a frame in the first cell, resizing with its cells up to the last, and an object in
-LibreOffice's own look.
+LibreOffice's default look.
 
 `kind` is one of `:column`, `:bar`, `:stackedColumn`, `:stackedBar`, `:percentStackedColumn`,
 `:percentStackedBar`, `:line`, `:lineMarkers`, `:stackedLine`, `:percentStackedLine`,
@@ -243,7 +243,7 @@ added in that order.
 title the axes (not on a pie or doughnut). LibreOffice's titles can't follow a cell: a `CellRef` is an
 error.
 
-LibreOffice's own options:
+More options:
 - `subtitle`; `threeD` and `deep` for a 3-D chart; `dataTable = true` for a data table under the plot;
 - `interpolation` of line, XY and radar lines: `:straight`, `:smooth`, `:bspline`, `:stepStart`,
   `:stepEnd`, `:stepCenterX`, `:stepCenterY`;

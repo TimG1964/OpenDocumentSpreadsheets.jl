@@ -27,7 +27,7 @@ deleteComment(s, "B3")
 ```
 
 `visible = true` shows a note always, as View ▸ Comments or Show Comment does, rather than only
-when the mouse is over its cell. Notes take LibreOffice's own `date`, the date it shows on a note.
+when the mouse is over its cell. `date` sets the date LibreOffice shows on the note.
 
 ## Threaded comments
 

@@ -320,9 +320,9 @@ per 64 pixels of its width and per 20 of its height (its own size, or `size = (w
 pixels); for a range (`"B2:D6"`), the range. The picture is stored once in the file,
 however many times it is shown.
 
-LibreOffice has no pictures in cells: `inCell=true` is an error. `alt` is the picture's alt text,
-which LibreOffice keeps for every picture (its *Text Alternative*, `svg:title`), and `description`
-its longer description (`svg:desc`), LibreOffice's own.
+`alt` is the picture's short description for readers who can't see it, and `description` its longer
+one: the *Text* and *Alt Text* fields of LibreOffice's Format ▸ Alt Text.
+LibreOffice has no pictures in cells: `inCell=true` is an error.
 
 Returns `(sheet, media_name, from, to, alt, description)`. The file must be writable.
 """

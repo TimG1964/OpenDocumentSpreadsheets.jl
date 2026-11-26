@@ -17,7 +17,7 @@ for i in 1:60
 end
 
 setPageSetup(s; orientation = :landscape, paperSize = :A4, fitToWidth = 1, fitToHeight = 0)
-setPageMargins(s; left = 0.5, right = 0.5, top = 0.75, bottom = 0.75)   # inches
+setPageMargins(s; left = 0.5, right = 0.5, top = 0.75, bottom = 0.75)   # in inches
 setPrintOptions(s; gridLines = true, horizontalCentered = true)
 setPrintArea(s, "A1:C61")
 setPrintTitles(s; rows = 1)                      # repeated on every page
@@ -52,7 +52,9 @@ edits, so changing one sheet leaves the others alone. A sheet without one prints
 default header and footer, and [`getHeaderFooter`](@ref) says so.
 
 - **Paper:** `paperSize` takes the common sizes (`:A4`, `:letter`, …), and `paperWidth` and
-  `paperHeight` any other.
-- **Scaling:** `fitToWidth` and `fitToHeight` fit the print to pages, and LibreOffice's own
+  `paperHeight` any other, in cm unless `unit` says otherwise.
+- **Units:** margins are in inches, paper sizes in cm; [Units](../layout/widthAndHeight.md#Units)
+  lists them all.
+- **Scaling:** `fitToWidth` and `fitToHeight` fit the print to pages across and down, and
   `scaleToPages` fits it to a number of pages in all.
 - **Print titles** must lie inside a group or apart from it.

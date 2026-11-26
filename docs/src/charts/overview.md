@@ -22,7 +22,7 @@ own. They work in zipped (`.ods`) and flat (`.fods`) files, new or edited.
 - [Histograms and chart sheets](histograms.md).
 - [Sparklines](sparklines.md): small charts inside cells.
 
-A new chart takes LibreOffice's own look (its palette, symbols, fonts and legend), so it looks as a
+A new chart takes LibreOffice's default look (its palette, symbols, fonts and legend), so it looks as a
 chart made in LibreOffice does. What a LibreOffice chart can't store is an error that says why.
 
 ## Through edits and operations

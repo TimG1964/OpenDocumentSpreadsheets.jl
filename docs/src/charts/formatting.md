@@ -61,7 +61,7 @@ Some setters follow LibreOffice's model of a chart:
 - **Legend corners** (`:tr`, `:tl`, `:bl`, `:br`) are custom positions.
 - **A minor unit** must divide the major one, since LibreOffice stores the number of minor steps.
 
-LibreOffice's own options include gradients and hatches for fills, explosion of pie slices
+Other options include gradients and hatches for fills, explosion of pie slices
 ([`setSeriesExplosion`](@ref)), and how axis labels are arranged
 ([`setAxisLabelArrangement`](@ref)).
 

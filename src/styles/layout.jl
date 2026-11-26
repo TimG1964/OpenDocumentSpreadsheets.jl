@@ -102,8 +102,8 @@ setColumnWidth(ws::Worksheet, col::Union{Integer,AbstractVector{<:Integer}}; kw.
     getColumnWidth(sheet, row, col; unit=:chars)
 
 The width of the column of one cell, or `nothing` if its column style gives none. In
-characters by default (the width set, plus 0.7109375);
-with `unit`, as a length. Works on read-only files.
+characters by default, including the column's padding of 0.7109375 characters, so a width set
+as 20 reads back as 20.7109375; with `unit`, as a length. Works on read-only files.
 """
 function getColumnWidth(x::Union{Worksheet,ODSFile}, ref...; unit::Symbol = :chars)
     ws, _, c = format_cell(x, ref...)
@@ -139,7 +139,8 @@ setRowHeight(ws::Worksheet, row::Union{Integer,AbstractVector{<:Integer}}; kw...
     getRowHeight(sheet, ref) -> Union{Nothing, Float64}
     getRowHeight(sheet, row, col)
 
-The height of the row of one cell, in points plus 0.2109375 (the height set, plus padding).
+The height of the row of one cell, in points, including the row's padding of 0.2109375 points,
+so a height set as 30 reads back as 30.2109375.
 `nothing` if its row style gives no height, -1 if the sheet has no such row. Works on
 read-only files.
 """

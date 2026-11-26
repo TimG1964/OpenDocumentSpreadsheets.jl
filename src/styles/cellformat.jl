@@ -617,10 +617,14 @@ setFont
 """
     setFill(sheet, ref; pattern, fgColor, bgColor) -> String or -1
 
-Set the background of cells (address forms as [`setFont`](@ref)). `pattern="solid"` with
-`fgColor` gives a solid background, `"none"` none. ODF cells have no pattern fills: other
-patterns blend `fgColor` into `bgColor` (white by default) as LibreOffice does when it
-imports one.
+Set the background of cells, LibreOffice's Format ▸ Cells ▸ Background (address forms as
+[`setFont`](@ref)). For a plain colour give `pattern = "solid"` and the colour as `fgColor`:
+`setFill(sheet, "A1:C1"; pattern = "solid", fgColor = "DDEEFF")`; without `pattern`, nothing is
+filled. `pattern = "none"` removes the background.
+
+The names come from patterned fills, where `fgColor` is the pattern's colour and `bgColor` the
+colour behind it. OpenDocument cells have no patterns: another `pattern` blends `fgColor` into
+`bgColor` (white by default) into one colour.
 """
 setFill
 

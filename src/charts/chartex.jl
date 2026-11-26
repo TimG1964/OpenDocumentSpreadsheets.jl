@@ -68,7 +68,7 @@ end
     addChartEx(xf::ODSFile, kind::Symbol, values; sheetname = "", …) -> ChartEx
 
 A chartex chart of `kind` plotting `values`, on a sheet or on a new chart sheet. Of the
-chartex kinds LibreOffice has `:histogram`, made as LibreOffice's own histogram; `:waterfall`,
+chartex kinds LibreOffice has `:histogram`, made as LibreOffice makes a histogram; `:waterfall`,
 `:funnel`, `:treemap`, `:sunburst`, `:pareto` and `:boxWhisker` are errors: LibreOffice reads them without
 a diagram. A histogram takes no `categories`, and LibreOffice draws its bins from its values
 (set them with `setSeriesBinning`, under [`setSeriesName`](@ref)).

@@ -465,8 +465,8 @@ Attach a note (LibreOffice's comment, an annotation) to one cell, replacing any 
 height as a minimum); `visible=true` shows it always, not only when the mouse is over the cell.
 A cell with a threaded comment is refused.
 
-`date` (a `Date` or `DateTime`; the time of the call, in UTC, if not given) is LibreOffice's own:
-it shows a note's date with its author.
+`date` (a `Date` or `DateTime`; the time of the call, in UTC, if not given) is the date
+LibreOffice shows with the note's author.
 
 Returns `(sheet, ref, author, text, date)`. The file must be writable.
 """

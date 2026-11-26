@@ -316,7 +316,7 @@ cell is locked unless its format says otherwise. Only the keywords given change,
 other formatting is kept. Address forms as [`setFont`](@ref); as with the other format setters,
 whole columns and rows are formatted as such, not only up to the used range.
 
-Two options are LibreOffice's own: `hideAll` (LibreOffice's
+Two more options: `hideAll` (LibreOffice's
 *Hide all*: on a protected sheet the cell shows nothing, and is locked; while it is set, `locked`
 and `hidden` change nothing) and `hidePrint` (*Hide when printing*, `style:print-content`).
 """

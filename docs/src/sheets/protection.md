@@ -27,5 +27,5 @@ unprotectSheet(s)
 - **Permissions** are LibreOffice's: selecting protected and unprotected cells, and inserting and
   deleting rows and columns. LibreOffice has no permission to format, sort, insert hyperlinks or edit
   objects and scenarios on a protected sheet, and no window protection: asking for them is an error.
-- **LibreOffice's own options:** `hideAll` and `hidePrint` hide a cell's contents on screen or in
-  print while the sheet is protected.
+- **Hiding contents:** `hideAll` and `hidePrint` (*Hide all* and *Hide when printing*) hide a cell's
+  contents on screen or in print while the sheet is protected.

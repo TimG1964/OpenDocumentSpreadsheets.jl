@@ -25,7 +25,7 @@ deleteImage(s, "B2")
 
 A picture (PNG, JPEG or GIF) is anchored to its first cell and resizes with its cells, as
 LibreOffice's Anchor ▸ To Cell (resize with cell) does. It moves with its cell through inserts,
-deletes, sorts and sheet copies. LibreOffice's own `alt` and `description` are its Name and
-Description in Format ▸ Name and Description.
+deletes, sorts and sheet copies. `alt` and `description` are the picture's short and long descriptions for
+readers who can't see it: the *Text* and *Alt Text* fields of LibreOffice's Format ▸ Alt Text.
 
 LibreOffice has no pictures inside cells, so `inCell=true` is an error.

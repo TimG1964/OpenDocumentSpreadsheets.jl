@@ -34,7 +34,7 @@ getFormula(p, "C5"; raw = true)     # "of:=SUM([.C2:.C4])"
 - English function names, with `,` between arguments.
 - In inline arrays, `,` between columns and `;` between rows (`{1,2;3,4}`).
 - References name their sheet with `.` (`Sheet2.A1`), as in LibreOffice.
-- Functions that LibreOffice stores under another name are translated with LibreOffice's own table:
+- Functions that LibreOffice stores under another name are translated with LibreOffice's table of names:
   `IFS` is stored as `COM.MICROSOFT.IFS`, `CEILING.XCL` as `COM.MICROSOFT.CEILING`, and so on.
 
 `getFormula` and the getters on other pages are public but not exported: import them by name, as

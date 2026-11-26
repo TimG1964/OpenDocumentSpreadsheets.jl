@@ -39,5 +39,5 @@ A cell has one rule: a new rule replaces the rule of the cells it covers, and
 deleteDataValidation(o, "C2:C20")
 ```
 
-LibreOffice's own options are keywords too: `caseSensitive` for text comparisons, and `sortEntries`
-to show a list's values in order.
+Two more options: `caseSensitive` (*Case sensitive*) for text comparisons, and `sortEntries`
+(*Sort entries ascending*) to show a list's values in order.

@@ -184,7 +184,8 @@ the rule's name (`"cellIs"`, `"top10"`, `"aboveAverage"`, `"containsText"`,
 
 Rules are in LibreOffice's order, which is their priority: a range's rules in the order they
 were set, and the ranges in the order they were first given rules. `priority` counts from 1 through
-the sheet. LibreOffice's own rules and the rules of an imported workbook are read as they are stored.
+the sheet. Rules made in LibreOffice, or by LibreOffice when it opened a file in another format,
+are read as they are stored.
 """
 function getConditionalFormats(ws::Worksheet)
     out = Pair{Union{CellRange,NonContiguousRange},CfInfo}[]

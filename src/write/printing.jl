@@ -236,7 +236,7 @@ keywords given change.
 - `fitToWidth`, `fitToHeight`: the pages to fit the sheet on, across and down (0: as many as
   needed). `scale` and fitting are alternatives: giving one turns the other off.
 
-LibreOffice's own settings:
+Also:
 - `paperWidth`, `paperHeight`: any paper size, in `unit`s (`:cm`, the default, `:mm`, `:in` or
   `:pt`), instead of `paperSize`. Without `orientation`, the page is landscape when it is wider
   than high, as LibreOffice's page dialog makes it; with it, the two are swapped to suit.
@@ -409,7 +409,7 @@ Choose what is printed with a sheet, as LibreOffice keeps it in the page style: 
 `headings` (row and column headers) join `style:print`, the centring is `style:table-centering`.
 Each keyword is a `Bool`; only those given change.
 
-The rest are LibreOffice's own (its page style's *Sheet* tab), also in `style:print`:
+The rest are the other settings of the page style's *Sheet* tab in LibreOffice:
 `comments`, `formulas` (formulas instead of their results), `zeroValues`, `charts`, `drawings`
 (drawing objects) and `objects` (pictures and other objects). LibreOffice prints charts, drawings,
 objects and zero values unless told not to.

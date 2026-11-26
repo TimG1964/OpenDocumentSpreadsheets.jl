@@ -50,9 +50,24 @@ getChartGroups(c::AbstractChart) = _groups(_doc(c))
 """
     getChartTypes(c::Chart) -> Vector{Symbol}
 
-The tags of the chart's groups (`:barChart`, `:lineChart`, `:pieChart`, `:doughnutChart`, `:areaChart`,
-`:scatterChart`, `:bubbleChart`, `:radarChart`, and LibreOffice's `:stockChart`, `:ofPieChart` and the
-3-D tags such as `:bar3DChart`).
+The types of the chart's groups of series, one for each type the chart combines. They are broader
+than [`addChart`](@ref)'s kinds:
+
+| `addChart` kind | `getChartTypes` |
+|---|---|
+| `:column`, `:bar` and their stacked forms | `[:barChart]` |
+| `:line`, `:lineMarkers` and their stacked forms | `[:lineChart]` |
+| `:area` and its stacked forms | `[:areaChart]` |
+| `:pie`, `:doughnut` | `[:pieChart]`, `[:doughnutChart]` |
+| `:pieOfPie`, `:barOfPie` | `[:ofPieChart]` |
+| `:scatter`, `:bubble` | `[:scatterChart]`, `[:bubbleChart]` |
+| `:radar`, `:filledRadar` | `[:radarChart]` |
+| `:stock`, `:stockOHLC` | `[:stockChart]` |
+| `:stockVolume`, `:stockVolumeOHLC` | `[:barChart, :stockChart]` |
+| `:combo` | `[:barChart, :lineChart]` |
+
+A 3-D chart (`threeD = true`) gives the 3-D type: `:bar3DChart`, `:line3DChart`, `:area3DChart`,
+`:pie3DChart`. Whether bars run up or across, and whether they are stacked, isn't read back.
 """
 getChartTypes(c::AbstractChart) = [g.kind for g in getChartGroups(c)]
 

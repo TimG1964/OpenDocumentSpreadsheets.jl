@@ -341,7 +341,7 @@ _own_stroke(o, st) = _style_attr(o, st, "draw:stroke")
 gradientAngle = 0, hatch = nothing, hatchAngle = 0) -> Chart
 
 Series `i`'s fill: a colour (hex, a colour name, a theme colour such as `:accent1` or a
-[`SchemeColor`](@ref)), `:none`, or `:inherit` (LibreOffice's default). LibreOffice's own option:
+[`SchemeColor`](@ref)), `:none`, or `:inherit` (LibreOffice's default). Also:
 `transparency`, 0 to 100 percent; a gradient from `color` to `gradient` (another colour), of
 `gradientStyle` (`:linear`, `:axial`, `:radial`, `:ellipsoid`, `:square`, `:rectangular`) at
 `gradientAngle` degrees; or a `hatch` (`:single`, `:double`, `:triple`) of lines of `color` at `hatchAngle`
@@ -518,9 +518,8 @@ end
     setMarkerFill / setMarkerLineColor / setMarkerLineWidth(c, i, value; point = nothing) -> error
 
 A line, XY or radar series' (or point's, from 1) symbol and size (2 to 72 points). Symbols are
-the usual ones (`:circle`, `:square`, `:diamond`, `:triangle`, `:x`, `:plus`, `:star`, `:dash`, `:dot`,
-`:none`, `:auto`) and LibreOffice's own (`:arrowDown`, `:arrowLeft`, `:bowTie`, `:hourglass`, `:loStar`,
-`:vBar`). LibreOffice draws a symbol in its series' colours: a fill or border of its own is an error.
+`:circle`, `:square`, `:diamond`, `:triangle`, `:x`, `:plus`, `:star`, `:dash`, `:dot`,
+`:none`, `:auto`, `:arrowDown`, `:arrowLeft`, `:bowTie`, `:hourglass`, `:loStar` and `:vBar`. LibreOffice draws a symbol in its series' colours: a fill or border of its own is an error.
 """
 function setMarker(c::Chart, i::Integer; point = nothing, symbol = nothing, size = nothing, fill = nothing,
                    lineColor = nothing, lineWidth = nothing)
@@ -822,7 +821,7 @@ The legend's place: `:b`, `:t`, `:l`, `:r`, `:tr`, and the other corners `:tl`, 
 corner is a custom position in that corner of the chart, as LibreOffice's import writes `:tr`.
 `:inherit` removes the position, which LibreOffice reads as `:r`. Whether the legend may overlap the
 plot area, and the series whose entries are hidden. The first two make a legend if the chart has none.
-LibreOffice's own: `expansion`, `:wide`, `:high` or `:balanced` (not for a corner).
+`expansion` shapes the legend: `:wide`, `:high` or `:balanced` (not for a corner).
 """
 function setLegendPos(c::Chart, pos::Symbol; overlay = nothing, expansion = nothing)
     corner = get(_LEGEND_CORNERS, pos, nothing)

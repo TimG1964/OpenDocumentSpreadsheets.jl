@@ -37,6 +37,11 @@ setFont(s, "A4:A6"; italic = true)
 <!-- shot: cellformat_basic cells=5x7 -->
 ![A report with a large dark blue title, a header row of white bold text on blue with centred quarter names, a medium blue outline round the table, thin grey lines between the rows, and italic region names](../images/cellformat_basic.png)
 
+A cell's background (Format ▸ Cells ▸ Background) is set with `pattern = "solid"` and the colour as
+`fgColor`; without `pattern`, nothing is filled. The names come from patterned fills, where `fgColor` is the pattern's colour and `bgColor`
+the colour behind it; OpenDocument cells have plain backgrounds, so a pattern is blended into one
+colour. Colours are hex (`"4472C4"`) or names (`"darkblue"`).
+
 Setters return the name of the cell style they made, for a single cell. Getters report what the
 cell's style resolves to:
 
@@ -105,7 +110,7 @@ OpenDocumentSpreadsheets.getCellStyle(st, "A1")   # "Heading 1"
 - **Direct formatting stays on top**, as in LibreOffice. Applying a style removes the cell's own
   settings only for what the style sets (its font size, say). The rest stays, including the number
   format unless the style has one.
-- **LibreOffice's built-in styles** are added, in LibreOffice's own definitions, to a file that lacks
+- **LibreOffice's built-in styles** are added, as LibreOffice defines them, to a file that lacks
   them: Heading, Heading 1, Heading 2, Text, Note, Footnote, Hyperlink, Status, Good, Neutral, Bad,
   Warning, Error, Accent, Accent 1 to 3, and Result.
 - **Names** are the ones LibreOffice shows. In the file, a name such as "My Style" is stored as

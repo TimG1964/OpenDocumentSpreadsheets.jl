@@ -193,8 +193,8 @@ _doc(c::AbstractChart) = _chart_doc(_object_text(_frame(c)))
     getCharts(ws::Worksheet) -> Vector{AbstractChart}
     getCharts(xf::ODSFile) -> Vector{AbstractChart}
 
-The charts on a sheet, or in a workbook (sheet by sheet), as they are now: LibreOffice's own, those its
-import made, and those added here. A histogram is a [`ChartEx`](@ref), the others are
+The charts on a sheet, or in a file (sheet by sheet), as they are now: those made in LibreOffice,
+those it made when it opened a file in another format, and those added here. A histogram is a [`ChartEx`](@ref), the others are
 [`Chart`](@ref)s. A chart anchored to the page reports the cells its position falls in.
 """
 getCharts(xf::ODSFile) = AbstractChart[_handle(f) for f in _chart_frames(xf)]

@@ -414,7 +414,7 @@ ignoring case (it may be a defined name's too, as LibreOffice allows); `""` give
 its cells are left as they are. LibreOffice has no table styles: `style` other than `nothing` or
 `"None"` is an error.
 
-LibreOffice's own options: `has_header_row=false` makes a table whose first row is data
+Options: `has_header_row=false` makes a table whose first row is data
 (its columns are then named `"Column A"`, …), and `filterButtons=false` hides the header's filter
 buttons, which a table shows by default.
 

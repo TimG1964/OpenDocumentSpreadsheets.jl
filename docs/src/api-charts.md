@@ -22,7 +22,7 @@ Charts
 
 ## Creating charts
 
-A chart added here takes LibreOffice's own look (its colours, symbols, fonts and legend). It is a
+A chart added here takes LibreOffice's default look (its colours, symbols, fonts and legend). It is a
 frame anchored in its first cell and resizing with its cells, and its references follow inserts,
 deletes and sheet operations as LibreOffice moves them.
 
@@ -72,7 +72,7 @@ setGroupGapWidth
 SchemeColor
 ```
 
-### LibreOffice's own
+### Trendlines, error bars and more
 
 Trendlines and error bars, explosion and axis label arrangement. `addChart`'s own options (stock charts, interpolation, empty and hidden cells, the data table,
 the chart wizard's `data` and `seriesIn`) are under [`addChart`](@ref).

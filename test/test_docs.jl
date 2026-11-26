@@ -28,6 +28,8 @@ const _RECORD_IDS = r"\b[DFQ]-\d{3}\b|\b[Pp]hase \d"
         @test (rel, occursin("SheetCore", text)) == (rel, false)
         rel in ("index.md", "xlsx.md") && continue
         @test (rel, occursin("XLSX", text)) == (rel, false)
+        # "LibreOffice's own" contrasts with XLSX.jl, which these pages don't assume (the docs audit)
+        @test (rel, occursin("LibreOffice's own", text)) == (rel, false)
     end
     # The docstrings of public names, which the API pages show. `@doc` without REPL loaded gives the
     # docstring object, whose printed form holds its text. A name bound from the shared core has its
@@ -38,8 +40,8 @@ const _RECORD_IDS = r"\b[DFQ]-\d{3}\b|\b[Pp]hase \d"
     for m in (OpenDocumentSpreadsheets, OpenDocumentSpreadsheets.Charts), n in names(m)   # the public names
         isdefined(m, n) || continue
         s = string(Core.eval(@__MODULE__, :(@doc $m.$n)))
-        @test (m, n, occursin("XLSX", s), occursin(_RECORD_IDS, s), occursin(_core_words, s)) ==
-              (m, n, false, false, false)
+        @test (m, n, occursin("XLSX", s), occursin(_RECORD_IDS, s), occursin(_core_words, s),
+               occursin("LibreOffice's own", s)) == (m, n, false, false, false, false)
     end
 end
 

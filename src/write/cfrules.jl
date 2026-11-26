@@ -621,7 +621,7 @@ The highlight rules (all but data bars, colour scales and icon sets) format matc
 `redborder`) or with custom `format`, `font`, `border` and `fill`, each a vector of pairs
 (`font = ["color" => "red", "bold" => "true"]`; a font may also have LibreOffice's `name`
 and `size`). Each rule's format becomes a named cell style,
-`ConditionalStyle_N`. LibreOffice's own option `style` applies any named cell style instead
+`ConditionalStyle_N`. `style` applies any named cell style instead
 (`style = "Good"`; its built-in styles are added when used).
 
 Values and thresholds are numbers or cell references given as strings, or formulas;

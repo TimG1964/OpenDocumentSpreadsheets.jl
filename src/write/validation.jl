@@ -698,8 +698,8 @@ and `showErrorMessage` with `error`, `errorTitle` and `errorStyle` (`:stop`, `:w
 `:information`) set the input help and error alert. As in LibreOffice, a cell has one validation: a new one replaces
 the validation of the cells it covers. Identical validations share one rule.
 
-Two options are LibreOffice's own: `caseSensitive`
-(`table:case-sensitive`: lists and comparisons with text tell upper and lower case apart) and
+Two more options: `caseSensitive`
+(lists and comparisons with text tell upper and lower case apart) and
 `sortEntries` (a `:list`'s drop-down shows its items sorted ascending).
 
 Returns the validation, as [`getDataValidation`](@ref) reads it. An `:any` validation without a
@@ -814,8 +814,8 @@ end
 
 Every validation of a sheet, or of every sheet: `(sheet, range, type,
 operator, formula1, formula2, allowBlank, dropdown, showInputMessage, promptTitle, prompt,
-showErrorMessage, errorTitle, error, errorStyle)`, followed by LibreOffice's own `caseSensitive` and
-`sortEntries` (see [`addDataValidation`](@ref)). `range` is a `CellRange`, or a
+showErrorMessage, errorTitle, error, errorStyle, caseSensitive, sortEntries)` (see
+[`addDataValidation`](@ref)). `range` is a `CellRange`, or a
 `NonContiguousRange` for several areas; formulas are in LibreOffice's notation, without `=` (a list's
 items as `"a","b"`); `operator` is `nothing` for `:list`, `:custom` and `:any`. In the file's order.
 """
