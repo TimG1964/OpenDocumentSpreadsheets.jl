@@ -38,7 +38,7 @@ alike from one run to the next. The same run gives the same pictures byte for by
 | `dropdown` | the cursor's drop-down list open (Alt+Down) |
 | `file=x.ods` | the file the example saved, rather than the page's `xf` |
 | `xf=name` | the page's variable holding the workbook (default `xf`) |
-| `sheet=Name` | the sheet shown (default the first): it's moved to the front in the copy captured |
+| `sheet=Name` | the sheet shown (default the first): it's moved to the front in the copy captured. Write a space in its name as `_` (`sheet=Costs_2027`) |
 | `zoom=N` | the zoom, in percent (default 100) |
 | `top=A1`, `top=keep` | the cell at the top left (default A1), or the one the example set |
 | `cursor=A1`, `cursor=keep` | the cursor (default A1), or the one the example set |

@@ -38,9 +38,10 @@ setFont(s, "A4:A6"; italic = true)
 ![A report with a large dark blue title, a header row of white bold text on blue with centred quarter names, a medium blue outline round the table, thin grey lines between the rows, and italic region names](../images/cellformat_basic.png)
 
 A cell's background (Format ▸ Cells ▸ Background) is set with `pattern = "solid"` and the colour as
-`fgColor`; without `pattern`, nothing is filled. The names come from patterned fills, where `fgColor` is the pattern's colour and `bgColor`
-the colour behind it; OpenDocument cells have plain backgrounds, so a pattern is blended into one
-colour. Colours are hex (`"4472C4"`) or names (`"darkblue"`).
+`fgColor`; without `pattern`, nothing is filled. The names come from patterned fills, where
+`fgColor` is the pattern's colour and `bgColor` the colour behind it; OpenDocument cells have plain
+backgrounds, so a pattern is blended into one colour. Colours are hex (`"4472C4"`) or names
+(`"darkblue"`).
 
 Each setter changes only what its keywords give: `setFont(s, "A1"; bold = true)` leaves the font's
 size, colour and name, and the cell's fill, borders and number format, as they were. LibreOffice
@@ -58,8 +59,26 @@ getFill(s, "B3")          # its fill
 ```
 
 Every setter works on empty cells, as in LibreOffice, and whole columns and rows are formatted to
-the end of the sheet. `setUniformFont`, `setUniformFill`, `setUniformBorder` and the others give a
-range one style, and [`setOutsideBorder`](@ref) draws a frame round it.
+the end of the sheet.
+
+### Formatting a range alike
+
+A setter given a range changes each cell's own formatting, so cells that differed still differ in
+everything else. The `setUniform*` functions instead make the range alike: they format its first
+(top-left) cell, then give every cell that cell's font, fill, border, alignment or number format.
+
+```julia
+u = addsheet!(xf, "Regions")
+u["A1:C2"] = ["North" 1 2; "South" 3 4]
+setFont(u, "A1"; bold = true, size = 14)
+
+setFont(u, "A1:C2"; color = "darkgreen")      # all green; A1 is still the only bold, 14 pt cell
+setUniformFont(u, "A1:C2"; italic = true)     # every cell gets A1's font: bold, 14 pt, green, italic
+```
+
+`setUniformFill`, `setUniformBorder`, `setUniformAlignment` and `setUniformFormat` work the same way
+for their part. [`setUniformStyle`](@ref) gives every cell the first cell's whole style, and
+[`setOutsideBorder`](@ref) draws a frame round a range.
 
 ## Number formats
 

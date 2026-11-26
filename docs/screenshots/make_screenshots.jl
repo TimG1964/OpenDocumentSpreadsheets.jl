@@ -52,7 +52,9 @@ function shot_file(m::Module, dir::AbstractString, shot::DocsShot)
         cd(() -> writeods(path, xf), dir)
     end
     openods(path; mode = "rw") do xf
-        ws = haskey(shot.opts, "sheet") ? xf[shot.opts["sheet"]] : xf[1]
+        name = get(shot.opts, "sheet", "")
+        hassheet(xf, name) || (name = replace(name, '_' => ' '))    # a marker writes a space as `_`
+        ws = isempty(name) ? xf[1] : xf[name]
         ws === xf[1] || movesheet!(ws; before = 1)      # LibreOffice opens on the first sheet
         view = Dict{Symbol,Any}(:zoom => parse(Int, get(shot.opts, "zoom", "100")))
         top = get(shot.opts, "top", "A1")

@@ -181,30 +181,68 @@ end
 
 [Charts](../charts/overview.md) covers charts, histograms, chart sheets and sparklines.
 
-## Links, notes, database ranges and filters
+## A link, a note and a drop-down list
+
+A hyperlink, a note on a cell (LibreOffice's Insert ▸ Comment), and a Validity rule that limits the
+Status column to two values, offered as a drop-down list:
 
 ```julia
 openods("budget.ods"; mode = "rw") do xf
     s = xf["Costs"]
     addHyperlink(s, "E1"; url = "https://example.org/budget", display = "Budget notes")
-    addComment(s, "B7", "Agreed with finance"; author = "Ann")
-    addDataValidation(s, "C2:C13"; type = :list, values = ["Open", "Paid"])   # a drop-down
-    t = addtable!(s, "A1:C13"; name = "Costs")             # a database range
-    settotals!(t, "Month" => "Total", "Amount" => :sum)   # a totals row, in row 14
+    addComment(s, "B7", "Agreed with finance"; author = "Ann", visible = true)
+    addDataValidation(s, "C2:C13"; type = :list, values = ["Open", "Paid"])
+end
+```
+
+<!-- shot: tutorial_links file=budget.ods sheet=Costs cells=6x14 -->
+![The Costs sheet with a link reading Budget notes in E1, and the note Agreed with finance shown beside B7, the cell's note marker in its corner](../images/tutorial_links.png)
+
+The Status cells now offer Open and Paid, and refuse anything else.
+[Hyperlinks](../objects/hyperlinks.md), [Notes and comments](../objects/notes.md) and
+[Validity](../data/validity.md) cover each in full.
+
+## A database range with a totals row
+
+[`addtable!`](@ref) makes a block of rows under a header row a database range, as LibreOffice's
+Data ▸ Define Range does: the header gets filter buttons. [`settotals!`](@ref) adds a totals row
+below it:
+
+```julia
+openods("budget.ods"; mode = "rw") do xf
+    t = addtable!(xf["Costs"], "A1:C13"; name = "Costs")
+    settotals!(t, "Month" => "Total", "Amount" => :sum)    # the totals row is row 14
+end
+```
+
+<!-- shot: tutorial_table file=budget.ods sheet=Costs cells=4x15 -->
+![The Costs sheet as a database range: filter buttons on the Month, Amount and Status headers, and a totals row reading Total and 3900 under the twelve months; the note is still shown beside B7](../images/tutorial_table.png)
+
+The total is a formula (`SUBTOTAL(109,…)`), which LibreOffice calculates when it opens the file. See
+[Database ranges](../data/tables.md).
+
+## Filtering and sorting
+
+[`setAutoFilter`](@ref) puts filter buttons on a range's header, as Data ▸ AutoFilter does, and can
+also filter and sort it, so the file opens that way. Here, the income from sales, largest first:
+
+```julia
+openods("budget.ods"; mode = "rw") do xf
     setAutoFilter(xf["Income"], "A1:C13"; filters = ["Source" => ["Sales"]],
                   sort = "Amount" => :descending)
 end
 ```
 
-[`addtable!`](@ref) makes A1:C13 a database range, LibreOffice's Data ▸ Define Range: see
-[Database ranges](../data/tables.md). [Validity](../data/validity.md),
-[AutoFilter and sorting](../data/autoFilter.md), [Notes and comments](../objects/notes.md) and
-[Hyperlinks](../objects/hyperlinks.md) cover the others.
+<!-- shot: tutorial_filter file=budget.ods sheet=Income cells=4x14 -->
+![The Income sheet with filter buttons on its header, showing only the six Sales rows, in descending order of amount; the Grants rows are hidden](../images/tutorial_filter.png)
+
+[AutoFilter and sorting](../data/autoFilter.md) covers the criteria and the sort's options.
 
 ## Rows, columns and sheets
 
-Rows, columns and sheets can be inserted, deleted, renamed, copied and moved, and references to them
-follow, as they do in LibreOffice:
+Rows, columns and sheets can be inserted, deleted, renamed, copied and moved, and the references to
+them follow, as they do in LibreOffice. Here three empty rows go in before row 5 (April), the sheet is
+renamed and copied, and its header row is frozen:
 
 ```julia
 openods("budget.ods"; mode = "rw") do xf
@@ -212,11 +250,30 @@ openods("budget.ods"; mode = "rw") do xf
     insertRows(s, 5; count = 3)            # the totals row moves to row 17, and sums B2:B16
     renamesheet!(s, "Costs 2027")
     copysheet!(s)                          # "Costs 2027 (copy)"
-    freezePanes(s; nrows = 1)
-    setPageSetup(s; orientation = :landscape, fitToWidth = 1)
+    freezePanes(s; nrows = 1)              # row 1 stays in view while the rest scrolls
+end
+```
+
+<!-- shot: tutorial_sheets file=budget.ods sheet=Costs_2027 cells=4x18 top=keep cursor=keep -->
+![The sheet, now named Costs 2027, with three empty rows inserted after March, the months continuing from April in row 8, the note moved with June to B10, and the totals row moved to row 17, still totalling 3900, under a frozen header row](../images/tutorial_sheets.png)
+
+The database range, the chart, the note and the totals formula moved with their rows. See
+[Inserting and deleting rows and columns](../layout/insertDelete.md) and
+[Managing sheets](../sheets/sheets.md).
+
+## Page setup and document properties
+
+How the sheet prints, and the file's title (File ▸ Properties):
+
+```julia
+openods("budget.ods"; mode = "rw") do xf
+    setPageSetup(xf["Costs 2027"]; orientation = :landscape, fitToWidth = 1)
     setDocumentProperties(xf; title = "Budget 2027")
 end
 ```
+
+See [Page setup and printing](../sheets/printing.md) and
+[Document properties](../sheets/properties.md).
 
 ## Large files
 
