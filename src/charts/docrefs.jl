@@ -699,7 +699,7 @@ setSeriesLineWidth
     setSeriesQuartileMethod(c::ChartEx, i, method) / setSeriesParentLabelLayout(c::ChartEx, i, layout)
     setSeriesLayoutFlag(c::ChartEx, i, flag, value) -> error
 
-Settings of the chartex kinds LibreOffice lacks (waterfall, box and whisker, treemap) and of an
+Settings for chart kinds LibreOffice doesn't have (waterfall, box and whisker, treemap) and for an
 aggregated histogram: errors. See [`setSeriesName`](@ref).
 """
 setSeriesSubtotals
@@ -721,7 +721,7 @@ SCHEME_TOKENS
 """
     CX_KINDS
 
-The chartex kinds: `:waterfall`, `:funnel`, `:treemap`, `:sunburst`, `:histogram`, `:pareto`,
-`:boxWhisker`. LibreOffice has the histogram; see [`addChartEx`](@ref).
+The kinds [`addChartEx`](@ref) names: `:waterfall`, `:funnel`, `:treemap`, `:sunburst`,
+`:histogram`, `:pareto`, `:boxWhisker`. LibreOffice has only the histogram; the others are errors.
 """
 CX_KINDS

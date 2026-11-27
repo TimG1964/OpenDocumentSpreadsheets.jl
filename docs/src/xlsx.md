@@ -169,6 +169,10 @@ The formatting functions work as in XLSX.jl too, with the differences listed bel
   - **Errors:** what LibreOffice can't store (titles from cells, compound lines, joins, marker
     borders, bubble-size labels, text caps, kerning and outlines; the chartex kinds but the
     histogram).
+  - **Histograms:** `addChartEx(ws, :histogram, values; …)` works, and makes the same chart as
+    `addChart(ws, :histogram; …)` followed by `addSeries`, the form the guide uses. A histogram is an
+    ordinary chart in an OpenDocument file; its handle is still a `ChartEx`, with XLSX.jl's histogram
+    functions, and `getChartSchema` gives `:cx`.
   - **Chart sheets** are ordinary sheets holding a page-anchored chart.
   - **LibreOffice's own options:** 3-D, stock charts, subtitles, data tables, stepped and B-spline
     lines, empty and hidden cells, the chart wizard's `data`, gradients and hatches, trendlines and

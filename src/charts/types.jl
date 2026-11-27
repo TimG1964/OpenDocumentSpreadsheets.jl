@@ -99,8 +99,10 @@ end
 """
     ChartEx
 
-A handle to a chart made with [`addChartEx`](@ref): in LibreOffice, a histogram
-(`loext:histogram`). Fields as [`Chart`](@ref)'s.
+A handle to a histogram, made with `addChart(…, :histogram)` or [`addChartEx`](@ref), or found in a
+file. Fields as [`Chart`](@ref)'s. In the file a histogram is an ordinary chart: the chart getters
+(its title, legend, series, data and ranges) read it as any other, and its bins have functions of
+their own (`setSeriesBinning`, `getSeriesBinning`). The formatting setters take other charts only.
 """
 struct ChartEx <: AbstractChart
     package::ODSFile

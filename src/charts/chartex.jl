@@ -10,7 +10,7 @@ const _CHARTSHEET_CM = (25.821, 16.856)
 """
     ChartExDimension, ChartExData, ChartExBinning
 
-A chartex series' data and a histogram's binning. LibreOffice's histogram has one
+A histogram's data and its bins. LibreOffice's histogram has one
 dimension, its values (`kind` `:num`, `type` `:val`, `formula` the ODF range, `range` its
 [`ChartRange`](@ref)); its binning is a bin width or a bin count (`intervalClosed`, `underflow` and
 `overflow` are always `nothing`: LibreOffice has none).
@@ -36,30 +36,48 @@ end
 @doc (@doc ChartExDimension) ChartExBinning
 
 function _check_cx_kind(kind::Symbol)
-    kind in CX_KINDS || throw(ODSError("Unknown chartex kind `:$kind`: the kinds are " * join(string.(":", CX_KINDS), ", ") * "."))
+    kind in CX_KINDS || throw(ODSError("Unknown kind `:$kind` for addChartEx: the kinds are " * join(string.(":", CX_KINDS), ", ") * "."))
     kind === :histogram ||
-        throw(ODSError("LibreOffice has no $kind chart: its import reads one without a diagram (F-080, D-086). Of the chartex kinds it has the histogram."))
+        throw(ODSError("LibreOffice has no $kind chart: addChartEx makes only histograms (`:histogram`)."))
 end
 
 # A histogram, as LibreOffice's own (F-080): a bar chart of class `loext:histogram`, its bins chosen by
-# LibreOffice (`frequency-type` 0), no gap between its columns, and one series of class `chart:histogram`.
-function _make_histogram!(c::Chart, values, name, name_ref, sheet)
+# LibreOffice (`frequency-type` 0), no gap between its columns, and (added by `addSeries`) one series of
+# class `chart:histogram`. `addChart(…, :histogram)` makes it (D-092).
+function _make_histogram!(c::Chart)
     xf = c.package
     o = xf.chartobjs[c.name]
     o.text = replace(o.text, r"(<chart:chart\b[^>]*?) chart:class=\"chart:bar\"" => s"\1 chart:class=\"chart:bar\" loext:class=\"loext:histogram\""; count = 1)
     _set_style_attrs!(o, _plot_style(o), ["chart:treat-empty-cells" => "use-zero", "loext:frequency-type" => "0",
                                           "loext:bin-width" => "2", "loext:bin-count" => "10"])
     _axis_set!(c, 2, ["chart:gap-width" => "0"])
-    vals = _odf_range(values, sheet)
+    return ChartEx(xf, c.path, c.name, nothing, c.sheet, c.from, c.to)
+end
+
+"""
+    addSeries(c::ChartEx, values; name = nothing, name_ref = nothing) -> ChartEx
+
+Adds a histogram's series: the cells whose values it counts (`"Data.B2:B201"`, `"B2:B201"` on the chart's
+sheet, or a range object), with its name as text (`name`) or from a cell (`name_ref`). A histogram has
+one series, and no categories: LibreOffice draws its bins from its values.
+"""
+function addSeries(c::ChartEx, values; name = nothing, name_ref = nothing, kw...)
+    haskey(kw, :categories) && throw(ODSError("A histogram takes no `categories`: LibreOffice draws its bins from its values."))
+    isempty(kw) || throw(ODSError("A histogram's series takes `name` or `name_ref`; `$(first(keys(kw)))` is for other charts."))
+    name !== nothing && name_ref !== nothing && throw(ODSError("Give the series' `name` or its `name_ref`, not both."))
+    o = _editable(c)
+    occursin("<chart:series", o.text) && throw(ODSError("A histogram has one series: make another histogram for more data."))
+    vals = _odf_range(values, c.sheet)
+    label = name_ref === nothing ? nothing : _odf_range(name_ref, c.sheet)
     st = _add_style!(o, """<style:chart-properties chart:link-data-style-to-source="true"/><style:graphic-properties draw:stroke="none" draw:fill-color="$(_PALETTE[1])"/>""" * _TEXT10;
                      datastyle = true)
     io = IOBuffer()
     print(io, "<chart:series chart:style-name=\"$st\" chart:values-cell-range-address=\"", _esc(vals), "\"")
-    name_ref === nothing || print(io, " chart:label-cell-address=\"", _esc(_odf_range(name_ref, sheet)), "\"")
+    label === nothing || print(io, " chart:label-cell-address=\"", _esc(label), "\"")
     name === nothing || print(io, " loext:label-string=\"", _esc("\"" * replace(String(name), "\"" => "\"\"") * "\""), "\"")
     print(io, " chart:class=\"chart:histogram\"></chart:series>")
     _insert_before!(o, "<chart:wall", String(take!(io)))
-    return ChartEx(xf, c.path, c.name, nothing, c.sheet, c.from, c.to)
+    return c
 end
 
 """
@@ -67,11 +85,12 @@ end
                name_ref = nothing, title = nothing) -> ChartEx
     addChartEx(xf::ODSFile, kind::Symbol, values; sheetname = "", …) -> ChartEx
 
-A chartex chart of `kind` plotting `values`, on a sheet or on a new chart sheet. Of the
-chartex kinds LibreOffice has `:histogram`, made as LibreOffice makes a histogram; `:waterfall`,
-`:funnel`, `:treemap`, `:sunburst`, `:pareto` and `:boxWhisker` are errors: LibreOffice reads them without
-a diagram. A histogram takes no `categories`, and LibreOffice draws its bins from its values
-(set them with `setSeriesBinning`, under [`setSeriesName`](@ref)).
+A histogram of `values` (`kind = :histogram`), on a sheet or on a new chart sheet: the same as
+[`addChart`](@ref)`(ws, :histogram; anchor, title)` followed by `addSeries(h, values; name, name_ref)`,
+the form these docs use. The other kinds, `:waterfall`, `:funnel`, `:treemap`, `:sunburst`, `:pareto`
+and `:boxWhisker`, are charts LibreOffice doesn't have, so they are errors. A histogram takes no
+`categories`, and LibreOffice draws its bins from its values (set them with `setSeriesBinning`,
+under [`setSeriesName`](@ref)).
 
 A chart sheet is LibreOffice's form of one: an ordinary sheet, named `sheetname` (by default
 `Chart1`, `Chart2`, …), holding the chart anchored to the page. Its references name their sheet
@@ -83,8 +102,8 @@ function addChartEx(ws::Worksheet, kind::Symbol, values; anchor::Union{AbstractS
     categories === nothing || throw(ODSError("A histogram takes no `categories`: LibreOffice draws its bins from its values."))
     name !== nothing && name_ref !== nothing && throw(ODSError("Give the series' `name` or its `name_ref`, not both."))
     _odf_range(values, ws.name)                          # a bad reference changes nothing
-    c = addChart(ws, :column; anchor, title)
-    return _make_histogram!(c, values, name, name_ref, ws.name)
+    name_ref === nothing || _odf_range(name_ref, ws.name)
+    return addSeries(addChart(ws, :histogram; anchor, title), values; name, name_ref)
 end
 function addChartEx(xf::ODSFile, kind::Symbol, values; sheetname::AbstractString = "", categories = nothing,
                     name = nothing, name_ref = nothing, title = nothing)
@@ -92,15 +111,15 @@ function addChartEx(xf::ODSFile, kind::Symbol, values; sheetname::AbstractString
     categories === nothing || throw(ODSError("A histogram takes no `categories`: LibreOffice draws its bins from its values."))
     name !== nothing && name_ref !== nothing && throw(ODSError("Give the series' `name` or its `name_ref`, not both."))
     _require_qualified(values, name_ref)
-    c = _chartsheet_chart(xf, :column, sheetname; title)
-    return _make_histogram!(c, values, name, name_ref, c.sheet)
+    _odf_range(values, ""); name_ref === nothing || _odf_range(name_ref, "")   # a bad reference changes nothing
+    return addSeries(_chartsheet_chart(xf, :histogram, sheetname; title), values; name, name_ref)
 end
 
 """
     addChart(xf::ODSFile, kind::Symbol; sheetname = "", title = nothing, xtitle = nothing, ytitle = nothing,
              kw...) -> Chart
 
-A chart on a new chart sheet: LibreOffice's form of one, an ordinary sheet
+A chart on a new chart sheet (a [`ChartEx`](@ref) for `:histogram`): LibreOffice's form of one, an ordinary sheet
 named `sheetname` (by default `Chart1`, `Chart2`, …) holding the chart anchored to the page, after the
 other sheets. Add its series with [`addSeries`](@ref), naming their sheet (`"Data!B2:B7"`). The other
 keywords are [`addChart`](@ref)'s, but `data` (whose cells would be the chart sheet's).
@@ -126,7 +145,7 @@ function _chartsheet_chart(xf::ODSFile, kind::Symbol, sheetname::AbstractString;
     ws.pagecharts === nothing && (ws.pagecharts = ImageData[])
     push!(ws.pagecharts, img)
     er, ec = _page_end_cell(ws, w, h)
-    return Chart(xf, c.path, c.name, nothing, ws.name, "A1", _cellname(er, ec))
+    return typeof(c)(xf, c.path, c.name, nothing, ws.name, "A1", _cellname(er, ec))
 end
 
 function _next_chartsheet_name(xf)
@@ -204,9 +223,9 @@ end
 
 A histogram's series name (text), and its bins: a width (`binSize`) or a count (`binCount`), or
 `:auto` (LibreOffice chooses); `:inherit` is `:auto`. LibreOffice's bins have no closed side, underflow
-or overflow bin: those are errors. The other ChartEx setters (`setSeriesSubtotals`,
+or overflow bin: those are errors. The other setters for a histogram's handle (`setSeriesSubtotals`,
 `setSeriesAggregation`, `setSeriesQuartileMethod`, `setSeriesParentLabelLayout`, `setSeriesLayoutFlag`)
-are for kinds LibreOffice lacks: errors.
+are for chart kinds LibreOffice doesn't have: errors.
 """
 function setSeriesName(c::ChartEx, i::Integer, name::AbstractString; pareto::Bool = false)
     _no_pareto(pareto)
@@ -253,13 +272,13 @@ setSeriesAggregation(::ChartEx, ::Integer, ::Bool) =
 setSeriesLayoutFlag(::ChartEx, ::Integer, flag::Symbol, value) =
     throw(ODSError("LibreOffice's histogram has no layout flag `:$flag` (D-086)."))
 
-addSeries(c::ChartEx, values; kw...) = throw(ODSError("A histogram has one series (as XLSX.jl's, but a box-and-whisker chart's)."))
 
 """
     getSeriesSubtotals(c::ChartEx, i) / getSeriesAggregation(c::ChartEx, i) / getSeriesQuartileMethod(c::ChartEx, i)
     getSeriesParentLabelLayout(c::ChartEx, i) / getSeriesLayoutFlag(c::ChartEx, i, flag)
 
-Getters of the chartex kinds LibreOffice lacks (waterfall, box and whisker, treemap): a histogram has none of them, so `nothing`.
+Getters for chart kinds LibreOffice doesn't have (waterfall, box and whisker, treemap): a histogram
+has none of these settings, so `nothing`.
 """
 getSeriesSubtotals(c::ChartEx, i::Integer) = (_cx_series(c, i); nothing)
 getSeriesAggregation(c::ChartEx, i::Integer) = (_cx_series(c, i); nothing)

@@ -51,7 +51,6 @@ makedocs(
             "Creating charts" => "charts/creating.md",
             "Formatting charts" => "charts/formatting.md",
             "Reading charts" => "charts/reading.md",
-            "Histograms and chart sheets" => "charts/histograms.md",
             "Sparklines" => "charts/sparklines.md",
         ],
         "Saving and large files" => "saving.md",

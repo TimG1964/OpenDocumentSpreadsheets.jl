@@ -39,6 +39,54 @@
     @test length(getCharts(xf)) == 1                           # the refused calls added nothing
 end
 
+@testset "addChart(…, :histogram) and addSeries (D-092)" begin
+    E = OpenDocumentSpreadsheets.ODSError
+    # the same object as addChartEx's, on a sheet and on a chart sheet
+    xf1, ws1 = _chart_data_sheet(); xf2, ws2 = _chart_data_sheet()
+    a = OC.addChartEx(ws1, :histogram, "B2:B7"; anchor = "H2:O18", name_ref = "B1", title = "Spread")
+    h = OC.addSeries(OC.addChart(ws2, :histogram; anchor = "H2:O18", title = "Spread"), "B2:B7"; name_ref = "B1")
+    @test h isa OC.ChartEx && OC.getChartTypes(h) == [:histogram] && OC.getSeriesName(h, 1) == "North"
+    @test OC._object_text(OC._frame(a)) == OC._object_text(OC._frame(h))
+    s1 = OC.addChartEx(xf1, :histogram, "Data.C2:C7"; sheetname = "Spread", name = "South")
+    s2 = OC.addSeries(OC.addChart(xf2, :histogram; sheetname = "Spread"), "Data.C2:C7"; name = "South")
+    @test s2 isa OC.ChartEx && s2.sheet == "Spread" && OC._object_text(OC._frame(s1)) == OC._object_text(OC._frame(s2))
+    # what a histogram doesn't take
+    @test_throws E OC.addSeries(h, "C2:C7")                                    # one series
+    n = length(getCharts(xf2))
+    for kw in ((threeD = true,), (dataTable = true,), (emptyCells = :gap,), (includeHidden = true,), (data = "B1:B7",),
+               (interpolation = :smooth,))
+        @test_throws E OC.addChart(ws2, :histogram; anchor = "A20:B30", kw...)
+    end
+    @test length(getCharts(xf2)) == n                                          # the refused calls added nothing
+    e = OC.addChart(ws2, :histogram; anchor = "A20:B30")
+    @test_throws E OC.addSeries(e, "B2:B7"; categories = "A2:A7")
+    @test_throws E OC.addSeries(e, "B2:B7"; color = "red")
+    @test_throws E OC.addSeries(e, "B2:B7"; name = "x", name_ref = "B1")
+    @test !occursin("<chart:series", OC._object_text(OC._frame(e)))          # still without a series
+    # its titles, as LibreOffice keeps them
+    xf, ws = _chart_data_sheet()
+    t = OC.addChart(ws, :histogram; anchor = "H2:O18", title = "Spread", subtitle = "Six months", xtitle = "Sales",
+                    ytitle = "Months")
+    OC.addSeries(t, "B2:B7"; name_ref = "B1")
+    # each title's text, without the spans LibreOffice puts in it
+    titles(text) = [replace(m.captures[2], r"<[^>]*>" => "") for m in eachmatch(r"<chart:(title|subtitle)\b[^>]*>(.*?)</chart:\1>"s, text)]
+    @test titles(OC._object_text(OC._frame(t))) == ["Spread", "Six months", "Sales", "Months"]
+    if isfile(SOFFICE) && lo_version(SOFFICE) >= LO_FIXTURE_VERSION
+        mktempdir() do dir
+            p = joinpath(dir, "h.ods"); OpenDocumentSpreadsheets.writeods(p, xf)
+            out = joinpath(dir, "lo")
+            run(pipeline(`$SOFFICE -env:UserInstallation=$(lo_profile_url(joinpath(dir, "profile"))) --headless --norestore --convert-to ods --outdir $out $p`;
+                         stdout = devnull, stderr = devnull))
+            c = only(getCharts(readods(joinpath(out, "h.ods"))))
+            @test c isa OC.ChartEx && OC.getChartTypes(c) == [:histogram]
+            @test [x.values.ref for x in getChartSeries(c)] == ["Data.B2:B7"]
+            @test sort(titles(OC._object_text(OC._frame(c)))) == sort(["Spread", "Six months", "Sales", "Months"])
+        end
+    else
+        @test_skip false
+    end
+end
+
 @testset "chart sheets" begin
     xf, ws = _chart_data_sheet()
     c = OC.addChart(xf, :line; title = "On its own sheet", xtitle = "Month")

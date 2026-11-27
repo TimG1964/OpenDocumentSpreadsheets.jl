@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Added
+
+- `addChart(sheet, :histogram; anchor)` makes a histogram, and `addSeries` adds its series, as for
+  any other chart; `addChart(file, :histogram; sheetname)` makes one on a chart sheet. A histogram
+  also takes a subtitle and axis titles. `addChartEx` still works and makes the same chart.
+
 ### Fixed
 
 - A sheet's own defined name that refers to cells on another sheet can be read, written and

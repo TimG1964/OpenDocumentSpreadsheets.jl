@@ -15,11 +15,11 @@ A chart is LibreOffice's Insert ▸ Chart: an embedded chart object in a frame, 
 functions make charts, change their formatting, and read them, both the charts made here and a file's
 own. They work in zipped (`.ods`) and flat (`.fods`) files, new or edited.
 
-- [Creating charts](creating.md): the kinds, series, combo charts, and LibreOffice's chart options.
+- [Creating charts](creating.md): the kinds, series, combo charts, histograms, chart sheets, and
+  LibreOffice's chart options.
 - [Formatting charts](formatting.md): colours, lines, legends, axes, titles, labels, trendlines and
   error bars.
 - [Reading charts](reading.md): finding a file's charts and reading their data and formatting.
-- [Histograms and chart sheets](histograms.md).
 - [Sparklines](sparklines.md): small charts inside cells.
 
 A new chart takes LibreOffice's default look (its palette, symbols, fonts and legend), so it looks as a

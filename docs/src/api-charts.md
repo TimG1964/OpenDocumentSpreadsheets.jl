@@ -35,8 +35,10 @@ deleteChart
 
 ## Histograms and chart sheets
 
-`addChartEx` makes LibreOffice's histogram; the other "chartex" kinds, which LibreOffice lacks, are
-errors. A chart sheet is an ordinary sheet holding one chart anchored to the page.
+`addChart(…, :histogram)` makes a histogram, and `addSeries` adds its one series; its handle is a
+`ChartEx`. `addChartEx` makes the same chart in one call; the other kinds it names are charts
+LibreOffice doesn't have, so asking for them is an error. A chart sheet is an ordinary sheet holding
+one chart anchored to the page.
 
 ```@docs
 addChartEx

@@ -224,11 +224,15 @@ _points_of(addr::AbstractString) = sum(length(r) * length(c) for (_, r, c) in _r
 
 """
     addChart(ws::Worksheet, kind::Symbol; anchor, title = nothing, xtitle = nothing, ytitle = nothing,
-             subtitle = nothing, threeD = false, deep = false) -> Chart
+             subtitle = nothing, threeD = false, deep = false) -> Chart (a ChartEx for :histogram)
 
 A new chart of `kind` over the cells of `anchor` (`"F2:M18"`), with no series yet (add them with
 [`addSeries`](@ref)): a frame in the first cell, resizing with its cells up to the last, and an object in
 LibreOffice's default look.
+
+`kind = :histogram` makes LibreOffice's histogram, which counts the values of its one series in bins:
+it returns a [`ChartEx`](@ref), and takes only `anchor`, `title`, `subtitle`, `xtitle` and `ytitle`.
+See [`addSeries`](@ref addSeries(::ChartEx, ::Any)) and `setSeriesBinning`.
 
 `kind` is one of `:column`, `:bar`, `:stackedColumn`, `:stackedBar`, `:percentStackedColumn`,
 `:percentStackedBar`, `:line`, `:lineMarkers`, `:stackedLine`, `:percentStackedLine`,
@@ -260,7 +264,17 @@ function addChart(ws::Worksheet, kind::Symbol; anchor::Union{AbstractString,Cell
                   interpolation::Symbol = :straight, emptyCells = nothing, includeHidden = nothing, sortByX = nothing,
                   startAngle = nothing, data = nothing, seriesIn::Symbol = :columns, firstRowLabels::Bool = true,
                   firstColumnLabels::Bool = true)
-    haskey(_KINDS, kind) || throw(ODSError("Unknown chart kind `:$kind`. The kinds are $(join(string.(":", sort!(collect(keys(_KINDS)))), ", "))."))
+    if kind === :histogram      # D-092: a column chart, made LibreOffice's histogram
+        given = (threeD, deep, dataTable, interpolation !== :straight, emptyCells !== nothing, includeHidden !== nothing,
+                 sortByX !== nothing, startAngle !== nothing, data !== nothing)
+        names = (:threeD, :deep, :dataTable, :interpolation, :emptyCells, :includeHidden, :sortByX, :startAngle, :data)
+        for (g, k) in zip(given, names)
+            g && throw(ODSError("A histogram takes `anchor`, `title`, `subtitle`, `xtitle` and `ytitle`; `$k` is for other charts." *
+                                (k === :data ? " Add its series with `addSeries`." : "")))
+        end
+        return _make_histogram!(addChart(ws, :column; anchor, title, subtitle, xtitle, ytitle))
+    end
+    haskey(_KINDS, kind) || throw(ODSError("Unknown chart kind `:$kind`. The kinds are $(join(string.(":", sort!([collect(keys(_KINDS)); :histogram])), ", "))."))
     _class0 = _KINDS[kind][1]
     haskey(_INTERPOLATIONS, interpolation) ||
         throw(ODSError("Unknown interpolation `:$interpolation`: use $(join(string.(":", sort!(collect(keys(_INTERPOLATIONS)))), ", "))."))

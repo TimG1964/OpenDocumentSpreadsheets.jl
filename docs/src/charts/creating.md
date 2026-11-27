@@ -45,6 +45,7 @@ sheet, or `"Data.B2:B7"` on another.
 | `:radar`, `:filledRadar` | LibreOffice's net charts |
 | `:combo` | columns and lines |
 | `:stock`, `:stockOHLC`, `:stockVolume`, `:stockVolumeOHLC` | LibreOffice's stock charts |
+| `:histogram` | a histogram (see [below](#Histograms)) |
 
 ```julia
 xf = newods("Kinds")
@@ -90,6 +91,48 @@ makeCombo(c)
 <!-- shot: chart_combo cells=12x19 -->
 ![A combo chart titled Units and margin: units as blue columns against the left axis, and margin as an orange line against a second axis on the right](../images/chart_combo.png)
 
+## Histograms
+
+A histogram counts the values of one series that fall in each bin, as the Histogram Chart type of
+LibreOffice's Insert ▸ Chart does:
+
+```julia
+xf = newods("Heights")
+heights = xf["Heights"]
+heights["A1"] = "Height (cm)"
+for i in 1:200
+    heights[i+1, 1] = round(170 + 9 * sin(i) * cos(i / 7) + 4 * sin(i / 3); digits = 1)
+end
+h = addChart(heights, :histogram; anchor = "C2:J18")
+addSeries(h, "A2:A201"; name_ref = "A1")
+setSeriesBinning(h, 1; binCount = 8)
+```
+
+<!-- shot: histogram cells=11x19 -->
+![A column of 200 heights, and beside it a histogram of them in eight bins, the bars touching, tallest in the middle](../images/histogram.png)
+
+Bins are set by their width (`binSize`) or count (`binCount`). LibreOffice draws the bins stored with
+the chart, but labels the bars with the ranges of its own automatic bins.
+
+In the file a histogram is an ordinary chart. Here its handle is a [`ChartEx`](@ref): the chart getters
+read it as any other chart (its title, legend, series and data), and its bins have functions of their
+own (`setSeriesBinning`, `getSeriesBinning`). The formatting setters take other charts only. A
+histogram takes the titles (`title`, `subtitle`, `xtitle`, `ytitle`) and one series, with no
+categories.
+
+## Chart sheets
+
+A chart sheet is a sheet that holds only a chart, anchored to the page. Give `addChart` the file and
+a `sheetname`, rather than a sheet and an anchor:
+
+```julia
+c = addChart(xf, :column; sheetname = "Chart", title = "Heights")
+addSeries(c, "Heights.A2:A21"; name_ref = "Heights.A1")
+```
+
+It is an ordinary sheet in the file, so its references name their sheet: `"Heights.A2:A21"`.
+`addChart(xf, :histogram; sheetname)` makes a histogram on a sheet of its own.
+
 ## LibreOffice's options
 
 `addChart` takes LibreOffice's chart options too:
@@ -118,3 +161,6 @@ LibreOffice's model shows in a few rules:
 
 LibreOffice can't store these, so asking for one is an error that says why: titles that follow a
 cell, and categories of a series' own.
+
+LibreOffice has no waterfall, funnel, treemap, sunburst, Pareto or box and whisker charts, so there
+are no such kinds.
