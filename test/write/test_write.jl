@@ -469,3 +469,43 @@ end
         @test sheetnames(p) == ["Table", "Names", "Merged", "Hidden", "My sheet", "Formulas"]
     end
 end
+
+# Text an XML file can't hold (F-090): every setter that takes user text refuses it, with nothing
+# changed, rather than writing a file LibreOffice can't load (code review, Phase 1 item 1).
+@testset "user text an XML file can't hold" begin
+    OC = OpenDocumentSpreadsheets.Charts
+    pic = joinpath(DATA, "images", "red.png")
+    setters = [
+        "a comment"               => (ws, t) -> addComment(ws, "A1", t),
+        "a comment's author"      => (ws, t) -> addComment(ws, "A1", "x"; author = t),
+        "a threaded comment"      => (ws, t) -> addThreadedComment(ws, "A2", t; author = "Sam"),
+        "a reply"                 => (ws, t) -> (addThreadedComment(ws, "A3", "x"; author = "Sam"); addThreadedReply(ws, "A3", t; author = "Sam")),
+        "a link's url"            => (ws, t) -> addHyperlink(ws, "B1"; url = "https://example.org/" * t),
+        "a link's display text"   => (ws, t) -> addHyperlink(ws, "B2"; url = "https://example.org/", display = t),
+        "a validation's prompt"   => (ws, t) -> addDataValidation(ws, "C1"; type = :any, prompt = t),
+        "a validation's title"    => (ws, t) -> addDataValidation(ws, "C2"; type = :any, errorTitle = t),
+        "a validation list item"  => (ws, t) -> addDataValidation(ws, "C3"; values = ["ok", t]),
+        "a validation formula"    => (ws, t) -> addDataValidation(ws, "C4"; type = :custom, formula1 = "LEN(\"$t\")>0"),
+        "a picture's alt text"    => (ws, t) -> addImage(ws, "D1", pic; alt = t),
+        "a picture's description" => (ws, t) -> addImage(ws, "D2", pic; description = t),
+        "a condition's value"     => (ws, t) -> setConditionalFormat(ws, "E1:E3", :cellIs; operator = "equal", value = "\"$t\"", dxStyle = "Good"),
+        "a filter value"          => (ws, t) -> setAutoFilter(ws, "F1:F3"; filters = ["F" => t]),
+        "a chart title"           => (ws, t) -> OC.addChart(ws, :column; anchor = "H1:M10", title = t),
+        "a series name"           => (ws, t) -> OC.addSeries(OC.addChart(ws, :column; anchor = "H12:M20"), "G2:G3"; name = t),
+    ]
+    for bad in ("a\x01b", "a￾b", "a\xffb")
+        for (what, f) in setters
+            xf = newods()
+            ws = xf[1]
+            ws["F1"] = "F"; ws["F2"] = "x"; ws["F3"] = "y"; ws["G2"] = 1; ws["G3"] = 2
+            msg = try f(ws, bad); "no error" catch e; e isa ODSError ? e.msg : sprint(showerror, e) end
+            @test occursin("XML file", msg) || (what => msg)
+            # nothing was half-made: the file still saves, and LibreOffice could open it
+            @test readods(writeods(tmp("ok.ods"), xf))[1]["F2"] == "x"
+        end
+        @test_throws ODSError streamods(s -> addsheet!(s, bad), tmp("s.ods"))
+    end
+    # what is allowed still is: tab, LF, CR and the rest of Unicode
+    xf = newods()
+    @test addComment(xf[1], "A1", "tab\there\nnew line, Ünïcödé 宋体").text == "tab\there\nnew line, Ünïcödé 宋体"
+end

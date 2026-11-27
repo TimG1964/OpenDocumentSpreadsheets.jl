@@ -249,3 +249,21 @@ end
         @test getPageSetup(lp["A4"]).paperSize == 9 && getHeaderFooter(lp["HFSections"]).header.right == "R &A"
     end
 end
+
+# A style attribute whose value ends in a multi-byte character (`style:font-name="宋体"`) was cut by
+# byte and threw `StringIndexError` in every page-style getter and setter (code review, Phase 1 item 2).
+@testset "page styles with non-ASCII values" begin
+    dir = mktempdir()
+    font = headerFooterFont(name = "宋体")
+    xf = newods("Résumé")
+    setHeaderFooter(xf["Résumé"]; header = (center = font * "页眉",))
+    r = openods(writeods(joinpath(dir, "cjk.ods"), xf); mode = "rw")
+    w = r["Résumé"]
+    @test getHeaderFooter(w).header.center == font * "页眉"
+    @test getPageSetup(w) isa NamedTuple && getPageMargins(w) isa NamedTuple
+    setPageMargins(w; top = 2.5)
+    setHeaderFooter(w; footer = "页脚")      # plain, so the header's font reads back as codes (D-063)
+    p = readods(writeods(joinpath(dir, "cjk2.ods"), r))["Résumé"]
+    @test getHeaderFooter(p).header.center == font * "页眉" && getHeaderFooter(p).footer.center == "页脚"
+    @test getPageMargins(p).top ≈ 2.5
+end

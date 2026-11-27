@@ -44,6 +44,7 @@ _dv_expr(xf::ODSFile, v::Dates.DateTime, ::String) =
     _dv_num(Dates.value(v - Dates.DateTime(xf.null_date)) / 86_400_000)
 _dv_expr(::ODSFile, v::Dates.Time, ::String) = _dv_num(Dates.value(v) / 86_400_000_000_000)
 function _dv_expr(::ODSFile, v::AbstractString, k::String)
+    _check_xml_text(v)
     s = strip(v)
     startswith(s, '=') && (s = strip(s[nextind(s, 1):end]))
     isempty(s) && throw(ODSError("`$k` can't be empty."))
@@ -58,6 +59,7 @@ _dv_expr(::ODSFile, v, k::String) =
 # A list's items as LibreOffice writes them: `"a";"b"`, with `""` for a quote.
 function _dv_list(values::AbstractVector)
     isempty(values) && throw(ODSError("A list needs at least one item in `values`."))
+    foreach(v -> _check_xml_text(string(v)), values)
     return join(("\"" * replace(string(v), "\"" => "\"\"") * "\"" for v in values), ';')
 end
 
@@ -669,11 +671,23 @@ function _dv_blocks(ws::Worksheet, rng)
 end
 
 function _dv_sheet_ref(xf::ODSFile, ref::AbstractString)
-    i = something(findlast(c -> c == '!' || c == '.', ref), 0)
+    # the sheet ends at the first `.` or `!` outside quotes: a quoted name may hold either, and the
+    # range after it may name the sheet again (`Sheet1.A1:Sheet1.B5`)
+    i, quoted = 0, false
+    for (k, c) in pairs(ref)
+        c == '\'' && (quoted = !quoted)
+        !quoted && (c == '!' || c == '.') && (i = k; break)
+    end
     i == 0 && throw(ODSError("Give the sheet with the range, such as `Sheet1.B2:B20`: got `$ref`."))
     sh = String(SubString(ref, 1, prevind(ref, i)))
-    length(sh) >= 2 && startswith(sh, '\'') && endswith(sh, '\'') && (sh = replace(sh[2:end-1], "''" => "'"))
-    return getsheet(xf, sh), String(SubString(ref, nextind(ref, i)))
+    length(sh) >= 2 && startswith(sh, '\'') && endswith(sh, '\'') && (sh = replace(chop(sh; head = 1, tail = 1), "''" => "'"))
+    rest = String(SubString(ref, nextind(ref, i)))
+    prefix = SubString(ref, 1, i)                       # the sheet and its separator, as written
+    j = findfirst(':', rest)
+    if j !== nothing && startswith(SubString(rest, nextind(rest, j)), prefix)
+        rest = rest[1:j] * rest[nextind(rest, j) + ncodeunits(prefix):end]
+    end
+    return getsheet(xf, sh), rest
 end
 
 """
@@ -722,6 +736,7 @@ function addDataValidation(ws::Worksheet, rng; type::Union{Nothing,Symbol} = not
                            errorTitle::Union{Nothing,AbstractString} = nothing, error::Union{Nothing,AbstractString} = nothing,
                            errorStyle::Symbol = :stop, caseSensitive::Bool = false, sortEntries::Bool = false)
     _require_writable(ws, "add a data validation")
+    foreach(_check_xml_text, (promptTitle, prompt, errorTitle, error))
     xf = get_odsfile(ws)
     isnothing(type) && !isnothing(values) && (type = :list)
     isnothing(type) && throw(ODSError("Give the kind of value allowed as `type`: one of $(join(DV_TYPES, ", "))."))

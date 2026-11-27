@@ -101,7 +101,7 @@ end
 # "formula-is(X)" / "is-true-formula(X)" → "X" (the body a style:map shares with its calcext twin).
 function _condition_body(v::AbstractString)
     for p in ("formula-is(", "is-true-formula(")
-        startswith(v, p) && endswith(v, ")") && return String(v[ncodeunits(p)+1:end-1])
+        startswith(v, p) && endswith(v, ")") && return String(chop(v; head = length(p), tail = 1))
     end
     return String(v)
 end

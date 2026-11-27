@@ -61,8 +61,10 @@ const C_KINDS = Tuple(k for k in (:column, :bar, :stackedColumn, :stackedBar, :p
     :line, :lineMarkers, :stackedLine, :percentStackedLine, :stackedLineMarkers, :percentStackedLineMarkers, :area,
     :stackedArea, :percentStackedArea, :pie, :doughnut, :scatter, :bubble, :radar, :filledRadar, :combo))
 
-_esc(s) = sprint(_escape_attr, String(s))
-_esct(s) = sprint(_escape_text, String(s))
+# Every user text a chart gets is escaped here as the setter runs, so the XML check is made
+# here too, and fails the call that gave it (F-090).
+_esc(s) = (t = String(s); _check_xml_text(t); sprint(_escape_attr, t))
+_esct(s) = (t = String(s); _check_xml_text(t); sprint(_escape_text, t))
 
 # A title's paragraphs: a string (a line break starts a new paragraph, as XLSX.jl's do), or rich text.
 function _title_paras(t)

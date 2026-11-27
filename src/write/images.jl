@@ -331,6 +331,7 @@ function addImage(ws::Worksheet, ref::Union{AbstractString,CellRef,CellRange}, i
                   description::AbstractString = "")
     inCell && throw(ODSError("LibreOffice has no pictures in cells (F-060): leave out `inCell`."))
     _require_writable(ws, "add an image")
+    _check_xml_text(alt); _check_xml_text(description)
     rows, cols = _link_block(ref)
     bytes = image isa IOBuffer ? take!(copy(image)) : read(image)
     ext, mime = _image_type(bytes)

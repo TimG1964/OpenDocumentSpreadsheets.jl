@@ -149,8 +149,8 @@ function _text_atts(p::Dict{String,String})
     if pos !== nothing
         f = split(pos)
         e = isempty(f) ? "0%" : f[1]
-        e == "super" || (endswith(e, "%") && something(tryparse(Float64, e[1:end-1]), 0.0) > 0) ? push!(a, :vertAlign => "superscript") :
-        e == "sub" || (endswith(e, "%") && something(tryparse(Float64, e[1:end-1]), 0.0) < 0) ? push!(a, :vertAlign => "subscript") : nothing
+        e == "super" || (endswith(e, "%") && something(tryparse(Float64, chop(e)), 0.0) > 0) ? push!(a, :vertAlign => "superscript") :
+        e == "sub" || (endswith(e, "%") && something(tryparse(Float64, chop(e)), 0.0) < 0) ? push!(a, :vertAlign => "subscript") : nothing
     end
     c = get(p, "fo:color", nothing)
     if c !== nothing

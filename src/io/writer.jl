@@ -240,9 +240,28 @@ function write_package(path::AbstractString, parts; mediatype::AbstractString = 
     _check_parts(parts)
     mediatype in SPREADSHEET_MEDIATYPES || throw(ArgumentError("unsupported media type $(repr(mediatype))"))
     manifest = written -> manifest_xml(written, mediatype, version)
-    open(io -> _write_mimetype_zip(io, mediatype), path, "w")
-    ZipArchives.zip_append_archive(w -> _append_parts!(w, parts, manifest), path)
+    _write_replacing(path) do tmp
+        open(io -> _write_mimetype_zip(io, mediatype), tmp, "w")
+        ZipArchives.zip_append_archive(w -> _append_parts!(w, parts, manifest), tmp)
+    end
     path
+end
+
+# Writes the file at `path` as `write(tmp)` writes a temporary file beside it, which then replaces
+# `path`: parts are made as they are written, so a failure part-way would otherwise leave `path`
+# truncated, and saving back to the file that was read would lose it (code review, Phase 1 item 3).
+# A link is followed, so the file it points to is replaced, not the link.
+function _write_replacing(write::Function, path::AbstractString)
+    target = islink(path) ? realpath(path) : path
+    tmp = tempname(dirname(abspath(target)); cleanup = false)
+    try
+        write(tmp)
+        mv(tmp, target; force = true)
+    catch
+        rm(tmp; force = true)
+        rethrow()
+    end
+    return path
 end
 
 function write_package(io::IO, parts; mediatype::AbstractString = MEDIATYPE_ODS,
@@ -277,8 +296,7 @@ Building that document from the model belongs to the serialiser, not to the
 container layer.
 """
 function write_flat(path::AbstractString, xml::Union{AbstractString,Function})
-    open(io -> write_flat(io, xml), path, "w")
-    path
+    _write_replacing(tmp -> open(io -> write_flat(io, xml), tmp, "w"), path)
 end
 
 function write_flat(io::IO, xml::AbstractString)

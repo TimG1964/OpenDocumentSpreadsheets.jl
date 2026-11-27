@@ -274,3 +274,34 @@ end
         end
     end
 end
+
+# Parts are made as they are written, so a failure part-way used to leave the target truncated:
+# saving back to the file that was read lost it. The file is now written beside the target and
+# moved into place when finished (code review, Phase 1 item 3).
+@testset "a failed save leaves the file as it was" begin
+    dir = mktempdir()
+    boom = io -> (write(io, "<office:document-content"); error("boom"))
+    xf = newods(); xf[1]["A1"] = 1
+    p = writeods(joinpath(dir, "keep.ods"), xf)
+    before = read(p)
+    @test_throws ErrorException write_package(p, [PackagePart("content.xml", boom)])
+    @test read(p) == before
+    pf = writeods(joinpath(dir, "keep.fods"), xf)
+    flat = read(pf)
+    @test_throws ErrorException write_flat(pf, boom)
+    @test read(pf) == flat
+    @test_throws ErrorException streamods(s -> (addsheet!(s, "S"); error("boom")), p; overwrite = true)
+    @test read(p) == before
+    @test_throws ErrorException streamods(s -> error("boom"), joinpath(dir, "new.ods"))
+    @test sort(readdir(dir)) == ["keep.fods", "keep.ods"]            # no temporary file is left
+    # an edit saved back over its own file, through a link where links can be made
+    rw = openods(p; mode = "rw"); rw[1]["A2"] = 2
+    @test saveods(rw) == abspath(p) && readods(p)[1]["A2"] == 2
+    link = joinpath(dir, "link.ods")
+    made = try symlink(p, link); true catch e; e isa Base.IOError || rethrow(); false end
+    if made
+        rl = openods(link; mode = "rw"); rl[1]["A3"] = 3
+        saveods(rl)
+        @test islink(link) && readods(p)[1]["A3"] == 3
+    end
+end

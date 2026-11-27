@@ -35,6 +35,10 @@ const _ATTR_RX = r"([^\s=/<>]+)\s*=\s*(\"[^\"]*\"|'[^']*')"
 _raw_attrs(text::AbstractString) =
     [(String(m.captures[1]), String(m.captures[2])) for m in eachmatch(_ATTR_RX, SubString(text, 1, _start_tag_end(text)))]
 
+# A raw attribute value (quoted, as written) as its text: the quotes dropped by character, not by
+# byte, as a value can end in any character (`style:font-name-asian="宋体"`).
+_unquote_attr(v::AbstractString) = XML.unescape(String(chop(v; head = 1, tail = 1)))
+
 function _attr_int(text::AbstractString, name::AbstractString, default::Int)
     # the attribute in the start tag, preceded by white space and followed by `=` and a quote
     e = _start_tag_end(text)
@@ -954,7 +958,8 @@ function write_patched_content(out::_ChunkedIO, xf::ODSFile; display::Bool = tru
                 push!(splices, (first(sp), last(sp), _db_xml(repl[k])))
             else
                 a = first(sp)
-                while a > 1 && (src[a-1] == ' ' || src[a-1] == '\n' || src[a-1] == '\t' || src[a-1] == '\r'); a -= 1; end
+                # by byte: white space is one byte, and `src[a-1]` would throw after a multi-byte character
+                while a > 1 && codeunit(src, a - 1) in (0x20, 0x0a, 0x09, 0x0d); a -= 1; end
                 push!(splices, (a, last(sp), ""))
             end
         end

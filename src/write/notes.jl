@@ -479,6 +479,7 @@ function addComment(ws::Worksheet, ref::Union{AbstractString,CellRef}, text::Abs
                     author::AbstractString = "", width::Integer = 144, height::Integer = 79, visible::Bool = false,
                     date::Union{Nothing,Dates.Date,Dates.DateTime} = nothing)
     _require_writable(ws, "add a comment")
+    _check_xml_text(text); _check_xml_text(author)
     r, c = _note_cell(ref, "A comment")
     (width > 0 && height > 0) || throw(ODSError("A comment's `width` and `height` must be positive."))
     old = _note_at(ws, r, c)
@@ -560,6 +561,7 @@ Returns the thread, as [`getThreadedComment`](@ref) reads it. The file must be w
 function addThreadedComment(ws::Worksheet, ref::Union{AbstractString,CellRef}, text::AbstractString;
                             author::AbstractString, date::Dates.DateTime = Dates.now(Dates.UTC))
     _require_writable(ws, "add a threaded comment")
+    _check_xml_text(text); _check_xml_text(author)
     r, c = _note_cell(ref, "A threaded comment")
     old = _note_at(ws, r, c)
     old === nothing || throw(ODSError(old.thread !== nothing ?
@@ -591,6 +593,7 @@ writable.
 function addThreadedReply(ws::Worksheet, ref::Union{AbstractString,CellRef}, text::AbstractString;
                           author::AbstractString, date::Dates.DateTime = Dates.now(Dates.UTC))
     _require_writable(ws, "add a reply")
+    _check_xml_text(text); _check_xml_text(author)
     r, c, nd = _thread_at(ws, ref, "A reply")
     k = length(nd.thread) + 1
     push!(nd.thread, ThreadEntry(_guid("thread:$(ws.name)!$(_cellname(r, c)):$k:$(text):$(date)"),

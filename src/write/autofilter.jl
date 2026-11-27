@@ -85,7 +85,7 @@ function _af_item(v)
         Dates.millisecond(v) == 0 || return Dates.format(v, _AF_DTMS)
         return Dates.format(v, Dates.second(v) == 0 ? _AF_DTM : _AF_DTS)
     end
-    v isa AbstractString && return String(v)
+    v isa AbstractString && (_check_xml_text(v); return String(v))
     throw(ODSError("Cannot filter by a `$(typeof(v))`: `$v`. " * _AF_HELP))
 end
 
@@ -133,7 +133,7 @@ function _af_condition(p, f::Int, xf::ODSFile)
     v isa Dates.Date && return _AFCond(f, op, _af_num(Dates.value(v - xf.null_date)); num = true)
     v isa Dates.DateTime &&
         return _AFCond(f, op, _af_num((Dates.value(v) - Dates.value(Dates.DateTime(xf.null_date))) / 86_400_000); num = true)
-    v isa AbstractString && return _af_text_condition(f, op, String(v))
+    v isa AbstractString && (_check_xml_text(v); return _af_text_condition(f, op, String(v)))
     throw(ODSError("Cannot compare with a `$(typeof(v))`: `$v`."))
 end
 

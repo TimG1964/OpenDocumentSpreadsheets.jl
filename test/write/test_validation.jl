@@ -310,3 +310,17 @@ end
         @test _dv_grid(readods(joinpath(dir, "lo", "own.fods"))["Own"]) == _dv_grid(p["Own"])
     end
 end
+
+# The file-level forms take the sheet up to the first `.` or `!` outside quotes, by character
+# (code review, Phase 1 item 2): a quoted name ending in a multi-byte character threw, and a range
+# naming its sheet twice was read as a sheet called `Sheet1.A1:Sheet1`.
+@testset "file-level ranges: sheet names by character" begin
+    xf = newods("Résumé")
+    addsheet!(xf, "Two")
+    addDataValidation(xf, "'Résumé'.A1:A3"; type = :whole, operator = :greaterThan, formula1 = 0)
+    addDataValidation(xf, "Two.B1:Two.B3"; type = :whole, operator = :greaterThan, formula1 = 0)
+    addDataValidation(xf, "'Two'!C1:C2"; type = :whole, operator = :greaterThan, formula1 = 0)
+    @test sort(collect(keys(_dv_grid(xf["Résumé"])))) == [(1, 1), (2, 1), (3, 1)]
+    @test sort(collect(keys(_dv_grid(xf["Two"])))) == [(1, 2), (1, 3), (2, 2), (2, 3), (3, 2)]
+    @test_throws ODSError addDataValidation(xf, "Three.A1"; type = :any, prompt = "x")
+end

@@ -218,7 +218,7 @@ function _copy_objects!(xf::ODSFile, t::String)
     taken = Set{String}()
     for n in partnames(xf.container)
         i = findfirst('/', n)
-        i === nothing || push!(taken, n[1:i-1])
+        i === nothing || push!(taken, n[1:prevind(n, i)])
     end
     foreach(e -> push!(taken, rstrip(e.path, '/')), xf.container.manifest)
     foreach(p -> push!(taken, p.second), xf.objcopies)

@@ -128,6 +128,7 @@ end
 
 # A formula (with or without `=`) as LibreOffice stores it in a rule (OpenFormula, no prefix).
 function _cf_formula(v::AbstractString, k::String)
+    _check_xml_text(v)
     s = strip(v)
     startswith(s, '=') && (s = strip(s[nextind(s, 1):end]))
     isempty(s) && throw(ODSError("`$k` can't be empty."))

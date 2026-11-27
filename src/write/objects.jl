@@ -93,7 +93,7 @@ function _taken_objects(xf)
     if xf.container !== nothing && xf.container.zip !== nothing
         for n in partnames(xf.container)
             i = findfirst('/', n)
-            i === nothing || push!(taken, n[1:i-1])
+            i === nothing || push!(taken, n[1:prevind(n, i)])
         end
         foreach(e -> push!(taken, rstrip(e.path, '/')), xf.container.manifest)
     end

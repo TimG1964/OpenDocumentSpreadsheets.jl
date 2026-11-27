@@ -67,7 +67,7 @@ function _sheet_protection(ws::Worksheet)
                 text = SubString(parent(XML.sourcetext(ln)), first(child), last(child))
                 options = Dict{String,String}()
                 for (k, v) in _raw_attrs(SubString(text, 1, _start_tag_end(text)))
-                    options[k] = XML.unescape(String(SubString(v, 2, lastindex(v) - 1)))
+                    options[k] = _unquote_attr(v)
                 end
                 break
             end

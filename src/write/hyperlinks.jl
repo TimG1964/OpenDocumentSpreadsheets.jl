@@ -427,6 +427,7 @@ function addHyperlink(ws::Worksheet, ref::Union{AbstractString,CellRef,CellRange
     (url === nothing) == (location === nothing) &&
         throw(ODSError("Give exactly one of `url` (an address outside the workbook) or `location` (a place in it)."))
     target = something(url, location)
+    _check_xml_text(target); _check_xml_text(display)
     isempty(target) && throw(ODSError("A hyperlink's `$(url === nothing ? "location" : "url")` cannot be empty."))
     tooltip === nothing ||
         throw(ODSError("LibreOffice has no hyperlink tooltips (F-058): leave out `tooltip`."))

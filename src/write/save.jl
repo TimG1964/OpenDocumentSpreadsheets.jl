@@ -202,7 +202,7 @@ function _patched_parts(xf::ODSFile; display::Bool = true)
     seen = Set{String}()
     content = gating ? (io -> _write_chunked(o -> write_patched_content(o, xf; display), _HrefScan(io, seen))) :
                        (io -> write_patched_content(io, xf; display))     # written into the zip as it is made (D-048)
-    objof(name) = (i = findfirst('/', name); top = i === nothing ? "" : name[1:i-1];
+    objof(name) = (i = findfirst('/', name); top = i === nothing ? "" : name[1:prevind(name, i)];
                    top == "ObjectReplacements" ? name[i+1:end] : top in objs ? top : nothing)
     keepif(o) = gating && o !== nothing ? (() -> o in seen) : nothing
     # a part's media type as the manifest lists it (an object's picture: ""), else guessed
@@ -345,6 +345,9 @@ function saveods(xf::ODSFile)
     _require_writable(xf, "save the file")
     if xf.source_io !== nothing
         io = xf.source_io
+        # the file is made in full first, so a failure leaves the source as it was
+        buf = IOBuffer()
+        writeods(buf, xf)
         try
             seekstart(io)
             truncate(io, 0)
@@ -352,7 +355,7 @@ function saveods(xf::ODSFile)
             e isa InterruptException && rethrow()
             throw(ODSError("Can't save back to the source `IO`: it must be writable and seekable. Use `writeods` to write elsewhere. ($(sprint(showerror, e)))"))
         end
-        writeods(io, xf)
+        write(io, take!(buf))
         xf.source_io = io
         return nothing
     end

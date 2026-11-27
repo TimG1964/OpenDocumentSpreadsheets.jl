@@ -50,7 +50,7 @@ function _styles_doc(xf::ODSFile)
     return something(read_xml(xf.container, :styles), "")
 end
 
-_attr_pairs(tag::AbstractString) = Pair{String,String}[String(k) => XML.unescape(String(SubString(v, 2, lastindex(v) - 1)))
+_attr_pairs(tag::AbstractString) = Pair{String,String}[String(k) => _unquote_attr(v)
                                                        for (k, v) in _raw_attrs(tag)]
 _get(v::Vector{Pair{String,String}}, k, default = nothing) = (i = findfirst(p -> p.first == k, v); i === nothing ? default : v[i].second)
 function _put!(v::Vector{Pair{String,String}}, k, x)

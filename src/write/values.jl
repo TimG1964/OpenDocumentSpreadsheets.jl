@@ -158,14 +158,19 @@ function encode_value(v, style::Int32; colspan::Integer = 1, rowspan::Integer = 
     throw(ODSError("$(repr(v)): values of type $(typeof(v)) can't be written to a cell. Supported are numbers, strings, Bool, Date, DateTime, Time, periods, missing and nothing."))
 end
 
-# XML 1.0 allows no control characters but tab, LF and CR.
+# XML 1.0 allows no control characters but tab, LF and CR, nor U+FFFE, U+FFFF or text that
+# isn't valid UTF-8; LibreOffice refuses a file holding one (F-090). Every setter that takes
+# user text calls this, so the error comes from the call that gave it (code review, Phase 1).
 function _check_xml_text(s::AbstractString)
     for c in s
-        if c < ' ' && !(c in ('\t', '\n', '\r'))
+        if !isvalid(c)
+            throw(ODSError("The text $(repr(s)) is not valid UTF-8, which an XML file needs."))
+        elseif (c < ' ' && !(c in ('\t', '\n', '\r'))) || c == '￾' || c == '￿'
             throw(ODSError("The text $(repr(s)) holds the control character $(repr(c)), which an XML file can't hold."))
         end
     end
 end
+_check_xml_text(::Nothing) = nothing
 
 #
 # Editing the store

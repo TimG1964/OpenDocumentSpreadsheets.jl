@@ -146,8 +146,10 @@ function streamods(f::Function, dest::Union{AbstractString,IO}; overwrite::Bool 
         _append_parts!(w, others, manifest_xml(vcat([PackagePart("content.xml", "")], others), mt, version))
     end
     if dest isa AbstractString
-        open(io -> _write_mimetype_zip(io, mt), dest, "w")
-        ZipArchives.zip_append_archive(produce, dest)
+        _write_replacing(dest) do tmp
+            open(io -> _write_mimetype_zip(io, mt), tmp, "w")
+            ZipArchives.zip_append_archive(produce, tmp)
+        end
         return abspath(dest)
     else
         buf = IOBuffer()
@@ -195,6 +197,7 @@ function addsheet!(s::StreamWriter, name::AbstractString = ""; columns = nothing
     for c in _BAD_SHEETNAME_CHARS
         occursin(c, name) && throw(ODSError("The sheet name `$name` holds `$c`, which LibreOffice does not allow in sheet names."))
     end
+    _check_xml_text(name)
     any(x -> _same_sheetname(x, name), s.names) && throw(ODSError("There is already a sheet named `$name`."))
     push!(s.names, String(name))
     foreach(p -> _declare_width!(s, p.second), widths)       # the first sheet's can still be declared
