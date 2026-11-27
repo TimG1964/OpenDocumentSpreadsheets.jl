@@ -6,7 +6,9 @@ makedocs(
     modules = [OpenDocumentSpreadsheets],
     format = Documenter.HTML(
         prettyurls = get(ENV, "CI", nothing) == "true",
-        canonical = "https://TimG1964.github.io/OpenDocumentSpreadsheets.jl/stable/",
+        # `dev/` until the first release: `stable/` exists only once a version is tagged
+        # (deploydocs below). Switch it then (records/release-checklist.md).
+        canonical = "https://TimG1964.github.io/OpenDocumentSpreadsheets.jl/dev/",
     ),
     pages = [
         "Home" => "index.md",

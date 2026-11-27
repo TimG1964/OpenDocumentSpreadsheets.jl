@@ -75,8 +75,8 @@ export
     setAxisMajorTickMark, setAxisMinorTickMark, setAxisGridlines, setAxisTextProp, setAxisLine, setAxisMajorUnit,
     setAxisMinorUnit, setMarker, setMarkerSymbol, setMarkerSize, setMarkerFill, setMarkerLineColor, setMarkerLineWidth,
     setLabelText, setLabelTextProp, setLabelDeleted, setLabelFlag,
-    # LibreOffice's own (D-076)
-    addTrendline, deleteTrendlines, setErrorBars, deleteErrorBars, setAxisLabelArrangement, setSeriesExplosion,
+    # LibreOffice's own (D-076); a chart's kind read back (D-095)
+    getChartKind, addTrendline, deleteTrendlines, setErrorBars, deleteErrorBars, setAxisLabelArrangement, setSeriesExplosion,
     # types users construct
     SchemeColor,
     # chartex charts and chart sheets (step 7)

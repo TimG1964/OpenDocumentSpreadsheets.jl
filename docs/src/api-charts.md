@@ -92,6 +92,7 @@ setAxisLabelArrangement
 getCharts
 getChart
 getChartSchema
+getChartKind
 getChartType
 getChartTypes
 getChartGroups

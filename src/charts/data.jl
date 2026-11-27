@@ -67,9 +67,72 @@ than [`addChart`](@ref)'s kinds:
 | `:combo` | `[:barChart, :lineChart]` |
 
 A 3-D chart (`threeD = true`) gives the 3-D type: `:bar3DChart`, `:line3DChart`, `:area3DChart`,
-`:pie3DChart`. Whether bars run up or across, and whether they are stacked, isn't read back.
+`:pie3DChart`. [`getChartKind`](@ref) gives the `addChart` kind itself: whether bars run up or
+across, the stacking and the markers.
 """
 getChartTypes(c::AbstractChart) = [g.kind for g in getChartGroups(c)]
+
+"""
+    getChartKind(c) -> Symbol
+
+The chart's kind, as [`addChart`](@ref) names it: `addChart(sheet, getChartKind(c); …)` makes a chart
+of the same type, as LibreOffice's Chart Type dialog shows it. It works on any chart, whatever made it.
+
+- **Column, bar and area charts:** `:column` or `:bar` (bars across), each also `:stacked…` or
+  `:percentStacked…`; `:area`, `:stackedArea`, `:percentStackedArea`.
+- **Lines:** `:line`, `:stackedLine`, `:percentStackedLine`, with `Markers` when the chart's lines
+  have points (`:lineMarkers`, `:stackedLineMarkers`, …).
+- **Others:** `:pie`, `:doughnut`, `:pieOfPie`, `:barOfPie`, `:scatter`, `:bubble`, `:radar`,
+  `:filledRadar`, `:histogram`.
+- **Stock charts:** `:stock`, `:stockOHLC` (candlesticks), `:stockVolume`, `:stockVolumeOHLC`.
+- **`:combo`:** a column chart with line series (LibreOffice's column and line), stacked or not.
+- **`:unknown`:** a chart LibreOffice reads without a diagram.
+
+A few of LibreOffice's types have no kind of their own and give the nearest: XY with lines only is
+`:scatter`, and a net with points is `:radar`. 3-D isn't part of the kind: [`getChartTypes`](@ref)
+gives a 3-D chart's 3-D type.
+
+```julia
+using OpenDocumentSpreadsheets.Charts
+
+xf = openods("budget.ods"; mode = "rw")
+c = addChart(xf["Costs"], :stackedBar; anchor = "E2:L18")
+getChartKind(c)           # :stackedBar
+getChartTypes(c)          # [:barChart]
+```
+"""
+function getChartKind(c::AbstractChart)
+    doc = _doc(c)
+    cls = something(_get(doc.chart, "chart:class"), "")
+    pa = _plot_area(doc)
+    st = pa === nothing ? Dict{String,String}() : _style(doc, pa)
+    flag(k) = get(st, k, "") == "true"
+    sclasses = [something(_get(s, "chart:class"), cls) for s in _series_nodes(doc)]
+    stacking = flag("chart:percentage") ? "percentStacked" : flag("chart:stacked") ? "stacked" : ""
+    # :column, :stackedColumn, … (the kind's first letter is lower case only without stacking)
+    kind(base) = Symbol(isempty(stacking) ? lowercasefirst(base) : stacking * base)
+    if cls == "chart:bar"
+        _get(doc.chart, "loext:class") == "loext:histogram" && return :histogram
+        "chart:line" in sclasses && return :combo
+        return kind(flag("chart:vertical") ? "Bar" : "Column")
+    elseif cls == "chart:line"
+        return kind(get(st, "chart:symbol-type", "none") == "none" ? "Line" : "LineMarkers")
+    elseif cls == "chart:area"
+        return kind("Area")
+    elseif cls == "chart:circle"
+        _get(doc.chart, "loext:sub-pie") == "true" && return :pieOfPie
+        _get(doc.chart, "loext:sub-bar") == "true" && return :barOfPie
+        return :pie
+    elseif cls == "chart:stock"
+        # volume: its series is the first, in columns; before any series, the prices' secondary y axis
+        volume = isempty(sclasses) ? any(a -> _get(a, "chart:name") == "secondary-y", _children(pa, "chart:axis")) :
+                                     sclasses[1] == "chart:bar"
+        ohlc = flag("chart:japanese-candle-stick")
+        return volume ? (ohlc ? :stockVolumeOHLC : :stockVolume) : (ohlc ? :stockOHLC : :stock)
+    end
+    return get(Dict("chart:ring" => :doughnut, "chart:scatter" => :scatter, "chart:bubble" => :bubble,
+                    "chart:radar" => :radar, "chart:filled-radar" => :filledRadar), cls, :unknown)
+end
 
 """
     getChartType(c::Chart) -> Symbol

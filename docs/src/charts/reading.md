@@ -21,7 +21,8 @@ writeods("sales.ods", xf; overwrite = true)
 xf = readods("sales.ods")
 getCharts(xf)                          # every chart in the file
 c = getChart(xf, "Object 1")           # by object name, path, or the frame's name
-getChartTypes(c)                       # [:barChart]: a column chart (see below)
+getChartKind(c)                        # :column, as addChart names it
+getChartTypes(c)                       # [:barChart] (see below)
 getChartTitleText(c)                   # "Sales"
 getChartData(c)                        # the series' values, read from their cells now
 getChartRanges(c)                      # the series' references
@@ -33,8 +34,19 @@ come from its cells, as LibreOffice draws them.
 
 ## Chart types
 
-[`getChartTypes`](@ref) gives a chart's types, which are broader than [`addChart`](@ref)'s kinds: one
-type for each kind of series group in the chart.
+[`getChartKind`](@ref) gives a chart's type as [`addChart`](@ref) names it, the type LibreOffice's
+Chart Type dialog shows: whether bars run up (`:column`) or across (`:bar`), whether they are
+stacked (`:stackedBar`, `:percentStackedColumn`), and whether lines have points (`:lineMarkers`). It
+reads any chart, whatever made it. A few of LibreOffice's types have no kind of their own and give
+the nearest: XY with lines only is `:scatter`, and a net with points is `:radar`.
+
+```julia
+c2 = addChart(sh, :percentStackedBar; anchor = "D18:J32")
+getChartKind(c2)                       # :percentStackedBar
+```
+
+[`getChartTypes`](@ref) gives the chart's types, which are broader: one type for each kind of series
+group in the chart.
 
 | Made with `addChart` as | `getChartTypes` gives |
 |---|---|
@@ -50,8 +62,8 @@ type for each kind of series group in the chart.
 | `:combo`, or any chart after [`makeCombo`](@ref) | `[:barChart, :lineChart]` |
 
 A 3-D chart gives `:bar3DChart`, `:line3DChart`, `:area3DChart` or `:pie3DChart`.
-[`getChartType`](@ref) gives the one type, or `:combo` for a chart of two. Whether bars run up
-(a column chart) or across, and whether they are stacked, isn't read back.
+[`getChartType`](@ref) gives the one type, or `:combo` for a chart of two. 3-D isn't part of
+`getChartKind`'s kind: these 3-D types tell it.
 
 A chart's formatting is read from LibreOffice's chart styles into the types the setters take. Where a
 value isn't set on the chart itself, an `Effective` says where it comes from: LibreOffice's defaults,

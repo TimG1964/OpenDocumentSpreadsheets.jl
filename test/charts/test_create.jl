@@ -52,6 +52,7 @@ const _KIND_TAGS = Dict(:column => [:barChart], :bar => [:barChart], :stackedCol
         _add_kind_series!(c, kind)
         charts[kind] = c
         @test (kind, getChartTypes(c)) == (kind, _KIND_TAGS[kind])
+        @test (kind, getChartKind(c)) == (kind, kind)                              # Q-030, D-095
         @test OC.getChartTitle(c) == "Kind $kind"
     end
     # LibreOffice's own look (F-082): colours, symbols and lines as its templates make them
@@ -84,6 +85,7 @@ const _KIND_TAGS = Dict(:column => [:barChart], :bar => [:barChart], :stackedCol
             back = readods(path)
             @test length(getCharts(back)) == length(kinds)
             @test [getChartTypes(c) for c in getCharts(back)] == [_KIND_TAGS[k] for k in kinds]
+            @test [getChartKind(c) for c in getCharts(back)] == kinds
         end
         if isfile(SOFFICE) && lo_major(SOFFICE) >= LO_FIXTURE_MAJOR
             out = joinpath(dir, "lo")
@@ -96,6 +98,7 @@ const _KIND_TAGS = Dict(:column => [:barChart], :bar => [:barChart], :stackedCol
                 @test length(cs) == length(kinds)
                 for (c, kind) in zip(cs, kinds)
                     @test (kind, getChartTypes(c)) == (kind, _KIND_TAGS[kind])
+                    @test (kind, getChartKind(c)) == (kind, kind)       # LibreOffice keeps the kind
                     mine = charts[kind]
                     @test (kind, [s.values.ref for s in getChartSeries(c)]) == (kind, [s.values.ref for s in getChartSeries(mine)])
                     @test (kind, [s.name for s in getChartSeries(c)]) == (kind, [s.name for s in getChartSeries(mine)])
@@ -106,6 +109,48 @@ const _KIND_TAGS = Dict(:column => [:barChart], :bar => [:barChart], :stackedCol
             @test_skip false
         end
     end
+end
+
+@testset "getChartKind: any chart's kind, as addChart names it (Q-030, D-095)" begin
+    # LibreOffice's own charts, one per chart type template (experiment 039 part A)
+    own = readods(_ch("lo-charts-own.ods"))
+    for (tpl, kind) in ("tpl_Column" => :column, "tpl_Bar" => :bar, "tpl_StackedColumn" => :stackedColumn,
+                        "tpl_PercentStackedColumn" => :percentStackedColumn, "tpl_Line" => :line,
+                        "tpl_LineSymbol" => :lineMarkers, "tpl_Symbol" => :lineMarkers, "tpl_StackedLine" => :stackedLine,
+                        "tpl_Area" => :area, "tpl_Pie" => :pie, "tpl_Donut" => :doughnut, "tpl_PieOfPie" => :pieOfPie,
+                        "tpl_BarOfPie" => :barOfPie, "tpl_ScatterSymbol" => :scatter, "tpl_ScatterLine" => :scatter,
+                        "tpl_ScatterLineSymbol" => :scatter, "tpl_Bubble" => :bubble, "tpl_NetLine" => :radar,
+                        "tpl_Net" => :radar, "tpl_FilledNet" => :filledRadar, "tpl_ColumnWithLine" => :combo,
+                        "tpl_StackedColumnWithLine" => :combo, "tpl_StockLowHighClose" => :stock,
+                        "tpl_StockVolumeOpenLowHighClose" => :stockVolumeOHLC, "tpl_Histogram" => :histogram,
+                        # 3-D isn't part of the kind
+                        "tpl_ThreeDColumnDeep" => :column, "tpl_PercentStackedThreeDColumnFlat" => :percentStackedColumn,
+                        "tpl_ThreeDLine" => :line, "tpl_ThreeDPie" => :pie,
+                        # a secondary axis alone doesn't make a combo; a chart without a diagram is unknown
+                        "opt_secondary_y" => :column, "tpl_Waterfall" => :unknown)
+        @test (tpl, getChartKind(getChart(own, tpl))) == (tpl, kind)
+    end
+    # LibreOffice's import of XLSX.jl's 22 kinds (experiment 039 part B): Object 1 to 22, in C_KINDS order
+    imp = readods(_ch("lo-charts-import.ods"))
+    @test [getChartKind(getChart(imp, "Object $i")) for i in 1:22] == collect(OC.C_KINDS)
+    # stock charts, before and after their series; 3-D; histograms
+    xf, ws = _chart_data_sheet()
+    for (i, kind) in enumerate((:stock, :stockOHLC, :stockVolume, :stockVolumeOHLC))
+        c = addChart(ws, kind; anchor = "H$(20i):O$(20i + 15)")
+        @test (kind, getChartKind(c)) == (kind, kind)
+        cols = kind === :stock ? ("B", "C", "D") : kind === :stockOHLC ? ("B", "C", "D", "E") :
+               kind === :stockVolume ? ("E", "B", "C", "D") : ("E", "B", "C", "D", "F")
+        for col in cols
+            addSeries(c, "$(col)2:$(col)7"; categories = "A2:A7")
+        end
+        @test (kind, getChartKind(c), length(getChartSeries(c))) == (kind, kind, length(cols))
+    end
+    @test getChartKind(addChart(ws, :stackedBar; anchor = "H100:O115", threeD = true, deep = true)) === :stackedBar
+    h = addChart(ws, :histogram; anchor = "H120:O135")
+    @test getChartKind(h) === :histogram && getChartKind(addSeries(h, "B2:B7")) === :histogram
+    m = addChart(ws, :column; anchor = "H140:O155")
+    _add_kind_series!(m, :column)
+    @test getChartKind(makeCombo(m)) === :combo
 end
 
 @testset "addSeries' options" begin
