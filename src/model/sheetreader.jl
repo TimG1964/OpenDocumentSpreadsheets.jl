@@ -165,7 +165,7 @@ function _read_column!(r::SheetReader)
     count = 1; ds = Int32(-1); visible = true
     for (k, v) in XML.eachattribute!(c)
         if k == "table:number-columns-repeated"
-            count = something(tryparse(Int, v), 1)
+            count = _file_count(v, 1, 1, SheetCore.MAX_COLS)     # 0 or less: one column, as LibreOffice (F-092)
         elseif k == "table:default-cell-style-name"
             ds = style_id(r.styles, v)
         elseif k == "table:visibility"
@@ -191,7 +191,7 @@ function _read_row!(r::SheetReader)
     count = 1; rowdefault = Int32(-1)
     for (k, v) in XML.eachattribute!(c)
         if k == "table:number-rows-repeated"
-            count = max(1, something(tryparse(Int, v), 1))
+            count = _file_count(v, 1, 1, SheetCore.MAX_ROWS)
         elseif k == "table:default-cell-style-name"
             rowdefault = style_id(r.styles, v)
         end
@@ -209,7 +209,7 @@ function _read_row!(r::SheetReader)
         if XML.nodetype(ch) === XML.Element
             t = XML.tag(ch)
             if t == "table:table-cell" || t == "table:covered-table-cell"
-                col = _read_cell!(r, ch, rowno, count, col, rowdefault, t == "table:covered-table-cell")
+                col = _read_cell!(r, ch, rowno, col, rowdefault, t == "table:covered-table-cell")
             else
                 XML.skip_element!(ch)
             end
@@ -259,7 +259,7 @@ end
 
 # Reads the cell at the cursor `c`, starting at column `col`; pushes its run if it has
 # content. Returns the column after it.
-function _read_cell!(r::SheetReader, c::XML.Cursor, rowno::Int, rowcount::Int, col::Int, rowdefault::Int32, covered::Bool)
+function _read_cell!(r::SheetReader, c::XML.Cursor, rowno::Int, col::Int, rowdefault::Int32, covered::Bool)
     a = _cursor_cell_attrs(r, c)
     count = min(a.count, SheetCore.MAX_COLS - col + 1)
     count <= 0 && (XML.skip_element!(c); return col)
@@ -269,7 +269,7 @@ function _read_cell!(r::SheetReader, c::XML.Cursor, rowno::Int, rowcount::Int, c
     else
         XML.skip_element!(c)
     end
-    return _store_cell!(r, a, rowno, rowcount, col, count, rowdefault, kind, flags, bits, text)
+    return _store_cell!(r, a, rowno, col, count, rowdefault, kind, flags, bits, text)
 end
 
 function _cursor_cell_attrs(r::SheetReader, c::XML.Cursor)
@@ -292,7 +292,7 @@ function _cursor_cell_attrs(r::SheetReader, c::XML.Cursor)
         elseif k == "table:style-name"
             style = style_id(r.styles, v)
         elseif k == "table:number-columns-repeated"
-            count = max(1, something(tryparse(Int, v), 1))
+            count = _file_count(v, 1, 1, SheetCore.MAX_COLS)
         elseif k == "table:formula"
             formula = String(v)
         elseif k == "office:date-value"
@@ -306,9 +306,9 @@ function _cursor_cell_attrs(r::SheetReader, c::XML.Cursor)
         elseif k == "office:currency"
             currency = String(v)
         elseif k == "table:number-columns-spanned"
-            colspan = max(1, something(tryparse(Int, v), 1))
+            colspan = _file_count(v, 1, 1, SheetCore.MAX_COLS + 1)
         elseif k == "table:number-rows-spanned"
-            rowspan = max(1, something(tryparse(Int, v), 1))
+            rowspan = _file_count(v, 1, 1, SheetCore.MAX_ROWS + 1)
         end
     end
     return CellAttrs(count, style, vtype, cvtype, value, datev, timev, boolv, strv, currency, formula, colspan, rowspan)
@@ -361,7 +361,7 @@ end
 end
 
 # Stores the cell (its run, if it has content, and its merge); returns the column after it.
-function _store_cell!(r::SheetReader, a::CellAttrs, rowno::Int, rowcount::Int, col::Int, count::Int,
+function _store_cell!(r::SheetReader, a::CellAttrs, rowno::Int, col::Int, count::Int,
                       rowdefault::Int32, kind::CellKind, flags::UInt8, bits::UInt64, text)
     formula = a.formula; colspan = a.colspan; rowspan = a.rowspan
     # the effective style (F-009): the cell's own, else the row's, else the column's
@@ -369,10 +369,11 @@ function _store_cell!(r::SheetReader, a::CellAttrs, rowno::Int, rowcount::Int, c
     if style < 0
         style = rowdefault
     end
-    if colspan > 1 || rowspan > 1
-        for k in 0:rowcount-1, j in 0:count-1
-            push!(r.merges, CellRange(CellRef(rowno + k, col + j), CellRef(rowno + k + rowspan - 1, col + j + colspan - 1)))
-        end
+    # As in LibreOffice (F-092): one merge, from a repeated cell's first instance (its repeats are
+    # plain cells), and none that passes the sheet's end. A span is at most MAX + 1, so the
+    # sums can't overflow.
+    if (colspan > 1 || rowspan > 1) && rowno + rowspan - 1 <= SheetCore.MAX_ROWS && col + colspan - 1 <= SheetCore.MAX_COLS
+        push!(r.merges, CellRange(CellRef(rowno, col), CellRef(rowno + rowspan - 1, col + colspan - 1)))
     end
     if kind !== CK_EMPTY || formula !== nothing
         if style >= 0
@@ -443,7 +444,7 @@ function _para_text!(buf::IOBuffer, c::XML.Cursor)
             if t == "text:s"
                 n = 1
                 for (k, v) in XML.eachattribute!(ch)
-                    k == "text:c" && (n = something(tryparse(Int, v), 1))
+                    k == "text:c" && (n = _space_count(v))
                 end
                 for _ in 1:n
                     write(buf, ' ')

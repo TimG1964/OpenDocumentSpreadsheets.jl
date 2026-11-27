@@ -347,8 +347,8 @@ function getPageSetup(ws::Worksheet; unit::Symbol = :cm)
     sc = (fit || pages !== nothing || s === nothing) ? nothing : round(Int, something(tryparse(Float64, rstrip(s, '%')), 100.0))
     len(v) = v === nothing ? nothing : round(v / _CM_PER[unit]; digits = 4)
     return (orientation = o === nothing ? nothing : Symbol(o), paperSize = paper, scale = sc == 100 ? nothing : sc,
-            fitToWidth = fit ? something(tryparse(Int, something(x, "0")), 0) : nothing,
-            fitToHeight = fit ? something(tryparse(Int, something(y, "0")), 0) : nothing,
+            fitToWidth = fit ? _file_count(something(x, "0"), 0, 0, typemax(Int32)) : nothing,
+            fitToHeight = fit ? _file_count(something(y, "0"), 0, 0, typemax(Int32)) : nothing,
             paperWidth = len(w), paperHeight = len(h),
             scaleToPages = pages === nothing ? nothing : tryparse(Int64, pages))
 end
@@ -945,7 +945,7 @@ function _odf_section_codes(xf::ODSFile, doc::AbstractString, x::AbstractString,
                 endswith(tag, "/>") && pop!(fonts)
                 pos = gt + 1
             elseif name == "text:s"
-                n = something(tryparse(Int, something(_start_tag_attr(tag, "text:c"), "1")), 1)
+                n = _space_count(_start_tag_attr(tag, "text:c"))
                 f = fonts[end]; print(io, _font_codes(cur, f)); cur = _copyfont(f)
                 print(io, " "^n)
                 pos = gt + 1

@@ -223,10 +223,10 @@ end
                      stdout = devnull, stderr = devnull))
         csv = readlines(joinpath(lo, "nf.csv"))
         back = openods(joinpath(lo, "nf.ods"))["N"]                        # LibreOffice's own data styles, read back
-        # reading LibreOffice's own file back: two half-way seconds (the engine, F-030); its
-        # locale short date (`format-source="language"` styles don't say their digits); and a
-        # value it saved rounded to 15 digits (1.0000000000000002e15 as 1000000000000000)
-        half = Set(["46088.58691377315", "46088.58691140046", "1.0000000000000002e15"])
+        # reading LibreOffice's own file back: its locale short date (`format-source="language"`
+        # styles don't say their digits); and a value it saved rounded to 15 digits
+        # (1.0000000000000002e15 as 1000000000000000)
+        half = Set(["1.0000000000000002e15"])
         nlossy = 0
         for (r, v, fmt, expected) in cases
             shown = replace(strip(csv[r], '"'), "\"\"" => "\"")
@@ -239,5 +239,24 @@ end
             (v in half || fmt == "dd/mm/yy") || @test getText(back, r, 1) == shown
         end
         @test nlossy == 2
+    end
+end
+
+@testset "large numbers in data styles (32-bit safe)" begin
+    O = OpenDocumentSpreadsheets
+    # 1000^7 and 10^20 pass Int64 (and 1000^4 passes a 32-bit Int): written as exact digits
+    @test occursin("number:display-factor=\\\"1000000000000000000000\\\"", repr(O.numfmt_to_odf("0,,,,,,,")))
+    @test occursin("number:max-denominator-value=\\\"99999999999999999999\\\"", repr(O.numfmt_to_odf("# ?/" * "?"^20)))
+    # a condition past 2^31 (an `Int` threw on a 32-bit build) or past 2^63 (threw anywhere)
+    @test first(first(first(O.numfmt_to_odf("[>3000000000]0;0")))) == "value()>3000000000"
+    @test first(first(first(O.numfmt_to_odf("[>1e20]0;0")))) == "value()>1.0e20"
+    @test O.Charts._num_text(3e9) == "3000000000" && O.Charts._num_text(1e20) == "1.0e20"
+    # a digit count from a file is cut at 255, and read the same on a 32-bit build
+    @test O._int_attr(Dict("k" => "1000000000"), "k", 0) === 255
+    @test O._int_attr(Dict("k" => "3000000000000"), "k", 0) === 255
+    @test O._int_attr(Dict{String,String}(), "k", 3) === 3
+    # numbers no format has digits for show as the text a file stores them as (D-043); they threw
+    for lo in (false, true), (x, t) in ((Inf, "Inf"), (-Inf, "-Inf"), (NaN, "NaN")), f in ("0.00", "General", "0.0E+00", "# ?/?", "yyyy-mm-dd", "0%")
+        @test O.SheetCore._display_text(x, f; libreoffice = lo) == t
     end
 end

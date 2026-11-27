@@ -217,6 +217,7 @@ end
 function _write_sheets(filename, specs; overwrite::Bool, streaming::Bool, anchor_cell = CellRef("A1"), display_text::Bool = true,
                        column_widths = nothing, column_formats = nothing, as_table::Bool = false, table_name::AbstractString = "",
                        table_style = nothing, totals = nothing, freeze_header::Bool = false, names_from_sheets::Bool = false)
+    isempty(specs) && throw(ODSError("No tables to write."))     # `specs[1]` below threw BoundsError
     _check_overwrite(filename, overwrite)
     as_table && _check_table_style(table_style)
     if streaming

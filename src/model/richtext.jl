@@ -100,7 +100,10 @@ end
 Base.:(==)(a::RichTextRun, b::RichTextRun) = a.text == b.text && _norm_atts(a.atts) == _norm_atts(b.atts)
 Base.hash(r::RichTextRun, h::UInt) = hash(_norm_atts(r.atts), hash(r.text, hash(:RichTextRun, h)))
 Base.:(==)(a::RichTextString, b::RichTextString) = a.runs == b.runs
-Base.hash(s::RichTextString, h::UInt) = hash(s.runs, hash(:RichTextString, h))
+# As an AbstractString it equals its plain text (`rts == "ab"`), so it hashes as that text: values
+# that are `isequal` must hash alike (a Set held it and "ab" twice). Two with the same text and
+# different formats differ, and share a hash.
+Base.hash(s::RichTextString, h::UInt) = hash(s.text, h)
 
 function Base.show(io::IO, r::RichTextRun)
     print(io, "RichTextRun (", repr(r.text), "  [")

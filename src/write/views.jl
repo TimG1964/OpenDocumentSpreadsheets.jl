@@ -112,7 +112,8 @@ function _view_items_now(ws::Worksheet)
     return sheet, view
 end
 
-_ival(d, k, default) = haskey(d, k) ? something(tryparse(Int, d[k][2]), default) : default
+# as Int64, cut to Int32, so a 32-bit build reads a setting as a 64-bit one does
+_ival(d, k, default) = haskey(d, k) ? Int(clamp(something(tryparse(Int64, d[k][2]), default), typemin(Int32), typemax(Int32))) : default
 _bval(d, k, default) = haskey(d, k) ? d[k][2] == "true" : default
 
 #

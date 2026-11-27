@@ -234,18 +234,21 @@ function CellRef(n::AbstractString)
     col_end = i - 1
     col_end == 0 && throw(SheetCoreError("$n is not a valid CellRef."))
     
-    # decode column number inline (no SubString, no decode_column_number call)
-    col = 0
+    # decode column number inline (no SubString, no decode_column_number call); a number
+    # past the last column stops it, so it can't overflow
+    col = Int64(0)
     for j in 1:col_end
         col = col * 26 + (codeunit(n, j) - UInt8('A') + 1)
+        col > MAX_COLS && throw(SheetCoreError("$n is not a valid CellRef: its column is past the last, $(encode_column_number(MAX_COLS))."))
     end
-    
+
     # parse row number inline (no SubString, no parse() call)
-    row = 0
+    row = Int64(0)
     while i <= len
         c = codeunit(n, i)
         (c < UInt8('0') || c > UInt8('9')) && throw(SheetCoreError("$n is not a valid CellRef."))
         row = row * 10 + (c - UInt8('0'))
+        row > MAX_ROWS && throw(SheetCoreError("$n is not a valid CellRef: its row is past the last, $MAX_ROWS."))
         i += 1
     end
     row == 0 && throw(SheetCoreError("$n is not a valid CellRef."))
@@ -253,26 +256,26 @@ function CellRef(n::AbstractString)
     return CellRef(Int32(row), Int32(col))
 end
 
-@inline CellRef(row::Integer, col::Integer) = CellRef(Int32(row), Int32(col))
+@inline function CellRef(row::Integer, col::Integer)
+    (1 <= row <= MAX_ROWS && 1 <= col <= MAX_COLS) ||
+        throw(SheetCoreError("Row $row, column $col is not a cell: rows are 1 to $MAX_ROWS and columns 1 to $MAX_COLS."))
+    return CellRef(Int32(row), Int32(col))
+end
 @inline CellPosition(ref::CellRef) = CellPosition(row_number(ref), column_number(ref))
 @inline row_number(p::CellPosition) = p.row
 @inline column_number(p::CellPosition) = p.column
 @inline CellRef(p::CellPosition) = CellRef(row_number(p), column_number(p))
 
 # Converts column name to a column number. See also SheetCore.encode_column_number.
+# Only the letters A to Z make a name. A name past the last column gives MAX_COLS + 1, however
+# long it is, so the number can't overflow; callers compare it with MAX_COLS.
 function decode_column_number(column_name::AbstractString) :: Int
-    local result::Int = 0
-
-    !isascii(column_name) && throw(SheetCoreError("$column_name is not a valid column name."))
-    num_characters = length(column_name) # this is safe, since `column_name` is encoded as ASCII
-
-    iteration = 1
-    for i in num_characters:-1:1
-        column_char_as_int = Int(column_name[i])
-        result += (26^(iteration-1)) * (column_char_as_int - 64) # From A to Z we have 26 values. 'A' Char is ASCII 65.
-        iteration += 1
+    result = 0
+    for c in column_name
+        'A' <= c <= 'Z' || throw(SheetCoreError("$column_name is not a valid column name: a column is named by the letters A to Z."))
+        result = min(result * 26 + (c - 'A' + 1), MAX_COLS + 1)
     end
-
+    result == 0 && throw(SheetCoreError("A column name can't be empty."))
     return result
 end
 
@@ -329,7 +332,8 @@ Base.show(io::IO, c::CellRef) = print(io, c)
 Base.string(c::CellRef) = sprint(print, c)
 Base.:(==)(c1::CellRef, c2::CellRef) = c1.row_number == c2.row_number && c1.column_number == c2.column_number
 Base.hash(c::CellRef, h::UInt) = hash(c.column_number, hash(c.row_number, h))
-Base.isless(c1::CellRef, c2::CellRef) = Base.isless(string(c1), string(c2))
+# By position, row by row (A1, B1, A2): the string order put B10 before B2
+Base.isless(c1::CellRef, c2::CellRef) = isless((c1.row_number, c1.column_number), (c2.row_number, c2.column_number))
 cellname(c::CellRef) :: String = string(encode_column_number(column_number(c))) * string(row_number(c))
 
 
@@ -355,8 +359,8 @@ function is_valid_row_name(n::AbstractString) :: Bool
         return false
     end
 
-    row_number = parse(Int, n)
-    if row_number < 1 || row_number > MAX_ROWS
+    row_number = tryparse(Int64, n)        # nothing: too long for any row
+    if row_number === nothing || row_number < 1 || row_number > MAX_ROWS
         return false
     end
 
@@ -372,7 +376,8 @@ const RGX_CELLNAME_RIGHT = r"[0-9]+$"
     for (i, c) in enumerate(n)
         if isdigit(c) # this block is safe since n is encoded as ASCII
             column_name = SubString(n, 1, i-1)
-            row = parse(Int, SubString(n, i, length(n)))
+            # a row too long to parse is past the last row
+            row = something(tryparse(Int64, SubString(n, i, length(n))), Int64(MAX_ROWS) + 1)
             return column_name, row
         end
     end
@@ -475,7 +480,7 @@ Base.string(cr::CellRange) = string(cr.start)*":"*string(cr.stop)
 Base.show(io::IO, cr::CellRange) = print(io, string(cr))
 Base.:(==)(cr1::CellRange, cr2::CellRange) = cr1.start == cr2.start && cr1.stop == cr2.stop
 Base.hash(cr::CellRange, h::UInt) = hash(cr.stop, hash(cr.start, h))
-Base.isless(cr1::CellRange, cr2::CellRange) = Base.isless(string(cr1), string(cr2)) # needed for tests
+Base.isless(cr1::CellRange, cr2::CellRange) = isless((cr1.start, cr1.stop), (cr2.start, cr2.stop))   # by position, as CellRef
 
 macro range_str(cellrange)
     CellRange(cellrange)
@@ -635,7 +640,7 @@ end
 
 function is_valid_column_range(r::AbstractString) :: Bool
     if occursin(RGX_SINGLE_COLUMN, r)
-        return true
+        return is_valid_column_name(r)
     end
     if !occursin(RGX_COLUMN_RANGE, r)
         return false
@@ -648,11 +653,7 @@ function is_valid_column_range(r::AbstractString) :: Bool
 end
 function is_valid_row_range(r::AbstractString) :: Bool
     if occursin(RGX_SINGLE_ROW, r)
-        row_number = parse(Int, r)
-        if row_number <= 0 || row_number > MAX_ROWS
-            throw(SheetCoreError("Row number should be in the range from 1 to $MAX_ROWS."))
-        end
-        return true
+        return is_valid_row_name(r)
     end
     if !occursin(RGX_ROW_RANGE, r)
         return false

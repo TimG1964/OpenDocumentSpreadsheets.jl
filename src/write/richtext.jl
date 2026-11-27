@@ -140,7 +140,7 @@ end
 function _text_atts(p::Dict{String,String})
     a = Pair{Symbol,Any}[]
     w = get(p, "fo:font-weight", "normal")
-    (w == "bold" || something(tryparse(Int, w), 0) >= 600) && push!(a, :bold => true)
+    (w == "bold" || something(tryparse(Int64, w), 0) >= 600) && push!(a, :bold => true)
     get(p, "fo:font-style", "normal") in ("italic", "oblique") && push!(a, :italic => true)
     get(p, "style:text-underline-style", "none") != "none" && push!(a, :under => true)
     (get(p, "style:text-line-through-style", "none") != "none" || get(p, "style:text-line-through-type", "none") != "none") &&
@@ -197,7 +197,7 @@ function _paragraph_runs(paras::AbstractString, styles)
                     sa = nm === nothing ? nothing : _text_atts(get(styles, nm, Dict{String,String}()))
                     walk(c, sa === nothing ? a : sa)
                 elseif tg == "text:s"
-                    add!(repeat(" ", something(tryparse(Int, get(attrs(c), "text:c", "1")), 1)), a)
+                    add!(repeat(" ", _space_count(get(attrs(c), "text:c", nothing))), a)
                 elseif tg == "text:tab"
                     add!("\t", a)
                 elseif tg == "text:line-break"

@@ -216,6 +216,8 @@ function _display_text(v, code::AbstractString; date1904::Bool=false,
         return _render_tokens(textsec.tokens, s, for_width; lo = libreoffice)
     end
     x = Float64(v)
+    # no format has digits for these (they threw); shown as the text a file stores them as (D-043)
+    isfinite(x) || return string(x)
     sec, auto_minus = _number_section(sections, textsec, x)
     isnothing(sec) && return libreoffice ? _general_lo(x) : _general(x)
     return _render_section(sec, x, auto_minus, date1904, for_width; epoch, lo = libreoffice)
@@ -689,18 +691,29 @@ function _render_date(toks::Vector{_FmtToken}, x::Float64, date1904::Bool, for_w
     x < 0 && epoch === nothing && return "#"^11      # Excel can't show a negative date or time
     # LibreOffice shows a negative elapsed time (a duration) with its sign in front
     lo && x < 0 && any(t -> t.kind == :elapsed, toks) && return "-" * _render_date(toks, -x, date1904, for_width; epoch, lo)
-    nfrac = min(maximum((parse(Int, t.text) for t in toks if t.kind == :fracsec); init=0), 3)
-    per = 10^nfrac
-    # The time to the millisecond, then to the digits shown, a half rounding down: the
-    # rule that best matches Excel 365 (in all but 2 of 15 halves tried; Excel's own
-    # rounding of halves depends on its floating-point arithmetic).
-    days = floor(Int64, x)
-    ms = round(Int64, (x - days) * 86_400_000)
-    q, r = divrem(ms, 1000 ÷ per)
-    units = if lo     # LibreOffice (F-030): whole seconds truncated; a fraction rounded half up, never carried
-        sec = ms ÷ 1000
-        days * 86400 * per + (nfrac == 0 ? sec : min(q + (2r >= 1000 ÷ per ? 1 : 0), sec * per + per - 1))
+    # The digits of a second shown: up to 9 in LibreOffice, 3 in Excel (whose further
+    # digits show as zeros)
+    nfrac = min(maximum((parse(Int, t.text) for t in toks if t.kind == :fracsec); init=0), lo ? 9 : 3)
+    per = Int64(10)^nfrac
+    units = if lo
+        # LibreOffice (F-030, F-091): the seconds of the day are first rounded to as many
+        # decimals as the day number leaves of 10 significant digits (2 to 9). The fraction
+        # then rounds half up, as a double, to the digits shown. With an elapsed field it
+        # carries into the seconds; without one the whole seconds are truncated and it
+        # never carries.
+        days = floor(Int64, x)
+        keep = abs(x) >= 1 ? clamp(10 - ndigits(days), 2, 9) : 9
+        sec = round((x - days) * 86400; digits = keep)
+        whole = floor(Int64, sec)
+        f = round(Int64, (sec - whole) * per, RoundNearestTiesUp)
+        days * 86400 * per + whole * per + (any(t -> t.kind == :elapsed, toks) ? f : min(f, per - 1))
     else
+        # The time to the millisecond, then to the digits shown, a half rounding down: the
+        # rule that best matches Excel 365 (in all but 2 of 15 halves tried; Excel's own
+        # rounding of halves depends on its floating-point arithmetic).
+        days = floor(Int64, x)
+        ms = round(Int64, (x - days) * 86_400_000)
+        q, r = divrem(ms, 1000 ÷ per)
         days * 86400 * per + q + (2r > 1000 ÷ per ? 1 : 0)
     end
     totalsec, frac = fldmod(units, per)       # fldmod: dates before an epoch are negative
@@ -740,7 +753,8 @@ function _render_date(toks::Vector{_FmtToken}, x::Float64, date1904::Bool, for_w
             print(io, lpad(total, length(s_), '0'))
         elseif k == :fracsec
             n = parse(Int, s_)
-            print(io, '.', lpad(frac, nfrac, '0')[1:n])
+            digits = nfrac == 0 ? "" : lpad(frac, nfrac, '0')
+            print(io, '.', rpad(first(digits, n), n, '0'))
         elseif k == :ampm
             am = h < 12
             text = length(s_) == 5 ? (am ? s_[1:2] : string(s_[4], s_[5])) : (am ? s_[1:1] : s_[3:3])

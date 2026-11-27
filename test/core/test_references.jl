@@ -213,9 +213,33 @@
         @test_throws SheetCore.SheetCoreError SheetCore.encode_column_number(0)
         @test_throws SheetCore.SheetCoreError SheetCore.encode_column_number(SheetCore.MAX_COLS + 1)
         @test SheetCore.encode_column_number(SheetCore.MAX_COLS) == "XFD"
-        @test_throws SheetCore.SheetCoreError SheetCore.is_valid_row_range(string(SheetCore.MAX_ROWS + 1))
+        @test !SheetCore.is_valid_row_range(string(SheetCore.MAX_ROWS + 1))     # a validator says no, not throws
         @test SheetCore.is_valid_row_range(string(SheetCore.MAX_ROWS))
         @test_throws SheetCore.SheetCoreError SheetCore.split_cellname("A")
+
+        # validators given numbers too long for any integer say no (they threw OverflowError)
+        big = "99999999999999999999"
+        @test !SheetCore.is_valid_row_name(big) && !SheetCore.is_valid_row_range(big)
+        @test !SheetCore.is_valid_cellname("A" * big) && !SheetCore.is_valid_cellrange("A1:A" * big)
+        @test !SheetCore.is_valid_column_range("ZZZ")                           # one column, past XFD
+        @test SheetCore.is_valid_column_range("XFD")
+
+        # CellRef checks its bounds (it gave A0, a wrapped column, or InexactError)
+        for bad in ("A" * big, "A1048577", "XFE1", "ZZZ1", "ZZZZZZZZZZZZZZ1")
+            @test_throws SheetCore.SheetCoreError SheetCore.CellRef(bad)
+        end
+        for (r, c) in ((0, 1), (1, 0), (SheetCore.MAX_ROWS + 1, 1), (1, SheetCore.MAX_COLS + 1), (-1, -1))
+            @test_throws SheetCore.SheetCoreError SheetCore.CellRef(r, c)
+        end
+        @test string(SheetCore.CellRef("XFD1048576")) == "XFD1048576"
+        @test SheetCore.CellRef(SheetCore.MAX_ROWS, SheetCore.MAX_COLS) == SheetCore.CellRef("XFD1048576")
+
+        # column names are the letters A to Z only (`b` read as column AH, `A1` as K)
+        for bad in ("b", "A1", "", "Ä", "A-")
+            @test_throws SheetCore.SheetCoreError SheetCore.decode_column_number(bad)
+        end
+        @test SheetCore.decode_column_number("XFD") == SheetCore.MAX_COLS
+        @test SheetCore.decode_column_number("Z"^30) == SheetCore.MAX_COLS + 1      # past the last: no overflow
 
         @test !SheetCore.is_valid_row_name("0")
         @test !SheetCore.is_valid_cellrange("A0:B2") && !SheetCore.is_valid_cellrange("A1:B0")

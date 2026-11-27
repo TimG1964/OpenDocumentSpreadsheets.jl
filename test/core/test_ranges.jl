@@ -118,7 +118,8 @@
     @testset "Base methods on references and ranges" begin
 
         # cell ranges and Base methods on references
-        @test isless(SheetCore.CellRef("A2"), SheetCore.CellRef("B1"))
+        # by position, row by row (D-098; XLSX.jl compares the strings, so A2 < B1 and B10 < B2)
+        @test isless(SheetCore.CellRef("B1"), SheetCore.CellRef("A2")) && isless(SheetCore.CellRef("B2"), SheetCore.CellRef("B10"))
         @test 2 in SheetCore.ColumnRange("A:C") && 2 in SheetCore.RowRange("1:3")
         @test convert(SheetCore.RowRange, "2:4") == SheetCore.RowRange("2:4")
         @test convert(SheetCore.RowRange, SheetCore.RowRange("2:4")) == SheetCore.RowRange("2:4")

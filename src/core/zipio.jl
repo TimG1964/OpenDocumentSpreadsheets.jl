@@ -4,6 +4,20 @@
 # MIT License, Copyright (c) 2018-2026 Felipe Noronha Tavares and other contributors.
 # See records/provenance.md. Part of the shared core (records/core-migration.md).
 
+# A part's size from the zip directory, as an `Int` (past `typemax(Int)` no `String` can hold it)
+function _entry_size(zr::ZipArchives.ZipReader, i::Integer, name::AbstractString)::Int
+    n = ZipArchives.zip_uncompressed_size(zr, i)
+    n <= typemax(Int) || throw(ArgumentError("part $(repr(name)) is too large to read ($n bytes)"))
+    return Int(n)
+end
+
+# The bytes to allocate for a part of `n` bytes before its data comes. A damaged or hostile zip
+# directory can claim any size, so no more than deflate can make of the compressed bytes (at
+# most 1032 times as many). That bound is never below a real part's size, so a real part is
+# allocated once, at its size (a fixed cap made large parts grow by doubling: 3× the memory).
+_size_hint(zr::ZipArchives.ZipReader, i::Integer, n::Int) =
+    Int(min(n, 1032 * min(ZipArchives.zip_compressed_size(zr, i), typemax(Int) ÷ 2064) + (1 << 16)))
+
 """
     readentry_string(zr::ZipArchives.ZipReader, name::AbstractString) -> String
 
@@ -15,9 +29,10 @@ directory. Throws `ArgumentError` if the entry is missing or damaged.
 function readentry_string(zr::ZipArchives.ZipReader, name::AbstractString)::String
     i = ZipArchives.zip_findlast_entry(zr, name)
     isnothing(i) && throw(ArgumentError("the package has no part named $(repr(name))"))
-    n = Int(ZipArchives.zip_uncompressed_size(zr, i))
-    # `String(take!(buf))` takes over the buffer's memory instead of copying it.
-    buf = IOBuffer(; sizehint = n)
+    n = _entry_size(zr, i, name)
+    # `String(take!(buf))` takes over the buffer's memory instead of copying it. The hint is
+    # capped, as the size is the zip directory's word: the buffer grows past it as data comes.
+    buf = IOBuffer(; sizehint = _size_hint(zr, i, n))
     chunk = Vector{UInt8}(undef, clamp(n, 1, 1 << 16))
     crc = UInt32(0)
     io = ZipArchives.zip_openentry(zr, i)
@@ -55,8 +70,8 @@ sheets in content.xml) can stop inflating after that sheet.
 function readentry_prefix(stop, zr::ZipArchives.ZipReader, name::AbstractString)::String
     i = ZipArchives.zip_findlast_entry(zr, name)
     isnothing(i) && throw(ArgumentError("the package has no part named $(repr(name))"))
-    n = Int(ZipArchives.zip_uncompressed_size(zr, i))
-    data = Vector{UInt8}(undef, n)
+    n = _entry_size(zr, i, name)
+    data = Vector{UInt8}(undef, _size_hint(zr, i, n))      # grown as data comes (see `readentry_string`)
     pos = 0
     crc = UInt32(0)
     chunk = Vector{UInt8}(undef, clamp(n, 1, 1 << 20))
@@ -67,6 +82,7 @@ function readentry_prefix(stop, zr::ZipArchives.ZipReader, name::AbstractString)
             pos + nr <= n || throw(ArgumentError("part $(repr(name)) is longer than the zip directory says"))
             block = view(chunk, 1:nr)
             crc = ZipArchives.zip_crc32(block, crc)
+            pos + nr > length(data) && resize!(data, min(n, max(2 * length(data), pos + nr)))
             copyto!(data, pos + 1, chunk, 1, nr)
             pos += nr
             keep = stop(data, pos)

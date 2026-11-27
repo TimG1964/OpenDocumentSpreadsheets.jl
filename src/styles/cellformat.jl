@@ -67,6 +67,21 @@ function _style_map(t::Function, st::StyleIndex)
 end
 
 """
+    writable_targets(x, ref) -> FormatTargets
+
+`format_targets(x, ref...)`, with every sheet checked as writable. Setters call it before they
+build their transform, which may add a font face or a data style to the file: a bad reference
+or a read-only file then changes nothing.
+"""
+function writable_targets(x, ref)
+    targets = format_targets(x, ref...)
+    for (ws, _) in targets
+        _require_writable(ws, "format cells")
+    end
+    return targets
+end
+
+"""
     apply_format!(t, targets) -> Union{String, Int}
 
 Give every cell of `targets` (`format_targets`) the style it shows transformed by `t`
@@ -583,12 +598,14 @@ for (F, T, _) in _SETTERS
     if F === :setBorder
         @eval function $F(x::Union{Worksheet,ODSFile}, ref...; outside::_BorderKw = nothing, kw...)
             outside === nothing || return _set_outside(x, ref, outside, kw)
-            t = format_targets(x, ref...)
+            t = writable_targets(x, ref)
             return apply_format!($T(_styles_of(x), $(QuoteNode(F)); kw...), t)
         end
     else
-        @eval $F(x::Union{Worksheet,ODSFile}, ref...; kw...) =
-            apply_format!($T(_styles_of(x), $(QuoteNode(F)); kw...), format_targets(x, ref...))
+        @eval function $F(x::Union{Worksheet,ODSFile}, ref...; kw...)
+            t = writable_targets(x, ref)
+            return apply_format!($T(_styles_of(x), $(QuoteNode(F)); kw...), t)
+        end
     end
 end
 
@@ -674,7 +691,7 @@ setAlignment
 function _set_outside(x, ref, outside, kw)
     isempty(kw) || throw(ODSError("Keyword `outside` is incompatible with any other keywords."))
     st = _styles_of(x)
-    targets = format_targets(x, ref...)
+    targets = writable_targets(x, ref)
     for (ws, blocks) in targets
         length(blocks) == 1 && length(targets) == 1 ||
             throw(ODSError("An outside border needs one rectangular range, not a list of ranges or vectors."))
@@ -796,8 +813,8 @@ for (F, T, fam) in ((:setUniformFont, :_font_transform, :font), (:setUniformFill
                     (:setUniformBorder, :_border_transform, :border), (:setUniformAlignment, :_alignment_transform, :alignment))
     @eval function $F(x::Union{Worksheet,ODSFile}, ref...; kw...)
         st = _styles_of(x)
+        targets = writable_targets(x, ref)
         t = $T(st, $(QuoteNode(F)); kw...)
-        targets = format_targets(x, ref...)
         ws, r, c = _first_cell(targets)
         first_id = _style_map(t, st)(effective_style(ws, r, c))
         apply_format!(_copy_transform(st, cell_style(st, first_id), $(QuoteNode(fam))), targets)
@@ -841,11 +858,10 @@ setUniformAlignment
 Give every cell of `ref` the style of its first (top-left) cell. Returns that style's name.
 """
 function setUniformStyle(x::Union{Worksheet,ODSFile}, ref...)
-    targets = format_targets(x, ref...)
+    targets = writable_targets(x, ref)
     ws, r, c = _first_cell(targets)
     id = effective_style(ws, r, c)
     for (w, blocks) in targets
-        _require_writable(w, "format cells")
         _apply_map!(_ -> id, w, blocks)
     end
     return style_name(_styles_of(x), id)

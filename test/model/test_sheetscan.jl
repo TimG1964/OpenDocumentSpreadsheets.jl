@@ -186,3 +186,26 @@ end
     @test all(isequal(t1.data[j][i], rows[i][j]) for i in 1:n, j in 1:3)
     @test isequal(t1.data[3][1], missing) && t1.data[3][n] === true
 end
+
+@testset "scanner = cursor on huge counts and spans (F-092)" begin
+    for body in ("""<table:table table:name="S"><table:table-column table:number-columns-repeated="3000000000"/>
+                    <table:table-row table:number-rows-repeated="2"><table:table-cell table:number-columns-repeated="3"
+                    table:number-columns-spanned="2" office:value-type="float" office:value="1"/></table:table-row>
+                    <table:table-row><table:table-cell table:number-columns-spanned="99999999999" table:number-rows-spanned="3000000000"
+                    office:value-type="float" office:value="2"/><table:table-cell table:number-columns-repeated="-5" office:value-type="float" office:value="3"/></table:table-row>
+                    <table:table-row table:number-rows-repeated="3000000000"><table:table-cell/></table:table-row>
+                    <table:table-row><table:table-cell office:value-type="float" office:value="9"/></table:table-row></table:table>""",
+                 """<table:table table:name="S"><table:table-row table:number-rows-repeated="1048575"><table:table-cell/></table:table-row>
+                    <table:table-row><table:table-cell table:number-rows-spanned="2" office:value-type="float" office:value="1"/>
+                    <table:table-cell table:number-columns-spanned="2" office:value-type="float" office:value="1"/></table:table-row></table:table>""")
+        ws = open_fods(body)[1]
+        @test _same_read(ws)
+        rows, cols, merges = _sheet_read(ws, true)
+        @test all(m -> m.stop.row_number <= OpenDocumentSpreadsheets.SheetCore.MAX_ROWS, merges)
+    end
+    # the last row's 2-row span passes the end: no merge; its 2-column span is a merge
+    ws = open_fods("""<table:table table:name="S"><table:table-row table:number-rows-repeated="1048575"><table:table-cell/></table:table-row>
+                    <table:table-row><table:table-cell table:number-rows-spanned="2" office:value-type="float" office:value="1"/>
+                    <table:table-cell table:number-columns-spanned="2" office:value-type="float" office:value="1"/></table:table-row></table:table>""")[1]
+    @test last(_sheet_read(ws, true)) == [OpenDocumentSpreadsheets.SheetCore.CellRange("B1048576:C1048576")]
+end

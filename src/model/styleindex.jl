@@ -138,8 +138,9 @@ StyleIndex(xmls::Vector{String} = String[]) =
                Dict{Tuple{Int32,UInt8,Bool},String}(), zeros(UInt8, 64), xmls, Union{Nothing,StyleSheet}[nothing], String[], Tuple{String,String}[], [false],
                String[], Union{Nothing,Dict{String,Dict{String,String}}}[nothing])
 
-@inline style_info(s::StyleIndex, id::Integer) = @inbounds s.info[id + 1]
-@inline style_name(s::StyleIndex, id::Integer) = @inbounds s.names[id + 1]
+# Checked: an id of -1 (no style) read past the vectors under `@inbounds`
+@inline style_info(s::StyleIndex, id::Integer) = s.info[id + 1]
+@inline style_name(s::StyleIndex, id::Integer) = s.names[id + 1]
 
 """
     style_id(s::StyleIndex, name) -> Int32

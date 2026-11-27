@@ -190,7 +190,7 @@ function _rule_message(x::AbstractString, tag::String)
     lines = String[]
     for p in eachmatch(r"<text:p\b[^>]*?(?:/>|>(.*?)</text:p>)"s, body)
         t = something(p.captures[1], "")
-        t = replace(t, r"<text:s\s*/>" => " ", r"<text:s\s+text:c=\"\d+\"\s*/>" => z -> " "^Int(parse(Int64, match(r"\d+", z).match)),
+        t = replace(t, r"<text:s\s*/>" => " ", r"<text:s\s+text:c=\"\d+\"\s*/>" => z -> " "^_space_count(match(r"\d+", z).match),
                     r"<text:tab\s*/>" => "\t", r"<text:line-break\s*/>" => "\n", r"<[^>]*>" => "")
         push!(lines, XML.unescape(t))
     end
@@ -318,7 +318,7 @@ function _file_vals(ws::Worksheet)
                         if XML.tag(cc) in ("table:table-cell", "table:covered-table-cell")
                             k = 1; name = nothing
                             for (key, v) in XML.eachattribute!(cc)
-                                key == "table:number-columns-repeated" && (k = max(1, something(tryparse(Int, v), 1)))
+                                key == "table:number-columns-repeated" && (k = _file_count(v, 1, 1, SheetCore.MAX_ROWS))
                                 key == "table:content-validation-name" && (name = String(v))
                             end
                             k = min(k, SheetCore.MAX_COLS - col)

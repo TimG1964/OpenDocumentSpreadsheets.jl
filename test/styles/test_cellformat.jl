@@ -477,3 +477,26 @@ end
     @test getFont(r, 777, 1).font["color"]["rgb"] == "FF" * uppercase(colours[777]) && haskey(getFont(r, 777, 1).font, "b")
     @test getFont(r, 777, 2).font == fb[1]
 end
+
+@testset "a refused format call changes nothing (code review, Phase 1 item 8)" begin
+    O = OpenDocumentSpreadsheets
+    sheet_of(xf) = O.stylesheet(xf.styles)
+    # read-only: an outside border was drawn all the same
+    ro = openods(joinpath(DATA, "lo-scenarios.ods"))
+    ws = ro[1]
+    before = [O.effective_style(ws, r, c) for r in 1:4, c in 1:4]
+    err = try setBorder(ws, "A1:C3"; outside = ["style" => "thin"]); nothing catch e; e end
+    @test err isa ODSError && occursin("read-only", err.msg)
+    @test [O.effective_style(ws, r, c) for r in 1:4, c in 1:4] == before
+    # a read-only file or a bad reference: no font face or data style is added first
+    for (xf, ref) in ((ro, "A1"), (newods(), "NoSuchSheet.A1"), (newods(), "A1:"))
+        w = xf[1]
+        faces = copy(sheet_of(xf).added_faces); codes = copy(sheet_of(xf).code_styles)
+        x = ref == "NoSuchSheet.A1" ? xf : w
+        @test_throws ODSError setFont(x, ref; name = "Quirky Font")
+        @test_throws ODSError setUniformFont(x, ref; name = "Quirky Font")
+        @test_throws ODSError setFormat(x, ref; format = "0.0000")
+        @test_throws ODSError setUniformFormat(x, ref; format = "0.0000")
+        @test sheet_of(xf).added_faces == faces && sheet_of(xf).code_styles == codes
+    end
+end

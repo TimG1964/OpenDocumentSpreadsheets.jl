@@ -316,7 +316,7 @@ function _lines_in(ln, k::Int)
         if XML.nodetype(ch) === XML.Element && XML.tag(ch) == tag
             r = 1
             for (a, v) in XML.eachattribute!(ch)
-                a == key && (r = max(1, something(tryparse(Int, v), 1)))
+                a == key && (r = _file_count(v, 1, 1, SheetCore.MAX_ROWS))
             end
             n += r
         end

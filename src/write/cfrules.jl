@@ -708,7 +708,11 @@ function setColoredDataBars(ws::Worksheet, rng; bands::Int = 5, colors = ["green
     breaks === nothing && bands > 1 && !(hi > lo) && throw(ODSError("All numeric values in `$rng` are equal; cannot form bands."))
     breaks === nothing || issorted(breaks) || throw(ODSError("`breaks` must be sorted ascending."))
     _cf_band_colours(colors, breaks === nothing ? bands : length(breaks) + 1)
-    clear && clearConditionalFormats(ws, CellRange(first(rr), first(cc), last(rr), last(cc)))
+    # the thresholds every band's bar is given (a bad formula failed after the range was cleared)
+    xf = get_odsfile(ws)
+    _cf_threshold(xf, "min", something(min_type, "num"), something(min_val, _dv_num(lo)), "auto-minimum", "auto-maximum")
+    _cf_threshold(xf, "max", something(max_type, "num"), something(max_val, _dv_num(hi)), "auto-maximum", "auto-maximum")
+    whole = CellRange(first(rr), first(cc), last(rr), last(cc))
     extra = Dict{Symbol,Any}()
     showVal === nothing || (extra[:showVal] = showVal)
     direction === nothing || (extra[:direction] = direction)
@@ -718,8 +722,10 @@ function setColoredDataBars(ws::Worksheet, rng; bands::Int = 5, colors = ["green
     if breaks === nothing
         bands < 1 && throw(ODSError("`bands` must be at least 1, got $bands."))
         if bands == 1
-            bar(CellRange(first(rr), first(cc), last(rr), last(cc)), only(_cf_band_colours(colors, 1)))
-            return [1 => CellRange(first(rr), first(cc), last(rr), last(cc))]
+            col = only(_cf_band_colours(colors, 1))
+            clear && clearConditionalFormats(ws, whole)
+            bar(whole, col)
+            return [1 => whole]
         end
         hi > lo || throw(ODSError("All numeric values in `$rng` are equal; cannot form bands."))
         brk = collect(range(lo, hi; length = bands + 1))[2:end-1]
@@ -751,6 +757,8 @@ function setColoredDataBars(ws::Worksheet, rng; bands::Int = 5, colors = ["green
             end
         end
     end
+    # everything is checked: now the range's formats go, and the bands' come
+    clear && clearConditionalFormats(ws, whole)
     out = Pair{Int,NonContiguousRange}[]
     for b in 1:bands
         isempty(cells[b]) && continue

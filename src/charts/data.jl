@@ -219,7 +219,7 @@ function _chart_ref(xf::ODSFile, addr::Union{Nothing,AbstractString})
                 elseif cell isa Cell && cell.value !== nothing
                     v = cell.value
                     push!(data, v isa Real && !(v isa Bool) ? Float64(v) : v)
-                    fmt === nothing && v isa Real && (fmt = something(try getFormat(ws, r, c).format["numFmt"]["formatCode"] catch; nothing end, "General"))
+                    fmt === nothing && v isa Real && (fmt = something(try getFormat(ws, r, c).format["numFmt"]["formatCode"] catch e; e isa ODSError || e isa KeyError || rethrow(); nothing end, "General"))
                 else
                     push!(data, missing)
                 end
@@ -396,7 +396,7 @@ function _text(n)
         elseif t === XML.Element
             tg = XML.tag(c)
             if tg == "text:s"
-                print(io, " "^parse(Int, something(_get(c, "text:c"), "1")))
+                print(io, " "^_space_count(_get(c, "text:c")))
             elseif tg == "text:tab"
                 print(io, '\t')
             elseif tg == "text:line-break"

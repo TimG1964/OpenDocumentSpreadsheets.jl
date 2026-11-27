@@ -47,7 +47,7 @@ function _number_attrs(toks, digits::Vector{Int}, ipoint, thousands::Bool, scale
     loext = nblank > 0
     loext && print(io, " loext:max-blank-integer-digits=\"", nblank, "\"")
     thousands && print(io, " number:grouping=\"true\"")
-    scale > 0 && print(io, " number:display-factor=\"", 1000^scale, "\"")
+    scale > 0 && print(io, " number:display-factor=\"", big(1000)^scale, "\"")   # BigInt: 1000^7 passes Int64
     return String(take!(io)), loext
 end
 
@@ -92,7 +92,7 @@ function _numeric_element(toks, run::UnitRange{Int})
         if toks[first(den)].kind == :lit
             print(io, " number:denominator-value=\"", join(toks[k].text for k in den), "\"")
         else
-            print(io, " number:min-denominator-digits=\"", length(den), "\" number:max-denominator-value=\"", 10^length(den) - 1, "\"")
+            print(io, " number:min-denominator-digits=\"", length(den), "\" number:max-denominator-value=\"", big(10)^length(den) - 1, "\"")   # BigInt: 10^19 passes Int64
         end
         print(io, "/>")
         return String(take!(io)), true
@@ -228,7 +228,8 @@ function _odf_section(sec, raw::AbstractString)
     return _OdfSection(element, attrs, String(take!(io)), loext)
 end
 
-_cond_text((op, x)) = "value()" * op * (isinteger(x) ? string(Int(x)) : string(x))
+# (whole numbers as Int64 digits while exact: an `Int` threw past 2^31 on a 32-bit build)
+_cond_text((op, x)) = "value()" * op * (isinteger(x) && abs(x) < 2.0^53 ? string(Int64(x)) : string(x))
 
 """
     numfmt_to_odf(code) -> (sections, main)
@@ -329,7 +330,9 @@ function _code_literal(s::AbstractString, datelike::Bool)
 end
 
 _attrs_dict(c) = Dict{String,String}(String(k) => String(v) for (k, v) in XML.eachattribute!(c))
-_int_attr(a, k, d) = something(tryparse(Int, get(a, k, "")), d)
+# A digit count or position from a file: as Int64 (the same on a 32-bit build), and at most 255,
+# so a count of a billion digits builds no gigabyte code
+_int_attr(a, k, d) = _file_count(get(a, k, ""), d, 0, 255)
 
 function _number_code(a::Dict{String,String})
     haskey(a, "number:decimal-places") || return "General"     # LibreOffice's Standard number
@@ -344,8 +347,8 @@ function _number_code(a::Dict{String,String})
     end
     isempty(int) && (int = "#")
     dec = "0"^nmin * (repl == " " ? "?" : "#")^max(nd - nmin, 0)
-    f = parse(Float64, get(a, "number:display-factor", "1"))
-    commas = f > 1 ? round(Int, log10(f) / 3) : 0
+    f = something(tryparse(Float64, get(a, "number:display-factor", "1")), 1.0)   # not a number: none
+    commas = isfinite(f) && f > 1 ? round(Int, log10(f) / 3) : 0
     return int * (isempty(dec) ? "" : "." * dec) * ","^commas
 end
 

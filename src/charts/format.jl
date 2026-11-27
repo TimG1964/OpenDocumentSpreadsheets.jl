@@ -122,7 +122,7 @@ function _drawing_text(doc::_ChartDoc, n)
                 if tg == "text:line-break"
                     push!(runs, DrawingRun(:br, "\n", props, nothing))
                 elseif tg == "text:s"
-                    push!(runs, DrawingRun(:run, " "^something(tryparse(Int, something(_get(c, "text:c"), "1")), 1), props, nothing))
+                    push!(runs, DrawingRun(:run, " "^_space_count(_get(c, "text:c")), props, nothing))
                 elseif tg == "text:tab"
                     push!(runs, DrawingRun(:run, "\t", props, nothing))
                 elseif tg == "text:span"

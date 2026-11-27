@@ -305,3 +305,24 @@ end
         @test islink(link) && readods(p)[1]["A3"] == 3
     end
 end
+
+@testset "a zip directory's size is not allocated up front" begin
+    # a 17-byte part whose zip directory claims 2 GB: an error, not a 2 GB allocation first
+    io = IOBuffer()
+    ZipArchives.ZipWriter(io) do w
+        ZipArchives.zip_newfile(w, "a.xml"; compress = true); write(w, "hello hello hello"); ZipArchives.zip_commitfile(w)
+    end
+    b = take!(io)
+    cd = findfirst(b"PK\x01\x02", b)[1]
+    for at in (1 + 22, cd + 24)               # the local header's and the central directory's uncompressed size
+        b[at:at+3] .= reinterpret(UInt8, [htol(UInt32(0x7fff0000))])
+    end
+    zr = ZipArchives.ZipReader(b)
+    SC = OpenDocumentSpreadsheets.SheetCore
+    for read in (() -> SC.readentry_string(zr, "a.xml"), () -> SC.readentry_prefix((d, n) -> nothing, zr, "a.xml"))
+        read_err() = try read(); nothing catch e; e end
+        read_err()                                            # compiled
+        @test (@allocated read_err()) < 50_000_000
+        @test occursin("shorter than the zip directory says", sprint(showerror, read_err()))
+    end
+end

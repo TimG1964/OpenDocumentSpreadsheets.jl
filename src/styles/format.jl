@@ -84,8 +84,10 @@ setFormat(sh, "B1:B2"; format = "#,##0.00")      # 4.50
 setFormat(sh, "A1:A4"; format = "Percentage")    # 100%
 ```
 """
-setFormat(x::Union{Worksheet,ODSFile}, ref...; kw...) =
-    apply_format!(_format_transform(_styles_of(x), :setFormat; kw...), format_targets(x, ref...))
+function setFormat(x::Union{Worksheet,ODSFile}, ref...; kw...)
+    t = writable_targets(x, ref)
+    return apply_format!(_format_transform(_styles_of(x), :setFormat; kw...), t)
+end
 
 """
     CellFormat(numFmtId, format, applyNumberFormat)
@@ -143,8 +145,8 @@ Format the first (top-left) cell of `ref` with [`setFormat`](@ref), then give ev
 """
 function setUniformFormat(x::Union{Worksheet,ODSFile}, ref...; kw...)
     st = _styles_of(x)
+    targets = writable_targets(x, ref)
     t = _format_transform(st, :setUniformFormat; kw...)
-    targets = format_targets(x, ref...)
     ws, r, c = _first_cell(targets)
     first_id = _style_map(t, st)(effective_style(ws, r, c))
     ds = _resolved_datastyle(st, cell_style(st, first_id))

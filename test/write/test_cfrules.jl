@@ -458,3 +458,17 @@ _cf_is_band(t) = occursin(r"^CF\.[B-K]11[34]:CF\.[B-K]11[34]$", t)     # setColo
         @test bar[2][2] == Dict("value" => "-3", "type" => "number") && bar[3][2] == Dict("value" => "9", "type" => "number")
     end
 end
+
+@testset "setColoredDataBars: a refused call keeps the range's formats" begin
+    xf = newods(); ws = xf[1]
+    for r in 1:4; ws[r, 2] = r; end
+    setConditionalFormat(ws, "B1:B4", :cellIs; operator = "greaterThan", value = "2")
+    # `gte` of the wrong length was checked after the range was cleared
+    @test_throws ODSError setColoredDataBars(ws, "B1:B4"; bands = 3, gte = [true])
+    @test length(getConditionalFormats(ws)) == 1
+    @test_throws ODSError setColoredDataBars(ws, "B1:B4"; bands = 3, max_type = "percent")
+    @test_throws ODSError setColoredDataBars(ws, "B1:B4"; bands = 1, colors = ["nocolour"])
+    @test length(getConditionalFormats(ws)) == 1
+    @test length(setColoredDataBars(ws, "B1:B4"; bands = 2)) == 2            # and a good call still clears it
+    @test length(getConditionalFormats(ws)) == 2
+end

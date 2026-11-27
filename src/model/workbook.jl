@@ -738,8 +738,10 @@ function _sheet_index(xf::ODSFile, sheetname::AbstractString)
     end
     return findfirst(s -> _same_sheetname(s.name, name), xf.sheets)
 end
-_same_sheetname(a::AbstractString, b::AbstractString) =
-    Unicode.normalize(a; casefold = true) == Unicode.normalize(b; casefold = true)
+# Sheet names (and defined names) match without regard to case as LibreOffice matches them: by
+# simple per-character case mapping, so `Ab` is `AB` but `Straße` is not `STRASSE`, which full
+# case folding made one (F-093). Formula references use the same rule (formula/refs.jl).
+_same_sheetname(a::AbstractString, b::AbstractString) = a == b || lowercase(a) == lowercase(b)
 
 """
     hassheet(xf::ODSFile, sheetname) -> Bool
@@ -766,7 +768,7 @@ Base.getindex(xf::ODSFile, i::Integer) = getsheet(xf, i)
 function Base.getindex(xf::ODSFile, s::AbstractString)
     # a sheet-qualified reference to a sheet that exists (found without indexing the rest)
     if occursin('.', s) || occursin('!', s)
-        ref = try parse_sheet_ref(s) catch; nothing end
+        ref = try parse_sheet_ref(s) catch e; e isa ODSError || rethrow(); nothing end
         if ref !== nothing && _sheet_index(xf, ref.sheet) !== nothing
             return getdata(xf, ref)
         end
@@ -816,8 +818,17 @@ function get_defined_name_value(dn::NameDef)
                                 "which OpenDocumentSpreadsheets cannot evaluate."))
     return v
 end
-get_defined_name_value(xf::ODSFile, name::AbstractString) = get_defined_name_value(_find_name(_wb_names(xf), name))
-get_defined_name_value(ws::Worksheet, name::AbstractString) = get_defined_name_value(_find_name(_local_names(ws), name))
+# (a missing name was a MethodError on `nothing`)
+function get_defined_name_value(xf::ODSFile, name::AbstractString)
+    dn = _find_name(_wb_names(xf), name)
+    dn === nothing && throw(ODSError("`$name` is not a defined name of the file."))
+    return get_defined_name_value(dn)
+end
+function get_defined_name_value(ws::Worksheet, name::AbstractString)
+    dn = _find_name(_local_names(ws), name)
+    dn === nothing && throw(ODSError("`$name` is not a defined name of sheet `$(ws.name)`."))
+    return get_defined_name_value(dn)
+end
 
 is_defined_name_value_a_reference(v) = v isa Union{SheetCellRef,SheetCellRange,SheetColumnRange,SheetRowRange,NonContiguousRange}
 

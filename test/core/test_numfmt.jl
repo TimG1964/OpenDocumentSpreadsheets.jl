@@ -45,16 +45,13 @@ end
     # LibreOffice 26.8.3's texts (experiment 012) for the Excel cases and 50 General values.
     # Day numbers count from the ODF epoch. Left out: booleans (Calc shows a boolean under a
     # number format as a number; an ODS boolean cell keeps a boolean format, D-024).
-    # Two times half-way between tenths or hundredths of a second, where the engine's
-    # millisecond rounding and LibreOffice's floating-point arithmetic part (the values went
-    # through Basic's `Val`, so the exact doubles LibreOffice used are not known).
-    known = Dict(("ss.0", "46088.58691377315") => "09.4", ("ss.00", "46088.58691140046") => "09.15")
+    # This includes the times half-way between tenths or hundredths of a second (F-091).
     n = 0
     for line in readlines(joinpath(CORE_DATA, "number_formats_libreoffice.tsv"))
         startswith(line, '#') && continue
         kind, v, fmt, text = split(line, '\t')
         kind == "bool" && continue
-        lo = get(known, (fmt, v), chop(text; head=1, tail=1))
+        lo = chop(text; head=1, tail=1)
         x = kind == "string" ? String(v) : parse(Float64, v)       # day numbers, as LibreOffice was given them
         got = SheetCore._display_text(x, fmt; epoch=SheetCore.DEFAULT_NULL_DATE, libreoffice=true)
         got == lo || @info "differs from LibreOffice" kind v fmt lo got
@@ -62,6 +59,28 @@ end
         n += 1
     end
     @test n == 248
+end
+
+@testset "fractions of a second (F-091)" begin
+    # LibreOffice 26.8's texts for these exact doubles (written to a file, exported as shown)
+    t1, t2, t3, t4 = 0.5 + 1.23456789/86400, 0.5 + 59.99996/86400, 0.5 + 0.00049/86400, 0.5 + 1.99999949/86400
+    lo(x, fmt) = SheetCore._display_text(x, fmt; libreoffice = true)
+    for (fmt, want) in [
+            "hh:mm:ss.0"         => ("12:00:01.2", "12:00:59.9", "12:00:00.0", "12:00:01.9"),
+            "hh:mm:ss.000"       => ("12:00:01.235", "12:00:59.999", "12:00:00.000", "12:00:01.999"),
+            "hh:mm:ss.0000"      => ("12:00:01.2346", "12:00:59.9999", "12:00:00.0005", "12:00:01.9999"),
+            "hh:mm:ss.00000"     => ("12:00:01.23457", "12:00:59.99996", "12:00:00.00049", "12:00:01.99999"),
+            "hh:mm:ss.000000"    => ("12:00:01.234568", "12:00:59.999960", "12:00:00.000490", "12:00:01.999999"),
+            "hh:mm:ss.000000000" => ("12:00:01.234567890", "12:00:59.999960000", "12:00:00.000490000", "12:00:01.999999490"),
+            "hh:mm:ss"           => ("12:00:01", "12:00:59", "12:00:00", "12:00:01"),
+            "[ss]"               => ("43201", "43260", "43200", "43202"),     # elapsed: rounded, carried
+            "[ss].0000"          => ("43201.2346", "43260.0000", "43200.0005", "43202.0000"),
+            "[mm]:ss.0000"       => ("720:01.2346", "721:00.0000", "720:00.0005", "720:02.0000")]
+        @test lo.((t1, t2, t3, t4), fmt) == want
+    end
+    @test lo(1.5 + 59.9996/86400, "[hh]:mm:ss.000000") == "36:00:59.999600"
+    # Excel shows at most 3 digits; any more are zeros
+    @test SheetCore._display_text(t1, "hh:mm:ss.00000") == "12:00:01.23500"
 end
 
 @testset "format codes Excel accepts" begin

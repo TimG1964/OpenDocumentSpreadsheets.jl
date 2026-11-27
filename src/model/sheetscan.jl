@@ -324,7 +324,7 @@ function _scan_column!(r::SheetReader, s::String)
     count = 1; ds = Int32(-1); visible = true
     for (an, av) in r.attrs
         if _seq(s, an, "table:number-columns-repeated")
-            count = something(tryparse(Int, _sattr_or_throw_value(s, av)), 1)
+            count = _file_count(_sattr_or_throw_value(s, av), 1, 1, SheetCore.MAX_COLS)     # 0 or less: one (F-092)
         elseif _seq(s, an, "table:default-cell-style-name")
             ds = style_id(r.styles, _sattr_or_throw_value(s, av))
         elseif _seq(s, an, "table:visibility")
@@ -340,7 +340,7 @@ function _scan_row!(r::SheetReader, s::String, stop::Int, empty::Bool)
     count = 1; rowdefault = Int32(-1)
     for (an, av) in r.attrs
         if _seq(s, an, "table:number-rows-repeated")
-            count = max(1, something(tryparse(Int, _sattr_or_throw_value(s, av)), 1))
+            count = _file_count(_sattr_or_throw_value(s, av), 1, 1, SheetCore.MAX_ROWS)
         elseif _seq(s, an, "table:default-cell-style-name")
             rowdefault = style_id(r.styles, _sattr_or_throw_value(s, av))
         end
@@ -370,9 +370,9 @@ function _scan_row!(r::SheetReader, s::String, stop::Int, empty::Bool)
         end
         name, cstop, cempty = _stag!(r.attrs, s, j)
         if _seq(s, name, _SCELL)
-            col, j = _scan_cell!(r, s, j, cstop, cempty, rowno, count, col, rowdefault, false)
+            col, j = _scan_cell!(r, s, j, cstop, cempty, rowno, col, rowdefault, false)
         elseif _seq(s, name, _SCOVERED)
-            col, j = _scan_cell!(r, s, j, cstop, cempty, rowno, count, col, rowdefault, true)
+            col, j = _scan_cell!(r, s, j, cstop, cempty, rowno, col, rowdefault, true)
         else
             j = cempty ? cstop + 1 : _sskip_content(s, cstop + 1)
         end
@@ -385,9 +385,9 @@ end
 # The cell whose start tag is at `start` and ends at `stop`: (the column after it, the
 # index after it).
 function _scan_cell!(r::SheetReader, s::String, start::Int, stop::Int, empty::Bool,
-                     rowno::Int, rowcount::Int, col::Int, rowdefault::Int32, covered::Bool)
+                     rowno::Int, col::Int, rowdefault::Int32, covered::Bool)
     a = _scan_cell_attrs(r, s)
-    a.count < 0 && return _scan_cell_fallback(r, s, start, rowno, rowcount, col, rowdefault, covered)
+    a.count < 0 && return _scan_cell_fallback(r, s, start, rowno, col, rowdefault, covered)
     count = min(a.count, SheetCore.MAX_COLS - col + 1)
     count <= 0 && return col, (empty ? stop + 1 : _sskip_content(s, stop + 1))
     kind, flags, bits, text, needs_text = _cell_value(a, covered)
@@ -396,13 +396,13 @@ function _scan_cell!(r::SheetReader, s::String, start::Int, stop::Int, empty::Bo
             t = nothing; j = stop + 1
         else
             t, j = _scan_cell_text!(r, s, stop + 1)
-            j == 0 && return _scan_cell_fallback(r, s, start, rowno, rowcount, col, rowdefault, covered)
+            j == 0 && return _scan_cell_fallback(r, s, start, rowno, col, rowdefault, covered)
         end
         kind, text = _with_text(kind, text, t)
     else
         j = empty ? stop + 1 : _sskip_content(s, stop + 1)
     end
-    return _store_cell!(r, a, rowno, rowcount, col, count, rowdefault, kind, flags, bits, text), j
+    return _store_cell!(r, a, rowno, col, count, rowdefault, kind, flags, bits, text), j
 end
 
 # The cell's attributes, as `_cursor_cell_attrs` reads them; `_FALLBACK_ATTRS` when one of
@@ -429,7 +429,7 @@ function _scan_cell_attrs(r::SheetReader, s::String)
         elseif _seq(s, an, "table:style-name")
             style = style_id(r.styles, @_cell_attr(s, av))
         elseif _seq(s, an, "table:number-columns-repeated")
-            count = max(1, something(tryparse(Int, @_cell_attr(s, av)), 1))
+            count = _file_count(@_cell_attr(s, av), 1, 1, SheetCore.MAX_COLS)
         elseif _seq(s, an, "table:formula")
             formula = String(@_cell_attr(s, av))
         elseif _seq(s, an, "office:date-value")
@@ -443,9 +443,9 @@ function _scan_cell_attrs(r::SheetReader, s::String)
         elseif _seq(s, an, "office:currency")
             currency = String(@_cell_attr(s, av))
         elseif _seq(s, an, "table:number-columns-spanned")
-            colspan = max(1, something(tryparse(Int, @_cell_attr(s, av)), 1))
+            colspan = _file_count(@_cell_attr(s, av), 1, 1, SheetCore.MAX_COLS + 1)
         elseif _seq(s, an, "table:number-rows-spanned")
-            rowspan = max(1, something(tryparse(Int, @_cell_attr(s, av)), 1))
+            rowspan = _file_count(@_cell_attr(s, av), 1, 1, SheetCore.MAX_ROWS + 1)
         end
     end
     return CellAttrs(count, style, vtype, cvtype, value, datev, timev, boolv, strv, currency, formula, colspan, rowspan)
@@ -500,11 +500,11 @@ end
 
 # The cell at `start`, read by XML.jl: its text is parsed on its own and read by the cursor
 # walk's `_read_cell!`. Returns (the column after it, the index after it).
-function _scan_cell_fallback(r::SheetReader, s::String, start::Int, rowno::Int, rowcount::Int,
+function _scan_cell_fallback(r::SheetReader, s::String, start::Int, rowno::Int,
                              col::Int, rowdefault::Int32, covered::Bool)
     e = _sskip_element(s, start)
     Threads.atomic_add!(_SCAN_CELL_FALLBACKS, 1)
     c = XML.Cursor(String(SubString(s, start, prevind(s, e))))
     XML.next!(c)
-    return _read_cell!(r, c, rowno, rowcount, col, rowdefault, covered), e
+    return _read_cell!(r, c, rowno, col, rowdefault, covered), e
 end

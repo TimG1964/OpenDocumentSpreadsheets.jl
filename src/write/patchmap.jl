@@ -26,7 +26,7 @@ function _count_lines(node::XML.LazyNode, cols::Bool)
         if t == linetag
             k = 1
             for (a, v) in XML.eachattribute!(ch)
-                a == key && (k = max(1, something(tryparse(Int, v), 1)))
+                a == key && (k = _file_count(v, 1, 1, SheetCore.MAX_ROWS))
             end
             n += k
         elseif t in conts

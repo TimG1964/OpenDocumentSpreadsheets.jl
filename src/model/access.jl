@@ -415,7 +415,7 @@ function readdata(source::Union{AbstractString,IO}, sheet::Union{AbstractString,
 end
 
 function readdata(source::Union{AbstractString,IO}, sheetref::AbstractString)
-    ref = try parse_sheet_ref(sheetref) catch; nothing end
+    ref = try parse_sheet_ref(sheetref) catch e; e isa ODSError || rethrow(); nothing end
     ref === nothing && return getdata(openods(source; enable_cache = false), sheetref)   # a name
     return getdata(_open_through(source, ref.sheet), ref)
 end

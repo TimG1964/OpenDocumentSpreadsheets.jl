@@ -143,8 +143,8 @@ end
 _sheet_text(e::RefEnd, name::AbstractString) = (e.sheet_abs ? "\$" : "") * SheetCore.quoteit(name)
 _with_sheet(e::RefEnd, name::AbstractString) = _with(e; sheet = String(name), sheet_text = _sheet_text(e, name))
 
-# Sheet names match without regard to case, as LibreOffice's (and OpenDocumentSpreadsheets') sheet names do.
-_same_sheet(a::AbstractString, b::AbstractString) = a == b || lowercase(a) == lowercase(b)
+# Sheet names match without regard to case, as LibreOffice's do: the one rule of model/workbook.jl (F-093).
+_same_sheet(a::AbstractString, b::AbstractString) = _same_sheetname(a, b)
 _same_sheet(::Nothing, ::AbstractString) = false
 _sheet_index(order::Vector{String}, name::AbstractString) = findfirst(s -> _same_sheet(s, name), order)
 
@@ -554,12 +554,16 @@ function rebase_condition(cond::AbstractString, base::AbstractString, target::Ab
     tl = parse_ref(SubString(target, areas[1]...))
     tl === nothing && return nothing
     tl = tl[1]
+    # a whole row's top-left cell is in column A, a whole column's in row 1 (their 0 threw, or gave `B0`)
+    tlc, tlr = max(tl.col, 1), max(tl.row, 1)
     tsheet = something(tl.sheet, b.sheet, sheet)
     ctx = RefContext(tsheet)
     newtarget = rewrite_rangelist(target, op, RefContext(tsheet; expand = true))
     nareas = _areas(newtarget)
     (isempty(nareas) || SubString(newtarget, nareas[1]...) == "#REF!") && return nothing
-    ntl = parse_ref(SubString(newtarget, nareas[1]...))[1]
+    ntl = parse_ref(SubString(newtarget, nareas[1]...))
+    ntl === nothing && return nothing
+    ntl = ntl[1]
     changed = newtarget != target
     s = String(cond)
     pieces = Tuple{Int,Int,String}[]         # (first byte, last byte, new reference)
@@ -573,8 +577,8 @@ function rebase_condition(cond::AbstractString, base::AbstractString, target::Ab
         # as seen from the old top-left cell
         seen = map(ends) do e
             e.err && return e
-            c = e.col > 0 && !e.col_abs ? tl.col + (e.col - b.col) : e.col
-            r = e.row > 0 && !e.row_abs ? tl.row + (e.row - b.row) : e.row
+            c = e.col > 0 && !e.col_abs ? tlc + (e.col - b.col) : e.col
+            r = e.row > 0 && !e.row_abs ? tlr + (e.row - b.row) : e.row
             (e.col > 0 && c < 1) || (e.row > 0 && r < 1) ? e : _with(e; col = c, row = r)
         end
         r = _apply(op, seen, ctx)
@@ -590,6 +594,6 @@ function rebase_condition(cond::AbstractString, base::AbstractString, target::Ab
     end
     pos <= ncodeunits(s) && print(out, SubString(s, pos))
     newbase = (ntl.sheet === nothing ? "" : SheetCore.quoteit(ntl.sheet) * ".") *
-              SheetCore.encode_column_number(ntl.col) * string(ntl.row)
+              SheetCore.encode_column_number(max(ntl.col, 1)) * string(max(ntl.row, 1))
     return String(take!(out)), newbase
 end

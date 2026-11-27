@@ -55,7 +55,8 @@ function _attr_int(text::AbstractString, name::AbstractString, default::Int)
                 if q <= ncodeunits(tag) && (tag[q] == '"' || tag[q] == '\'')
                     z = findnext(tag[q], tag, nextind(tag, q))
                     z === nothing && return default
-                    return something(tryparse(Int, strip(SubString(tag, nextind(tag, q), prevind(tag, z)))), default)
+                    # a count: as Int64 and cut to the sheet, as the reader reads it
+                    return _file_count(SubString(tag, nextind(tag, q), prevind(tag, z)), default, 0, SheetCore.MAX_ROWS)
                 end
             end
         end
@@ -282,7 +283,8 @@ function _walk!(st::_PatchState, node::XML.LazyNode, level::Symbol)
         if t == "table:table-row" || t == "table:table-column"
             key = t == "table:table-row" ? "table:number-rows-repeated" : "table:number-columns-repeated"
             for (k, v) in XML.eachattribute!(ch)
-                k == key && (repeat = something(tryparse(Int, v), 1))
+                # as the reader and LibreOffice count (F-092): 0 or less is one (it shrank the column count)
+                k == key && (repeat = _file_count(v, 1, 1, key == "table:number-rows-repeated" ? SheetCore.MAX_ROWS : SheetCore.MAX_COLS))
             end
         end
         start() = first(XML.sourcespan(XML.LazyNode(ch)))
@@ -404,7 +406,7 @@ function _row_extent(ln::XML.LazyNode)
         if XML.nodetype(ch) === XML.Element && XML.tag(ch) in ("table:table-cell", "table:covered-table-cell")
             k = 1
             for (key, v) in XML.eachattribute!(ch)
-                key == "table:number-columns-repeated" && (k = max(1, something(tryparse(Int, v), 1)))
+                key == "table:number-columns-repeated" && (k = _file_count(v, 1, 1, SheetCore.MAX_ROWS))
             end
             n += k
         end

@@ -320,8 +320,10 @@ Two more options: `hideAll` (LibreOffice's
 *Hide all*: on a protected sheet the cell shows nothing, and is locked; while it is set, `locked`
 and `hidden` change nothing) and `hidePrint` (*Hide when printing*, `style:print-content`).
 """
-setCellProtection(x::Union{Worksheet,ODSFile}, ref...; kw...) =
-    apply_format!(_protection_transform(_styles_of(x), :setCellProtection; kw...), format_targets(x, ref...))
+function setCellProtection(x::Union{Worksheet,ODSFile}, ref...; kw...)
+    t = writable_targets(x, ref)
+    return apply_format!(_protection_transform(_styles_of(x), :setCellProtection; kw...), t)
+end
 
 """
     getCellProtection(sheet, ref) -> NamedTuple

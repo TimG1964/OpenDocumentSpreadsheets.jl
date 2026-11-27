@@ -81,16 +81,17 @@ end
 # D-030, as XLSX.jl does). Parsers.jl 3 gives Base's correctly rounded result.
 # Parsers.jl 2 (allowed, for environments capped at it) differs from Base on overflow,
 # underflow and some unusual forms, so its non-finite and zero results are checked with
-# Base. Text that is not a number reads as 0.0, as LibreOffice re-saves it (F-018).
+# Base. Text that is not a number reads as 0.0, as LibreOffice re-saves it (F-018), and so
+# do `INF`, `-inf` and `NaN`, which LibreOffice reads as 0 (F-092).
 const _PARSERS_V2 = pkgversion(Parsers) < v"3"
 
 function _parse_float(s::AbstractString)
     x = Parsers.tryparse(Float64, s)
     if x === nothing || (_PARSERS_V2 && (!isfinite(x) || iszero(x)))
         y = tryparse(Float64, strip(s))
-        return y === nothing ? something(x, 0.0) : y
+        x = y === nothing ? something(x, 0.0) : y
     end
-    return x
+    return isfinite(x) ? x : 0.0
 end
 
 # Read `n` digits starting at `i`; returns (value, next index) or (-1, i) on failure.
@@ -103,6 +104,35 @@ end
         v = 10v + (b - UInt8('0'))
     end
     return v, i + n
+end
+
+# Whether `e` says a file's content is bad: the package's own errors, a damaged part
+# (`ArgumentError`) or XML that doesn't parse (XML.jl's `ErrorException`). Code that falls
+# back on such content catches these only, so a bug (a `MethodError`), an interrupt or a lack
+# of memory still propagates.
+_content_error(e) = e isa ODSError || e isa ArgumentError || e isa ErrorException
+
+# A count from a file (a repeat or a span): read as Int64, so a 32-bit build reads a file as a
+# 64-bit one does, and cut to `lo:hi`, as no count passes the sheet's end. Digits too many for
+# Int64 are `hi`; a value that isn't a whole number is `default`.
+function _file_count(v::AbstractString, default::Integer, lo::Integer, hi::Integer)::Int
+    n = tryparse(Int64, v)
+    if n === nothing
+        t = strip(v)
+        return !isempty(t) && all(isdigit, t) ? hi : default
+    end
+    return Int(clamp(n, lo, hi))
+end
+
+# The spaces a `text:s` stands for, from its `text:c` (`nothing`: none given). As in
+# LibreOffice (F-092), a count that isn't a number from 1 to 2^31 - 1 is one space. Past
+# 2^24 the count is cut (D-097), so a 30-byte element can't ask for gigabytes.
+const _MAX_SPACES = 1 << 24
+function _space_count(v::Union{Nothing,AbstractString})::Int
+    v === nothing && return 1
+    n = tryparse(Int64, v)
+    (n === nothing || n < 1 || n > typemax(Int32)) && return 1
+    return Int(min(n, _MAX_SPACES))
 end
 
 """
@@ -128,8 +158,9 @@ function parse_odf_date(s::AbstractString)
     while j <= n && UInt8('0') <= codeunit(s, j) <= UInt8('9')
         j += 1
     end
-    (j - i >= 1 && j <= n && codeunit(s, j) == UInt8('-')) || return nothing
-    y = parse(Int, SubString(s, i, j - 1))
+    # at most 9 digits: a longer year overflowed (and threw on a 32-bit build), and is no date
+    (1 <= j - i <= 9 && j <= n && codeunit(s, j) == UInt8('-')) || return nothing
+    y = parse(Int64, SubString(s, i, j - 1))
     neg && (y = -y)
     m, j = _digits(s, j + 1, 2); m < 0 && return nothing
     (j <= n && codeunit(s, j) == UInt8('-')) || return nothing

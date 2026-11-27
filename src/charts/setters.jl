@@ -113,8 +113,11 @@ struct SchemeColor
     transforms::Vector{Pair{Symbol,Float64}}
     function SchemeColor(token::Symbol, transforms::Vector{Pair{Symbol,Float64}})
         token in SCHEME_TOKENS || throw(ODSError("`$token` is not a theme colour token: use " * join(SCHEME_TOKENS, ", ") * "."))
-        for (k, _) in transforms
+        for (k, v) in transforms
             k in COLOR_TRANSFORMS || throw(ODSError("`$k` is not a colour transform: use " * join(COLOR_TRANSFORMS, ", ") * "."))
+            isfinite(v) || throw(ODSError("A colour transform is a number of percent, not `$v`."))
+            # an opacity past 100 was written as a negative transparency
+            k === :alpha && !(0 <= v <= 100) && throw(ODSError("`alpha` is an opacity, 0 to 100 percent, not $v."))
         end
         return new(token, transforms)
     end
@@ -748,7 +751,9 @@ function _chart_run_props(run::RichTextRun)
     c === nothing || push!(p, "fo:color" => SheetCore.odf_color(c))
     s = get(a, :size, nothing)
     if s !== nothing
-        sz = string(isinteger(s) ? Int(s) : s) * "pt"
+        # a Rational was written as `21//2pt`
+        s isa Real && isfinite(s) && s > 0 || throw(ODSError("A text size is a positive number of points, not `$s`."))
+        sz = _num_text(s) * "pt"
         append!(p, ["fo:font-size" => sz, "style:font-size-asian" => sz, "style:font-size-complex" => sz])
     end
     n = get(a, :name, nothing)
@@ -868,6 +873,8 @@ function _legend_or_new!(o)
     return _find(r"<chart:legend\b[^>]*>", o.text)
 end
 function setLegendEntryDeleted(c::AbstractChart, positions, deleted::Union{Bool,Symbol})
+    # any other Symbol showed the entries
+    deleted isa Symbol && deleted !== :inherit && throw(ODSError("`deleted` is true, false or :inherit, not `:$deleted`."))
     o = _editable(c)
     _legend_tag(o)
     for i in positions
@@ -982,7 +989,9 @@ function _axis_set!(c, ax, attrs; element = "style:chart-properties")
     isempty(set) || _set_style_attrs!(o, st, set; element)
     return c
 end
-_num_text(v::Real) = isinteger(v) ? string(Int(v)) : string(Float64(v))
+# A number as attribute text: a whole number as Int64 digits while it is exact (an `Int` threw
+# past 2^31 on a 32-bit build, and past 2^63 anywhere), else as a Float64.
+_num_text(v::Real) = isinteger(v) && abs(v) < 2.0^53 ? string(Int64(v)) : string(Float64(v))
 function _axis_value(v, what)
     v === :inherit && return nothing
     v isa Real && isfinite(v) || throw(ODSError("$what is a number, or :inherit."))
@@ -1008,7 +1017,9 @@ function setAxisScaling(c::AbstractChart, ax; orientation = nothing, min = nothi
         orientation in (:minMax, :maxMin, :inherit) || throw(ODSError("`orientation` is :minMax or :maxMin."))
         push!(attrs, "chart:reverse-direction" => orientation === :maxMin ? "true" : orientation === :minMax ? "false" : nothing)
     end
-    lo = min isa Real ? min : getAxisMin(c, ax); hi = max isa Real ? max : getAxisMax(c, ax)
+    # against the bounds the axis will have: one this call removes (`:inherit`) is none
+    lo = min isa Real ? min : min === :inherit ? nothing : getAxisMin(c, ax)
+    hi = max isa Real ? max : max === :inherit ? nothing : getAxisMax(c, ax)
     lo !== nothing && hi !== nothing && lo >= hi && throw(ODSError("An axis' minimum must be less than its maximum."))
     return _axis_set!(c, ax, attrs)
 end
@@ -1089,19 +1100,34 @@ function setAxisNumberFormatCode(c::AbstractChart, ax, code)
     if r !== nothing
         maps, main = r
         isempty(maps) || throw(ODSError("A chart axis takes a format of one section."))
+        body = _ds_body(main)
+        # the object's data style with this body, if it has one: each call added another
         k = 100
         while occursin("style:name=\"N$k\"", o.text)
+            occursin(replace(body, "\$NAME" => "N$k"), o.text) && break
             k += 1
         end
         name = "N$k"
-        _insert_before!(o, "<style:style", replace(_ds_body(main), "\$NAME" => name))
+        occursin("style:name=\"$name\"", o.text) || _insert_before!(o, "<style:style", replace(body, "\$NAME" => name))
     end
     m = match(Regex("<style:style style:name=\"" * st * "\"[^>]*>"), o.text)
-    tag = occursin("style:data-style-name=", m.match) ? replace(m.match, r"style:data-style-name=\"[^\"]*\"" => "style:data-style-name=\"$name\"") :
+    old = match(r"style:data-style-name=\"([^\"]*)\"", m.match)
+    tag = old !== nothing ? replace(m.match, r"style:data-style-name=\"[^\"]*\"" => "style:data-style-name=\"$name\"") :
           m.match[1:end-1] * " style:data-style-name=\"$name\">"
     o.text = replace(o.text, m.match => tag; count = 1)
+    old === nothing || _drop_own_data_style!(o, old.captures[1])
     _set_style_attrs!(o, st, ["chart:link-data-style-to-source" => "false"])
     return c
+end
+
+# Removes data style `name` from the chart object if it is one this package made (`N100` on) and
+# no style uses it any more: a replaced axis format was kept.
+function _drop_own_data_style!(o, name::AbstractString)
+    k = match(r"^N(\d+)$", name)
+    (k === nothing || parse(Int, k.captures[1]) < 100) && return
+    occursin("style:data-style-name=\"$name\"", o.text) && return
+    o.text = replace(o.text, Regex("<number:([a-z-]+-style) style:name=\"$name\"[^>]*>.*?</number:\\1>", "s") => ""; count = 1)
+    return
 end
 setAxisNumberFormatLinked(c::AbstractChart, ax, linked::Bool) = _axis_set!(c, ax, ["chart:link-data-style-to-source" => string(linked)])
 
@@ -1176,7 +1202,7 @@ function setErrorBars(c::AbstractChart, i::Integer; type::Symbol, value = nothin
     type in (:fixed, :percent, :stdDev) && !(value isa Real) && throw(ODSError("Error bars of type `:$type` need a `value`."))
     type === :range && plus === nothing && minus === nothing && throw(ODSError("Error bars from cells need `plus` or `minus`."))
     o = _editable(c)
-    deleteErrorBars(c, i)
+    _delete_error_bars!(o, i, direction)          # this direction's only: the other's were lost
     p = ["chart:error-category" => _ERR_ODF[type], "chart:error-upper-indicator" => string(bars !== :minus),
          "chart:error-lower-indicator" => string(bars !== :plus)]
     type === :fixed && append!(p, ["chart:error-upper-limit" => _num_text(value), "chart:error-lower-limit" => _num_text(value)])
@@ -1190,7 +1216,20 @@ function setErrorBars(c::AbstractChart, i::Integer; type::Symbol, value = nothin
                        before = ("<chart:data-point", "<chart:data-label"))
     return c
 end
-deleteErrorBars(c::AbstractChart, i::Integer) = (o = _editable(c); _remove_in_series!(o, i, r"<chart:error-indicator\b[^>]*/>"); c)
+deleteErrorBars(c::AbstractChart, i::Integer) = (_delete_error_bars!(_editable(c), i, nothing); c)
+
+# An error indicator, empty or with children (one with children was left)
+const _ERR_INDICATOR = r"<chart:error-indicator\b[^>]*?(?:/>|>.*?</chart:error-indicator>)"s
+# Removes series `i`'s error bars in `direction` (`:x` or `:y`; `nothing`: both). An indicator
+# without `chart:dimension` is a y one, as ODF's default.
+function _delete_error_bars!(o, i::Integer, direction::Union{Nothing,Symbol})
+    function keep(m)
+        direction === nothing && return ""
+        d = match(r"chart:dimension=\"([^\"]*)\"", m)
+        return something(d === nothing ? nothing : d.captures[1], "y") == string(direction) ? "" : m
+    end
+    _remove_in_series!(o, i, _ERR_INDICATOR => keep)
+end
 
 # Inserts a child of series `i` before the first of the children `before` (ODF's order), else last.
 function _insert_in_series!(o, i, xml; before = ())
@@ -1207,12 +1246,13 @@ function _insert_in_series!(o, i, xml; before = ())
         o.text = o.text[1:e-1] * xml * o.text[e:end]
     end
 end
+# Removes what `rx` matches in series `i` (or replaces it, given `rx => f`).
 function _remove_in_series!(o, i, rx)
     st = _series_start(o, i)
     endswith(st.match, "/>") && return
     e = findnext("</chart:series>", o.text, st.at)
     a = st.at + ncodeunits(st.match)
-    o.text = o.text[1:a-1] * replace(o.text[a:first(e)-1], rx => "") * o.text[first(e):end]
+    o.text = o.text[1:a-1] * replace(o.text[a:first(e)-1], rx isa Pair ? rx : rx => "") * o.text[first(e):end]
 end
 
 """

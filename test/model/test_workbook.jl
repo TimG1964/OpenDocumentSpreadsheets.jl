@@ -251,3 +251,43 @@ end
     @test readdata(IOBuffer(read(TABLES)), "Names.B1") == 10
     @test readdata(TABLES, "onecell") == 10
 end
+
+@testset "smaller fixes (code review, Phase 1 item 10)" begin
+    O = OpenDocumentSpreadsheets
+    # a missing name: an ODSError, not a MethodError on `nothing`
+    xf = newods()
+    @test_throws ODSError O.get_defined_name_value(xf, "nope")
+    @test_throws ODSError O.get_defined_name_value(xf[1], "nope")
+    # sheet names match as LibreOffice's do (F-093): `Ab` is `AB`, `Straße` is not `STRASSE`
+    ws = open_fods("""<table:table table:name="Straße"><table:table-row><table:table-cell office:value-type="float" office:value="1"/></table:table-row></table:table>
+                      <table:table table:name="STRASSE"><table:table-row><table:table-cell office:value-type="float" office:value="2"/></table:table-row></table:table>""")
+    @test ws["straße"].name == "Straße" && ws["strasse"].name == "STRASSE" && ws["STRASSE"].name == "STRASSE"
+    @test O._same_sheetname("Ab", "AB") && !O._same_sheetname("Straße", "STRASSE")
+    @test O._same_sheet("Ab", "aB") && !O._same_sheet("Straße", "STRASSE")      # formula references: the same rule
+    # a RichTextString equals its plain text, so it hashes as that text
+    r = O.RichTextString([O.RichTextRun("ab", [:bold => true])])
+    @test isequal(r, "ab") && hash(r) == hash("ab") && length(Set([r, "ab"])) == 1
+    @test r != O.RichTextString([O.RichTextRun("ab")])                          # its format still counts
+    # CellRefs and CellRanges sort by position, row by row (B10 sorted before B2)
+    refs = O.CellRef.(["B10", "B2", "A3", "C2", "AA1"])
+    @test string.(sort(refs)) == ["AA1", "B2", "C2", "A3", "B10"]
+    @test string.(sort(O.CellRange.(["A10:B11", "A2:B3", "A2:A3"]))) == ["A2:A3", "A2:B3", "A10:B11"]
+end
+
+@testset "a repeat count of 0 or less, saved after an edit (code review, Phase 1 item 10)" begin
+    body = """<table:table table:name="S"><table:table-column table:number-columns-repeated="0"/>
+      <table:table-column table:number-columns-repeated="-3"/><table:table-column table:number-columns-repeated="2"/>
+      <table:table-row table:number-rows-repeated="0"><table:table-cell office:value-type="float" office:value="1"/>
+      <table:table-cell table:number-columns-repeated="-2" office:value-type="float" office:value="2"/><table:table-cell office:value-type="float" office:value="3"/></table:table-row>
+      <table:table-row><table:table-cell office:value-type="float" office:value="4"/></table:table-row></table:table>"""
+    xf = openods(IOBuffer(fods(body)); mode = "rw")
+    ws = xf[1]
+    @test ws["A1"] == 1 && ws["B1"] == 2 && ws["C1"] == 3 && ws["A2"] == 4          # each such count is one (F-092)
+    ws["D2"] = 5
+    # the walker counted those columns as 0 and -3: column B's width was lost, then put on D
+    OpenDocumentSpreadsheets.setColumnWidth(ws, :, 2; width = 30)
+    io = IOBuffer(); writeods(io, xf)
+    back = openods(IOBuffer(take!(io)))[1]
+    @test back["A1"] == 1 && back["B1"] == 2 && back["C1"] == 3 && back["A2"] == 4 && back["D2"] == 5
+    @test [OpenDocumentSpreadsheets.getColumnWidth(back, 1, c) !== nothing for c in 1:4] == [false, true, false, false]
+end

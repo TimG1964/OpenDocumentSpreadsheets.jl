@@ -220,7 +220,7 @@ function _para_fields!(buf::IOBuffer, links::Vector{Tuple{String,String}}, c)
             elseif t == "text:s"
                 n = 1
                 for (k, v) in XML.eachattribute!(ch)
-                    k == "text:c" && (n = something(tryparse(Int, v), 1))
+                    k == "text:c" && (n = _space_count(v))
                 end
                 for _ in 1:n
                     write(buf, ' ')
@@ -243,7 +243,7 @@ end
 function _repeat_attr(ch, key::String)
     n = 1
     for (k, v) in XML.eachattribute!(ch)
-        k == key && (n = max(1, something(tryparse(Int, v), 1)))
+        k == key && (n = _file_count(v, 1, 1, SheetCore.MAX_ROWS))
     end
     return n
 end
@@ -432,8 +432,8 @@ function addHyperlink(ws::Worksheet, ref::Union{AbstractString,CellRef,CellRange
     tooltip === nothing ||
         throw(ODSError("LibreOffice has no hyperlink tooltips (F-058): leave out `tooltip`."))
     rows, cols = _link_block(ref)
+    href = _link_href(get_odsfile(ws), url, location)     # checks the target before any link goes
     _delete_links!(ws, rows, cols)
-    href = _link_href(get_odsfile(ws), url, location)
     r1, c1 = first(rows), first(cols)
     blocks = FormatBlock[]
     if _field_cell(cell_data(_cached_store(ws), r1, c1))

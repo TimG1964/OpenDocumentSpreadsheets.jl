@@ -93,6 +93,11 @@ end
     @test rebase_condition("formula-is([.A5]>[.A6])", "Data.A1", "Data.B5:Data.B8", LineShift("Data", 1, 5, 1, ORDER), "Data") ==
           ("formula-is([.B10]>[.B11])", "Data.B6")
     @test rebase_condition("formula-is([.A5]>[.A6])", "Data.A1", "Data.B5:Data.B8", LineShift("Data", 1, 20, 1, ORDER), "Data") === nothing
+    # whole rows and columns: their top-left cell is in column A or row 1 (a row threw; a column gave `B0`)
+    @test rebase_condition("formula-is([.A5]>[.A6])", "Data.A1", "Data.5:Data.8", LineShift("Data", 1, 2, 1, ORDER), "Data") ==
+          ("formula-is([.A10]>[.A11])", "Data.A6")
+    @test rebase_condition("formula-is([.A5]>[.A6])", "Data.A1", "Data.B:Data.C", LineShift("Data", 1, 2, 1, ORDER), "Data") ==
+          ("formula-is([.B6]>[.B7])", "Data.B1")
 end
 
 # The values of `vals` that an operation leaves, as LibreOffice stored them in `after`, compared with

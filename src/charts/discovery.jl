@@ -175,7 +175,7 @@ _style(doc::_ChartDoc, n) = (s = _get(n, "chart:style-name"); s === nothing ? Di
 # The handle of a chart frame: a ChartEx for a histogram (F-080), else a Chart.
 function _handle(f::_ChartFrame, doc::Union{Nothing,_ChartDoc} = nothing)
     xf = get_odsfile(f.ws)
-    doc === nothing && (doc = try _chart_doc(_object_text(f)) catch; nothing end)
+    doc === nothing && (doc = try _chart_doc(_object_text(f)) catch e; _content_error(e) || rethrow(); nothing end)
     T = doc !== nothing && _get(doc.chart, "loext:class") == "loext:histogram" ? ChartEx : Chart
     return T(xf, f.name * "/content.xml", f.name, nothing, f.ws.name, f.from, f.to)
 end

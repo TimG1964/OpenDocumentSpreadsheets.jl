@@ -291,3 +291,42 @@ end
         end
     end
 end
+
+@testset "setter fixes (code review, Phase 1 item 9)" begin
+    E = OpenDocumentSpreadsheets.ODSError
+    xf, ws = _chart_data_sheet()
+    sc = OC.addChart(ws, :scatter; anchor = "H2:O18")
+    OC.addSeries(sc, "B2:B7"; categories = "F2:F7", name_ref = "B1")
+    # x and y error bars together: setting one direction kept the other (it deleted both)
+    OC.setErrorBars(sc, 1; type = :percent, value = 10, direction = :y)
+    OC.setErrorBars(sc, 1; type = :fixed, value = 2, direction = :x)
+    @test sort([e.direction for e in OC.getSeriesErrorBars(sc, 1)]) == ["x", "y"]
+    OC.setErrorBars(sc, 1; type = :fixed, value = 3, direction = :x)          # replaces the x ones only
+    @test length(OC.getSeriesErrorBars(sc, 1)) == 2
+    OC.deleteErrorBars(sc, 1)
+    @test isempty(OC.getSeriesErrorBars(sc, 1))
+    # an indicator with children is deleted too
+    o = OC._editable(sc)
+    OC.setErrorBars(sc, 1; type = :percent, value = 10)
+    o.text = replace(o.text, r"(<chart:error-indicator\b[^>]*)/>" => s"\1><text:p/></chart:error-indicator>")
+    OC.deleteErrorBars(sc, 1)
+    @test !occursin("chart:error-indicator", o.text)
+
+    c = OC.addChart(ws, :line; anchor = "H20:O36")
+    OC.addSeries(c, "B2:B7"; categories = "A2:A7")
+    # removing the minimum while setting a maximum below it: no longer checked against the old minimum
+    OC.setAxisMin(c, :y, 50)
+    OC.setAxisScaling(c, :y; min = :inherit, max = 20)
+    @test OC.getAxisMin(c, :y) === nothing && OC.getAxisMax(c, :y) == 20
+    @test_throws E OC.setAxisScaling(c, :y; min = 30)                          # still checked against the kept maximum
+    # each format call added a data style; the replaced one stayed
+    nstyles(c) = length(collect(eachmatch(r"<number:[a-z-]+-style style:name=\"N1\d\d", OC._editable(c).text)))
+    for code in ("0.0", "0.00", "0.0", "0.0", "0%")
+        OC.setAxisNumberFormatCode(c, :y, code)
+    end
+    @test nstyles(c) == 1 && OC.getAxisNumberFormatCode(c, :y) == "0%"
+    # unchecked values
+    @test_throws E OC.SchemeColor(:accent1; alpha = 150)                     # was written as transparency -50
+    @test_throws E OC.SchemeColor(:accent1; lumMod = NaN)
+    @test_throws E OC.setLegendEntryDeleted(c, [1], :yes)                    # showed the entries
+end

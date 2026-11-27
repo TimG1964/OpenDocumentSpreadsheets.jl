@@ -190,7 +190,7 @@ open_fods(body; cache = true, kw...) = openods(IOBuffer(fods(body; kw...)); enab
     cell(x) = "<table:table name=\"x\"><table:table-row><table:table-cell office:value-type=\"string\">$x</table:table-cell></table:table-row></table:table>"
     rd(x) = open_fods(replace(cell(x), "name=" => "table:name="))[1]["A1"]
     @test rd("<text:p>a<text:span>b<text:span>c</text:span></text:span>d</text:p>") == "abcd"
-    @test rd("<text:p>a<text:s text:c=\"0\"/>b</text:p>") == "ab"
+    @test rd("<text:p>a<text:s text:c=\"0\"/>b</text:p>") == "a b"      # LibreOffice: one space (F-092)
     @test rd("<text:p>x<office:annotation><text:p>note</text:p></office:annotation>y</text:p>") == "xy"
     @test rd("<office:annotation><text:p>note</text:p></office:annotation><text:p>v</text:p>") == "v"
     @test rd("<text:h>head</text:h><text:p>body</text:p>") == "head\nbody"
@@ -252,4 +252,42 @@ end
     @test getcell(ws, "B1") isa EmptyCell
     @test getcell(ws, "H1") isa Cell && getcell(ws, "H1").datatype === :empty && getFormula(ws, "H1") == "=A1"
     @test !isempty(getcell(ws, "H1"))
+end
+
+@testset "counts, spans and spaces from a file (F-092)" begin
+    using OpenDocumentSpreadsheets: _file_count, _space_count, _parse_float
+    MR, MC = OpenDocumentSpreadsheets.SheetCore.MAX_ROWS, OpenDocumentSpreadsheets.SheetCore.MAX_COLS
+    # counts are read as Int64, so a 32-bit build reads 3000000000 as a 64-bit one does
+    @test _file_count("3000000000", 1, 1, MR) === MR
+    @test _file_count("99999999999999999999", 1, 1, MR) === MR       # too long for Int64: past the end
+    @test _file_count("x", 1, 1, MR) === 1 && _file_count("-3", 1, 1, MR) === 1 && _file_count(" 7 ", 1, 1, MR) === 7
+    # spaces as LibreOffice reads them: not 1 to 2^31 - 1 is one space; past 2^24, cut
+    @test _space_count(nothing) === 1 && _space_count("5") === 5
+    @test _space_count("3000000000") === 1 && _space_count("-4") === 1 && _space_count("x") === 1
+    @test _space_count("2000000000") === 1 << 24
+    # LibreOffice reads INF, -inf and NaN as 0
+    @test _parse_float("INF") === 0.0 && _parse_float("-inf") === 0.0 && _parse_float("NaN") === 0.0
+    # a year too long for any date is no date (it threw OverflowError)
+    @test parse_odf_date("99999999999999999999-01-01") === nothing
+    @test parse_odf_date("123456789-01-01") == Date(123456789, 1, 1)
+
+    body = """<table:table table:name="S">
+      <table:table-row table:number-rows-repeated="2"><table:table-cell table:number-columns-repeated="3"
+        table:number-columns-spanned="2" office:value-type="float" office:value="1"/></table:table-row>
+      <table:table-row><table:table-cell table:number-columns-spanned="99999999999" table:number-rows-spanned="3000000000"
+        office:value-type="float" office:value="2"/><table:table-cell office:value-type="string"><text:p>a<text:s text:c="3000000000"/>b<text:s text:c="3"/>c</text:p></table:table-cell>
+        <table:table-cell office:value-type="float" office:value="INF"/></table:table-row>
+      <table:table-row table:number-rows-repeated="3000000000"><table:table-cell/></table:table-row>
+      <table:table-row><table:table-cell office:value-type="float" office:value="9"/></table:table-row>
+      </table:table>"""
+    for cache in (true, false)
+        ws = open_fods(body; cache)[1]
+        # one merge, from the repeated cell's first instance; none past the sheet's end (LibreOffice)
+        @test getMergedCells(ws) == [OpenDocumentSpreadsheets.SheetCore.CellRange("A1:B1")]
+        @test ws["A2"] == 1 && ws["C2"] == 1 && ws["A3"] == 2
+        @test ws["B3"] == "a b   c"
+        @test ws["C3"] === 0.0
+        # the repeated row stops at the sheet's end, so the row after it is past the end
+        @test OpenDocumentSpreadsheets.get_dimension(ws) == OpenDocumentSpreadsheets.SheetCore.CellRange("A1:C3")
+    end
 end

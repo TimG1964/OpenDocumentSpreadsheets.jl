@@ -427,14 +427,14 @@ function _color_spec(xf, c)
         return (_theme_colors(xf)[slot], slot)
     end
     c isa Symbol && throw(ODSError("`:$c` is not a colour: give a hex value (\"FF0000\"), a colour name or a theme colour (:accent1)."))
-    return (try SheetCore.odf_color(String(c)) catch; throw(ODSError("`$c` is not a colour: give a hex value (\"FF0000\"), a colour name or a theme colour (:accent1).")) end, nothing)
+    return (try SheetCore.odf_color(String(c)) catch e; e isa ODSError || rethrow(); throw(ODSError("`$c` is not a colour: give a hex value (\"FF0000\"), a colour name or a theme colour (:accent1).")) end, nothing)
 end
 
 # The document's theme colours (styles.xml's `loext:theme`), else LibreOffice's for a new document.
 function _theme_colors(xf)
     d = copy(_LO_THEME)
     xf.container === nothing && return d
-    s = try (xf.container.zip === nothing ? xf.content : read_part_text(xf.container, "styles.xml")) catch; "" end
+    s = try (xf.container.zip === nothing ? xf.content : read_part_text(xf.container, "styles.xml")) catch e; _content_error(e) || rethrow(); "" end
     for m in eachmatch(r"<loext:color loext:name=\"([^\"]*)\" loext:color=\"([^\"]*)\"/>", s)
         d[m.captures[1]] = m.captures[2]
     end
