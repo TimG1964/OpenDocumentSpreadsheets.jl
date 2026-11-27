@@ -13,6 +13,9 @@ const DOCUMENTED_NOT_MARKED = (
     # Parsers.jl 2 (allowed by compat; CI has a job for it) documents `Parsers.tryparse` in
     # its README but marks nothing `public`; Parsers.jl 3 marks it public:
     (pkgversion(OpenDocumentSpreadsheets.Parsers) < v"3" ? (:tryparse,) : ())...,
+    # XML.jl 0.4 documents `XML.write` and its `pretty` keyword in its README (*Writing*) but doesn't
+    # mark it public. Its public writer, `show`, indents, which changes LibreOffice's text (F-094, D-102):
+    :write,
 )
 # Imported only to be re-exported (declared `public` in OpenDocumentSpreadsheets on Julia 1.11+; on 1.10
 # nothing marks them as used):

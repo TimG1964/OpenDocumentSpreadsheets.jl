@@ -197,15 +197,58 @@ FrameEdit() = FrameEdit(Set{Int}(), Pair{String,Int}[], ImageData[], Set{String}
 # operations it already has, its styles.xml (its line dashes; "" when it has none of its own), and
 # for a flat file's own chart, its inline object as it was when it was first changed and the operations
 # then (the save finds it by them, and puts the chart in its place: phase 8 step 9; "" for others).
+#
+# Its content is held as text, or as an XML.jl tree once a setter works on the tree (D-102). `o.text`
+# is the text in either case: a tree edited since is written out first (`XML.write(…; pretty = false)`,
+# which keeps LibreOffice's text byte for byte, F-094). Setting `o.text` drops the tree. `version`
+# counts the changes, for the getters' cache.
 mutable struct ChartObj
-    text::String
+    src::String
     nops::Int
     styles::String
     flatorig::String
     flatops::Int
+    tree::Union{Nothing,XML.Node}
+    stale::Bool                      # the tree was edited since `src` was written
+    version::Int
 end
+ChartObj(text::String, nops::Int, styles::String, flatorig::String, flatops::Int) =
+    ChartObj(text, nops, styles, flatorig, flatops, nothing, false, 0)
 ChartObj(text::String, nops::Int) = ChartObj(text, nops, "", "", 0)
 ChartObj(text::String, nops::Int, styles::String) = ChartObj(text, nops, styles, "", 0)
+
+function Base.getproperty(o::ChartObj, s::Symbol)
+    s === :text || return getfield(o, s)
+    if getfield(o, :stale)
+        setfield!(o, :src, XML.write(getfield(o, :tree); pretty = false))
+        setfield!(o, :stale, false)
+    end
+    return getfield(o, :src)
+end
+function Base.setproperty!(o::ChartObj, s::Symbol, v)
+    s === :text || return setfield!(o, s, convert(fieldtype(ChartObj, s), v))
+    setfield!(o, :src, String(v))
+    setfield!(o, :tree, nothing)
+    setfield!(o, :stale, false)
+    setfield!(o, :version, getfield(o, :version) + 1)
+    return v
+end
+Base.propertynames(::ChartObj) = (:text, fieldnames(ChartObj)...)
+
+# The object's tree, parsed once and kept (D-102).
+function _tree!(o::ChartObj)
+    t = getfield(o, :tree)
+    t === nothing || return t
+    t = parse(XML.Node, o.text)
+    setfield!(o, :tree, t)
+    return t
+end
+# After an edit of the tree: its text is written again when it is next read.
+function _tree_edited!(o::ChartObj)
+    setfield!(o, :stale, true)
+    setfield!(o, :version, getfield(o, :version) + 1)
+    return o
+end
 
 # What a cell's writer adds or changes besides its value: its note (missing: unchanged; nothing:
 # removed), and its frames (D-073, D-074).
@@ -420,14 +463,17 @@ mutable struct ODSFile
     # what failed part-way through a structural edit, which leaves the model half-changed: the
     # file can still be read, but not edited or saved (Phase 2 of the code review)
     broken::Union{Nothing,String}
+    # the charts' documents as their getters read them, by object name: (the object's version and the
+    # operations so far, the document), parsed once per version (D-102)
+    chartdocs::Dict{String,Any}
 end
 
 ODSFile(source, container, content, version, styles, sheets, names, null_date, use_cache) =
     ODSFile(source, container, content, version, styles, sheets, names, null_date, use_cache, false, nothing,
-            nothing, ReentrantLock(), Any[], Any[], Any[], Pair{String,String}[], NameEdits(), TableStyleEdits(), ViewEdits(), nothing, PageEdits(), nothing, PersonEdits(), Tuple{String,String,Vector{UInt8}}[], nothing, ValEdits(), DBEdits(), Dict{String,ChartObj}(), nothing)
+            nothing, ReentrantLock(), Any[], Any[], Any[], Pair{String,String}[], NameEdits(), TableStyleEdits(), ViewEdits(), nothing, PageEdits(), nothing, PersonEdits(), Tuple{String,String,Vector{UInt8}}[], nothing, ValEdits(), DBEdits(), Dict{String,ChartObj}(), nothing, Dict{String,Any}())
 ODSFile(source, container, content, version, styles, sheets, names, null_date, use_cache, writable, source_io) =
     ODSFile(source, container, content, version, styles, sheets, names, null_date, use_cache, writable, source_io,
-            nothing, ReentrantLock(), Any[], Any[], Any[], Pair{String,String}[], NameEdits(), TableStyleEdits(), ViewEdits(), nothing, PageEdits(), nothing, PersonEdits(), Tuple{String,String,Vector{UInt8}}[], nothing, ValEdits(), DBEdits(), Dict{String,ChartObj}(), nothing)
+            nothing, ReentrantLock(), Any[], Any[], Any[], Pair{String,String}[], NameEdits(), TableStyleEdits(), ViewEdits(), nothing, PageEdits(), nothing, PersonEdits(), Tuple{String,String,Vector{UInt8}}[], nothing, ValEdits(), DBEdits(), Dict{String,ChartObj}(), nothing, Dict{String,Any}())
 
 #
 # The sheet index is built as far as it is needed: `xf["Sheet1"]` or `xf[1]` finds the first

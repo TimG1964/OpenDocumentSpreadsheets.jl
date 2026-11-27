@@ -16,9 +16,26 @@ struct _ChartFrame
 end
 
 _cellname(r::Int, c::Int) = string(SheetCore.encode_column_number(c), r)
-_attr(x::AbstractString, name::AbstractString) =
-    (m = match(Regex("\\b" * name * "=\"([^\"]*)\""), SubString(x, 1, something(findfirst('>', x), ncodeunits(x))));
-     m === nothing ? nothing : XML.unescape(String(m.captures[1])))
+# An attribute of the start tag at the beginning of `x`, unescaped, in any quoting, found without
+# reading the others. (A Regex built on each call was most of the time a getter took, D-102.)
+function _attr(x::AbstractString, name::AbstractString)
+    tag = SubString(x, 1, _start_tag_end(x))
+    i = 1
+    while (r = findnext(name, tag, i)) !== nothing
+        p = prevind(tag, first(r)); q = nextind(tag, last(r))
+        if p >= 1 && isspace(tag[p]) && q <= ncodeunits(tag) && tag[q] == '='
+            a = nextind(tag, q)
+            qc = tag[a]
+            if qc == '"' || qc == '\''
+                z = findnext(qc, tag, nextind(tag, a))
+                z === nothing && return nothing
+                return XML.unescape(String(SubString(tag, nextind(tag, a), prevind(tag, z))))
+            end
+        end
+        i = nextind(tag, last(r))
+    end
+    return nothing
+end
 
 const _OBJ_HREF = r"<draw:object\b[^>]*?\bxlink:href=\"\./([^\"/]+)\""
 _href_object(x::AbstractString) = (m = match(_OBJ_HREF, x); m === nothing ? nothing : XML.unescape(String(m.captures[1])))
@@ -172,10 +189,24 @@ end
 
 _style(doc::_ChartDoc, n) = (s = _get(n, "chart:style-name"); s === nothing ? Dict{String,String}() : get(doc.styles, s, Dict{String,String}()))
 
+# The document of a frame's chart as its getters read it, parsed once for each version of its object
+# and each count of structural operations (D-102: each getter parsed it again, and read a file's part
+# again). A chart is changed only through its `ChartObj` (`_editable`), which counts its versions.
+function _cached_doc(f::_ChartFrame)
+    xf = get_odsfile(f.ws)
+    o = get(xf.chartobjs, f.name, nothing)
+    key = (o === nothing ? UInt(0) : objectid(o), o === nothing ? -1 : o.version, length(xf.ops))
+    hit = get(xf.chartdocs, f.name, nothing)
+    hit !== nothing && hit[1] == key && return hit[2]::_ChartDoc
+    doc = _chart_doc(_object_text(f))
+    xf.chartdocs[f.name] = (key, doc)
+    return doc
+end
+
 # The handle of a chart frame: a ChartEx for a histogram (F-080), else a Chart.
 function _handle(f::_ChartFrame, doc::Union{Nothing,_ChartDoc} = nothing)
     xf = get_odsfile(f.ws)
-    doc === nothing && (doc = try _chart_doc(_object_text(f)) catch e; _content_error(e) || rethrow(); nothing end)
+    doc === nothing && (doc = try _cached_doc(f) catch e; _content_error(e) || rethrow(); nothing end)
     T = doc !== nothing && _get(doc.chart, "loext:class") == "loext:histogram" ? ChartEx : Chart
     return T(xf, f.name * "/content.xml", f.name, nothing, f.ws.name, f.from, f.to)
 end
@@ -187,7 +218,7 @@ function _frame(c::AbstractChart)
     end
     throw(ODSError("The chart `$(c.name)` is no longer in the workbook."))
 end
-_doc(c::AbstractChart) = _chart_doc(_object_text(_frame(c)))
+_doc(c::AbstractChart) = _cached_doc(_frame(c))
 
 """
     getCharts(ws::Worksheet) -> Vector{AbstractChart}

@@ -1,0 +1,8 @@
+case	ms	mib
+add_chart	0.28	0.3
+setters_20	2.46	1.9
+getters_20	0.98	1.6
+save	0.36	0.6
+all	3.89	4.4
+read_getters	1210.41	411.6
+edit_save	317.45	180.6
