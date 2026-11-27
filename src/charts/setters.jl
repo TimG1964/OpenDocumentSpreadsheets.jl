@@ -864,13 +864,19 @@ function setLabelFlag(c::AbstractChart, i::Integer, flag::Symbol, on::Bool)
     attrs = ["chart:data-label-number" => v && p ? "value-and-percentage" : v ? "value" : p ? "percentage" : "none"]
     cur("chart:data-label-text") === nothing && push!(attrs, "chart:data-label-text" => "false")
     cur("chart:data-label-symbol") === nothing && push!(attrs, "chart:data-label-symbol" => "false")
-    cur("loext:data-label-series") === nothing && push!(attrs, "loext:data-label-series" => "false")
+    sk = _series_label_keys(o, st)
+    all(k -> cur(k) === nothing, sk) && append!(attrs, [k => "false" for k in sk])
     flag === :categoryName && push!(attrs, "chart:data-label-text" => string(on))
     flag === :legendKey && push!(attrs, "chart:data-label-symbol" => string(on))
-    flag === :seriesName && push!(attrs, "loext:data-label-series" => string(on))
+    flag === :seriesName && append!(attrs, [k => string(on) for k in sk])
     _set_style_attrs!(o, st, unique(p -> p.first, reverse(attrs)))
     return c
 end
+
+# The keys of the series-name label flag a style takes: LibreOffice's own (`loext:`), and ODF 1.4's
+# (`chart:`, which LibreOffice 26 writes and reads) too when the style has it, so neither is left stale.
+_series_label_keys(o, st) = _style_attr(o, st, "chart:data-label-series"; element = "style:chart-properties") === nothing ?
+    ["loext:data-label-series"] : ["loext:data-label-series", "chart:data-label-series"]
 
 """
     setLabelText(c, i, point, text) -> Chart
@@ -890,9 +896,10 @@ end
 function setLabelDeleted(c::AbstractChart, i::Integer, point::Integer, deleted::Bool)
     o = _editable(c)
     st = _point_style!(o, i, point)
+    sk = _series_label_keys(o, st)
     deleted ? _set_style_attrs!(o, st, ["chart:data-label-number" => "none", "chart:data-label-text" => "false",
-                                        "chart:data-label-symbol" => "false", "loext:data-label-series" => "false"]) :
-              _del_style_attrs!(o, st, ["chart:data-label-number", "chart:data-label-text", "chart:data-label-symbol", "loext:data-label-series"])
+                                        "chart:data-label-symbol" => "false", (k => "false" for k in sk)...]) :
+              _del_style_attrs!(o, st, ["chart:data-label-number", "chart:data-label-text", "chart:data-label-symbol", sk...])
     return c
 end
 # The element of a series' point (from 1): a `chart:data-point` child of the series, repeats counted.
@@ -930,6 +937,7 @@ end
 
 """
     setAxisScaling(c, ax; orientation, min, max) / setAxisMin / setAxisMax / setAxisOrientation -> Chart
+    setAxisLogBase(c, ax, 10 | :inherit) -> Chart
     setAxisCrosses(c, ax, rule) / setAxisCrossesAt(c, ax, value) -> Chart
     setAxisMajorUnit / setAxisMinorUnit(c, ax, value) -> Chart
     setAxisTickLabelPos(c, ax, pos) / setAxisMajorTickMark / setAxisMinorTickMark(c, ax, mark) -> Chart
@@ -952,6 +960,15 @@ function setAxisScaling(c::AbstractChart, ax; orientation = nothing, min = nothi
     hi = max isa Real ? max : max === :inherit ? nothing : getAxisMax(c, ax)
     lo !== nothing && hi !== nothing && lo >= hi && throw(ODSError("An axis' minimum must be less than its maximum."))
     return _axis_set!(c, ax, attrs)
+end
+# A logarithmic axis (`chart:logarithmic`): LibreOffice's are base 10, and ODF stores no other base, so
+# another is refused (D-084). `:inherit` makes the axis linear again.
+function setAxisLogBase(c::AbstractChart, ax, base)
+    base === :inherit && return _axis_set!(c, ax, ["chart:logarithmic" => nothing])
+    base isa Real && base == 10 ||
+        throw(ODSError("LibreOffice's logarithmic axes are base 10, and ODF stores no other base: give 10 or :inherit (D-084)."))
+    _check_value_axis(c, ax)
+    return _axis_set!(c, ax, ["chart:logarithmic" => "true"])
 end
 setAxisMin(c::AbstractChart, ax, v) = setAxisScaling(c, ax; min = v)
 setAxisMax(c::AbstractChart, ax, v) = setAxisScaling(c, ax; max = v)
@@ -1073,15 +1090,15 @@ end
 
 
 """
-    addTrendline(c, i, kind = :linear; order, period, name, forward, backward, intercept,
+    addSeriesTrendline(c, i, kind = :linear; order, period, name, forward, backward, intercept,
                  displayEquation = false, displayRSquared = false) -> Chart
-    deleteTrendlines(c, i) -> Chart
+    deleteSeriesTrendlines(c, i) -> Chart
 
 A trendline on series `i`, LibreOffice's Insert ▸ Trend Line: `kind` `:linear`, `:log`,
 `:exp`, `:power`, `:poly` (with `order`, 2 to 6) or `:movingAvg` (with `period`); its `name`;
 extrapolation `forward` and `backward`; a forced `intercept`; the equation and R² shown.
 """
-function addTrendline(c::AbstractChart, i::Integer, kind::Symbol = :linear; order = nothing, period = nothing, name = nothing,
+function addSeriesTrendline(c::AbstractChart, i::Integer, kind::Symbol = :linear; order = nothing, period = nothing, name = nothing,
                       forward = nothing, backward = nothing, intercept = nothing, displayEquation::Bool = false,
                       displayRSquared::Bool = false)
     haskey(_TREND_ODF, kind) || throw(ODSError("Unknown trendline `:$kind`: use :linear, :log, :exp, :power, :poly or :movingAvg."))
@@ -1101,20 +1118,20 @@ function addTrendline(c::AbstractChart, i::Integer, kind::Symbol = :linear; orde
                        before = ("<chart:error-indicator", "<chart:data-point", "<chart:data-label"))
     return c
 end
-deleteTrendlines(c::AbstractChart, i::Integer) = (o = _editable(c); _remove_in_series!(o, i, c -> XML.tag(c) == "chart:regression-curve"); c)
+deleteSeriesTrendlines(c::AbstractChart, i::Integer) = (o = _editable(c); _remove_in_series!(o, i, c -> XML.tag(c) == "chart:regression-curve"); c)
 
 const _ERR_ODF = Dict(:fixed => "constant", :percent => "percentage", :stdDev => "standard-deviation", :stdErr => "standard-error",
                       :range => "cell-range")
 
 """
-    setErrorBars(c, i; type, value, plus, minus, bars = :both, direction = :y) -> Chart
-    deleteErrorBars(c, i) -> Chart
+    setSeriesErrorBars(c, i; type, value, plus, minus, bars = :both, direction = :y) -> Chart
+    deleteSeriesErrorBars(c, i) -> Chart
 
 Error bars on series `i`, LibreOffice's Insert ▸ Y Error Bars: `type` `:fixed`,
 `:percent` or `:stdDev` (with `value`), `:stdErr`, or `:range` (with the cells `plus` and `minus`);
 `bars` `:both`, `:plus` or `:minus`; `direction` `:y` or `:x` (XY charts).
 """
-function setErrorBars(c::AbstractChart, i::Integer; type::Symbol, value = nothing, plus = nothing, minus = nothing,
+function setSeriesErrorBars(c::AbstractChart, i::Integer; type::Symbol, value = nothing, plus = nothing, minus = nothing,
                       bars::Symbol = :both, direction::Symbol = :y)
     haskey(_ERR_ODF, type) || throw(ODSError("Unknown error bar type `:$type`: use :fixed, :percent, :stdDev, :stdErr or :range."))
     bars in (:both, :plus, :minus) || throw(ODSError("`bars` is :both, :plus or :minus."))
@@ -1136,7 +1153,7 @@ function setErrorBars(c::AbstractChart, i::Integer; type::Symbol, value = nothin
                        before = ("<chart:data-point", "<chart:data-label"))
     return c
 end
-deleteErrorBars(c::AbstractChart, i::Integer) = (_delete_error_bars!(_editable(c), i, nothing); c)
+deleteSeriesErrorBars(c::AbstractChart, i::Integer) = (_delete_error_bars!(_editable(c), i, nothing); c)
 
 # Removes series `i`'s error bars in `direction` (`:x` or `:y`; `nothing`: both). An indicator
 # without `chart:dimension` is a y one, as ODF's default.

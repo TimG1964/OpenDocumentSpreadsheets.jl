@@ -11,7 +11,7 @@
 #   - pattern fills are blended into one colour (D-036); colours are rgb only
 #   - setters return the cell's style name for a single cell (D-032)
 
-using OpenDocumentSpreadsheets: ODSError, getFont, getFill, getBorder, getAlignment, getDefaultFont, setOutsideBorder, effective_style, style_name
+using OpenDocumentSpreadsheets: ODSError, getFont, getFill, getBorder, getAlignment, getDefaultFont, effective_style, style_name
 import ZipArchives
 
 ctmp(name) = joinpath(mktempdir(), name)
@@ -223,7 +223,7 @@ end
     @test_throws ODSError setBorder(s, "D6"; left = ["style" => "wavy"])
     @test_throws ODSError setBorder(s, "D6"; diagonal = ["style" => "thin", "direction" => "sideways"])
     @test_throws ODSError setUniformBorder(s, "D6:E7"; outside = ["style" => "thick"])
-    @test setOutsideBorder(s, "A10:C12"; outside = ["style" => "thin"]) == -1
+    @test setBorder(s, "A10:C12"; outside = ["style" => "thin"]) == -1
     @test getBorder(s, "A12").border == bd(left = side("thin"), bottom = side("thin"))
 end
 

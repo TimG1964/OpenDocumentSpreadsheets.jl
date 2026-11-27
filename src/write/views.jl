@@ -2,7 +2,7 @@
 # (experiment 024, F-053).
 #
 # Adapted from XLSX.jl 0.13.4 (src/panes.jl `freezePanes`, `splitFreeze`, `splitPanes`,
-# `removePanes`, `setSheetView`, `getSheetView`), MIT License, Copyright (c) 2018-2026 Felipe Noronha
+# `deletePanes`, `setSheetView`, `getSheetView`), MIT License, Copyright (c) 2018-2026 Felipe Noronha
 # Tavares and other contributors. Changes: the settings are LibreOffice's view settings in
 # settings.xml (a flat file's office:settings), not Excel's `<sheetView>`; what LibreOffice keeps for
 # the whole view (headers, zeros, the page-break view) is set for the whole file; a selection is kept
@@ -209,7 +209,7 @@ freezePanes(sh)            # the first row stays in view
 freezePanes(sh, "B2")      # row 1 and column A
 ```
 
-See also [`splitPanes`](@ref), [`removePanes`](@ref), [`setSheetView`](@ref).
+See also [`splitPanes`](@ref), [`deletePanes`](@ref), [`setSheetView`](@ref).
 """
 freezePanes(ws::Worksheet; nrows::Integer = 1, ncols::Integer = 0) = _apply_panes!(ws, 2, Int(nrows), Int(ncols))
 freezePanes(ws::Worksheet, anchor::AbstractString) = _apply_panes!(ws, 2, _anchor_counts(anchor)...)
@@ -235,11 +235,11 @@ splitPanes(ws::Worksheet; nrows::Integer = 1, ncols::Integer = 0) = _apply_panes
 splitPanes(ws::Worksheet, anchor::AbstractString) = _apply_panes!(ws, 1, _anchor_counts(anchor)...)
 
 """
-    removePanes(sheet)
+    deletePanes(sheet)
 
 Remove frozen or split panes, and scroll back to the top left.
 """
-removePanes(ws::Worksheet) = _apply_panes!(ws, 0, 0, 0)
+deletePanes(ws::Worksheet) = _apply_panes!(ws, 0, 0, 0)
 
 #
 # The sheet view

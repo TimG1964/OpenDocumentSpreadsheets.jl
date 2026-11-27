@@ -79,10 +79,10 @@ getTrendlineShapeProps
 getTrendlineLabelText
 getTrendlineLabelTextProps
 getTrendlineLabelShapeProps
-deleteTrendlines
+deleteSeriesTrendlines
 getErrorBarsShapeProps
 getErrorBarsCustomRefs
-deleteErrorBars
+deleteSeriesErrorBars
 getGroupAxes
 getGroupOverlap
 setGroupOverlap
@@ -99,6 +99,7 @@ setGroupLabelTextProp
 getAxisMin
 getAxisMax
 getAxisLogBase
+setAxisLogBase
 getAxisMinorUnit
 getAxisMinorTickMark
 getAxisCrossesAt

@@ -455,6 +455,61 @@ function getSeriesLine(c::AbstractChart, i::Integer; point = nothing)
 end
 getMarkerFill(c::AbstractChart, i::Integer, point::Integer) = getSeriesFill(c, i; point)
 
+# A point's own style (point from 1), or nothing.
+function _point_props(doc::_ChartDoc, s, point::Integer)
+    for (k, p) in _points(doc, s)
+        k == point - 1 && return _style(doc, p)
+    end
+    return nothing
+end
+
+"""
+    getSeriesExplosion(c, i; point = nothing) -> Union{Nothing,Int}
+
+How far a pie or doughnut series (or one of its points, from 1) is pulled out, in percent of the
+radius, as [`setSeriesExplosion`](@ref) sets it: the point's own, else the series'. `nothing`
+when it isn't set.
+"""
+function getSeriesExplosion(c::AbstractChart, i::Integer; point = nothing)
+    doc = _doc(c)
+    s = _series_node(doc, i)
+    for d in (point === nothing ? nothing : _point_props(doc, s, point), _style(doc, s))
+        d === nothing && continue
+        v = get(d, "chart:pie-offset", nothing)
+        v === nothing || return something(tryparse(Int, v), 0)
+    end
+    return nothing
+end
+
+"""
+    getAxisLabelArrangement(c, ax) -> NamedTuple
+
+An axis' label options as [`setAxisLabelArrangement`](@ref) sets them: `stagger` (`:odd`, `:even`,
+`:none`), whether labels may `overlap`, and whether they may break into lines (`breakText`); each
+`nothing` when it isn't set.
+"""
+function getAxisLabelArrangement(c::AbstractChart, ax)
+    d = _axis_style(c, ax)
+    a = get(d, "chart:label-arrangement", nothing)
+    stagger = a == "stagger-odd" ? :odd : a == "stagger-even" ? :even : a == "side-by-side" ? :none : nothing
+    flag(k) = (v = get(d, k, nothing); v === nothing ? nothing : v == "true")
+    return (stagger = stagger, overlap = flag("chart:text-overlap"), breakText = flag("text:line-break"))
+end
+
+"""
+    getLabelDeleted(c, i, point) -> Bool
+
+Whether point `point` (from 1) of series `i` shows no label, as [`setLabelDeleted`](@ref) sets it.
+"""
+function getLabelDeleted(c::AbstractChart, i::Integer, point::Integer)
+    doc = _doc(c)
+    d = _point_props(doc, _series_node(doc, i), point)
+    d === nothing && return false
+    return get(d, "chart:data-label-number", nothing) == "none" &&
+           all(k -> get(d, k, nothing) == "false", ("chart:data-label-text", "chart:data-label-symbol")) &&
+           get(d, "loext:data-label-series", get(d, "chart:data-label-series", nothing)) == "false"   # (ODF 1.4's name: LibreOffice 26)
+end
+
 """
     getLabelTextProp(c, i, field) -> Effective
 
@@ -478,7 +533,7 @@ end
 # Trendlines and error bars
 #
 
-# Trendline kinds as `addTrendline` takes them and as ODF writes them, and back (derived, as `_CAPS`).
+# Trendline kinds as `addSeriesTrendline` takes them and as ODF writes them, and back (derived, as `_CAPS`).
 const _TREND_ODF = Dict(:linear => "linear", :log => "logarithmic", :exp => "exponential", :power => "power",
                         :poly => "polynomial", :movingAvg => "moving-average")
 const _REG = Dict(v => k for (k, v) in _TREND_ODF)

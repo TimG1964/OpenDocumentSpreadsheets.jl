@@ -30,7 +30,7 @@ setSheetView(sh; topLeftCell = "E20")      # scrolled down and right
 
 ```julia
 splitPanes(sh; nrows = 10)                 # a split that doesn't freeze
-removePanes(sh)
+deletePanes(sh)
 ```
 
 LibreOffice keeps a split's position in screen pixels, so a split after row 10 falls exactly at the
@@ -67,7 +67,7 @@ setSheetVisibility(xf["Notes"], :hidden)
 ![LibreOffice's sheet tabs: Grid, the open sheet, underlined in orange, and Plan on blue; the hidden Notes sheet has no tab](../images/tabs.png)
 
 ```julia
-removeTabColor(sh)
+deleteTabColor(sh)
 setSheetVisibility(xf["Notes"], :visible)
 ```
 

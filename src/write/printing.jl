@@ -3,8 +3,8 @@
 #
 # Adapted from XLSX.jl 0.13.4 (src/sheetsettings.jl `setPageSetup`, `getPageSetup`, `setPageMargins`,
 # `getPageMargins`, `setPrintOptions`, `getPrintOptions`, `setPrintArea`, `getPrintArea`,
-# `removePrintArea`, `setPrintTitles`, `getPrintTitles`, `removePrintTitles`, `setHeaderFooter`,
-# `getHeaderFooter`, `removeHeaderFooter`, `headerFooterField`, `headerFooterFont`, `PAPER_SIZES` and
+# `deletePrintArea`, `setPrintTitles`, `getPrintTitles`, `deletePrintTitles`, `setHeaderFooter`,
+# `getHeaderFooter`, `deleteHeaderFooter`, `headerFooterField`, `headerFooterFont`, `PAPER_SIZES` and
 # the header code parsing), MIT License, Copyright (c) 2018-2026 Felipe Noronha Tavares and other
 # contributors. Changes: the settings are a sheet's page style (a master page and its page layout, in
 # styles.xml) and its table's print ranges and title containers; Excel's header codes are converted
@@ -536,11 +536,11 @@ function getPrintArea(ws::Worksheet)
 end
 
 """
-    removePrintArea(sheet) -> Bool
+    deletePrintArea(sheet) -> Bool
 
 Print the whole sheet again. `false` if it had no print area.
 """
-function removePrintArea(ws::Worksheet)
+function deletePrintArea(ws::Worksheet)
     _require_writable(ws, "remove a print area")
     p = _print_state(ws)
     (p.area === nothing || isempty(p.area)) && return false
@@ -565,7 +565,7 @@ any titles the sheet has; the one not given is kept.
 function setPrintTitles(ws::Worksheet; rows = nothing, cols = nothing)
     _require_writable(ws, "set print titles")
     rows === nothing && cols === nothing &&
-        throw(ODSError("Give the rows or columns to repeat as `rows`, `cols` or both. To remove the titles, use `removePrintTitles`."))
+        throw(ODSError("Give the rows or columns to repeat as `rows`, `cols` or both. To remove the titles, use `deletePrintTitles`."))
     f = sheet_formats(ws)
     for (axis, x) in ((1, rows), (2, cols))
         x === nothing && continue
@@ -590,11 +590,11 @@ function getPrintTitles(ws::Worksheet)
 end
 
 """
-    removePrintTitles(sheet) -> Bool
+    deletePrintTitles(sheet) -> Bool
 
 Stop repeating rows and columns. `false` if the sheet had no titles.
 """
-function removePrintTitles(ws::Worksheet)
+function deletePrintTitles(ws::Worksheet)
     _require_writable(ws, "remove print titles")
     f = sheet_formats(ws)
     (f.title_rows === nothing && f.title_cols === nothing) && return false
@@ -1043,7 +1043,7 @@ only their defaults (`true`) are accepted.
 """
 function setHeaderFooter(ws::Worksheet; kw...)
     _require_writable(ws, "set headers and footers")
-    isempty(kw) && throw(ODSError("Give the headers, footers or options to set as keywords, such as `header=\"Report\"`. To remove them all, use `removeHeaderFooter`."))
+    isempty(kw) && throw(ODSError("Give the headers, footers or options to set as keywords, such as `header=\"Report\"`. To remove them all, use `deleteHeaderFooter`."))
     texts = Dict{String,String}()
     flags = Dict{Symbol,Bool}()
     for (k, v) in kw
@@ -1141,12 +1141,12 @@ function getHeaderFooter(ws::Worksheet)
 end
 
 """
-    removeHeaderFooter(sheet) -> Bool
+    deleteHeaderFooter(sheet) -> Bool
 
 Hide all of a sheet's headers and footers, keeping the margins as [`setPageMargins`](@ref) measures
 them. `false` if none was shown.
 """
-function removeHeaderFooter(ws::Worksheet)
+function deleteHeaderFooter(ws::Worksheet)
     _require_writable(ws, "remove headers and footers")
     p = _print_state(ws)
     any(t -> _shown(p.regions, t), _REGION_TAGS) || return false

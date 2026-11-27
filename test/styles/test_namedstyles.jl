@@ -1,4 +1,4 @@
-# Named cell styles (phase 4 step 8, D-045): getCellStyle, setCellStyle, addCellStyle!.
+# Named cell styles (phase 4 step 8, D-045): getCellStyle, setCellStyle, addCellStyle.
 # XLSX.jl has no named styles; the expectations are LibreOffice's (experiment 018, F-039 to
 # F-041).
 
@@ -84,14 +84,14 @@ end
     end
 end
 
-@testset "addCellStyle!" begin
+@testset "addCellStyle" begin
     f = newods(); s = f[1]
     s["A1"] = 3.5; s["A2"] = 1
-    @test addCellStyle!(f, "My Style"; parent = "Heading 1", font = (bold = true, name = "Liberation Serif", color = "0000FF"),
+    @test addCellStyle(f, "My Style"; parent = "Heading 1", font = (bold = true, name = "Liberation Serif", color = "0000FF"),
                         fill = (pattern = "solid", fgColor = "FFFF00"), border = (allsides = ["style" => "thin"],),
                         alignment = (horizontal = "right",), format = "0.00\" kg\"") == "My_20_Style"
-    @test addCellStyle!(f, "a&b"; font = Dict("italic" => true)) == "a_26_b"
-    @test addCellStyle!(f, "Child"; parent = "My Style", font = [:size => 9]) == "Child"
+    @test addCellStyle(f, "a&b"; font = Dict("italic" => true)) == "a_26_b"
+    @test addCellStyle(f, "Child"; parent = "My Style", font = [:size => 9]) == "Child"
     @test setCellStyle(s, "A1", "My Style") == "My_20_Style"
     setCellStyle(s, "A2", "Child"); setCellStyle(s, "B1", "a&b")
     function check(s)
@@ -116,16 +116,16 @@ end
     @test occursin("style:display-name=\"a&amp;b\"", sx)
     check(openods(writeods(ntmp("a.fods"), f))[1])
     # errors
-    @test_throws ODSError addCellStyle!(f, "My Style")
-    @test_throws ODSError addCellStyle!(f, "Good")
-    @test_throws ODSError addCellStyle!(f, "Default")
-    @test_throws ODSError addCellStyle!(f, "")
-    @test_throws ODSError addCellStyle!(f, "x"; parent = "nope")
-    @test_throws ODSError addCellStyle!(f, "x"; font = (heavy = true,))
-    @test_throws ODSError addCellStyle!(f, "x"; border = (outside = ["style" => "thin"],))
-    @test_throws ODSError addCellStyle!(f, "x"; font = 1)
-    @test_throws ODSError addCellStyle!(f, "x"; colour = "red")
-    @test_throws ODSError addCellStyle!(openods(joinpath(DATA, "lo-values.ods")), "x")
+    @test_throws ODSError addCellStyle(f, "My Style")
+    @test_throws ODSError addCellStyle(f, "Good")
+    @test_throws ODSError addCellStyle(f, "Default")
+    @test_throws ODSError addCellStyle(f, "")
+    @test_throws ODSError addCellStyle(f, "x"; parent = "nope")
+    @test_throws ODSError addCellStyle(f, "x"; font = (heavy = true,))
+    @test_throws ODSError addCellStyle(f, "x"; border = (outside = ["style" => "thin"],))
+    @test_throws ODSError addCellStyle(f, "x"; font = 1)
+    @test_throws ODSError addCellStyle(f, "x"; colour = "red")
+    @test_throws ODSError addCellStyle(openods(joinpath(DATA, "lo-values.ods")), "x")
     # a format reused by direct formatting is declared once, in styles.xml
     setFormat(s, "C1"; format = "0.00\" kg\"")
     p = writeods(ntmp("b.ods"), f)
@@ -143,7 +143,7 @@ end
     @test _part(p1, "styles.xml") == before
     # a new style: only office:styles (and the faces) change
     g = openods(q; mode = "rw")
-    addCellStyle!(g, "Mine"; font = (name = "Courier New", bold = true), format = "0.000")
+    addCellStyle(g, "Mine"; font = (name = "Courier New", bold = true), format = "0.000")
     setCellStyle(g[1], "B2", "Mine")
     p2 = writeods(ntmp("p2.ods"), g)
     after = _part(p2, "styles.xml")
@@ -160,7 +160,7 @@ end
     # a LibreOffice file with named styles: its own styles are kept, ours appended
     q2 = ntmp("n.ods"); cp(joinpath(DATA, "lo-named-styles.ods"), q2)
     g = openods(q2; mode = "rw")
-    addCellStyle!(g, "Extra"; parent = "My Style", fill = (pattern = "solid", fgColor = "00FF00"))
+    addCellStyle(g, "Extra"; parent = "My Style", fill = (pattern = "solid", fgColor = "00FF00"))
     setCellStyle(g[1], "C1", "Extra"); setCellStyle(g[1], "C2", "My Style")
     r = openods(writeods(ntmp("n2.ods"), g))[1]
     @test getCellStyle(r, "C1") == "Extra" && getCellStyle(r, "C2") == "My Style" && getCellStyle(r, "B2") == "a&b"
@@ -168,7 +168,7 @@ end
     # flat files
     q3 = ntmp("n.fods"); cp(joinpath(DATA, "lo-named-styles.fods"), q3)
     g = openods(q3; mode = "rw")
-    addCellStyle!(g, "Flat one"; font = (size = 20,)); setCellStyle(g[1], "C3", "Flat one"); setCellStyle(g[1], "C4", "Heading 2")
+    addCellStyle(g, "Flat one"; font = (size = 20,)); setCellStyle(g[1], "C3", "Flat one"); setCellStyle(g[1], "C4", "Heading 2")
     r = openods(writeods(ntmp("n3.fods"), g))[1]
     @test getCellStyle(r, "C3") == "Flat one" && getFont(r, "C3").font["sz"]["val"] == "20" && getCellStyle(r, "C4") == "Heading 2"
 end
@@ -182,7 +182,7 @@ end
         profile = lo_profile_url(joinpath(dir, "lo-profile"))
         f = newods("N"); s = f["N"]
         s["A1"] = 3.5; s["A2"] = Date(2024, 1, 2); s["A3"] = "t"; s["A4"] = 4
-        addCellStyle!(f, "My Style"; parent = "Heading 1", font = (bold = true, name = "Liberation Serif"),
+        addCellStyle(f, "My Style"; parent = "Heading 1", font = (bold = true, name = "Liberation Serif"),
                       fill = (pattern = "solid", fgColor = "FFFF00"), format = "0.00\" kg\"")
         setCellStyle(s, "A1", "My Style")
         setFont(s, "A2"; italic = true); setCellStyle(s, "A2", "Good")
@@ -191,7 +191,7 @@ end
         f3 = writeods(joinpath(dir, "flat.fods"), f)
         q = joinpath(dir, "patched.ods"); cp(joinpath(DATA, "lo-scenarios.ods"), q)
         g = openods(q; mode = "rw"); w = g[1]
-        addCellStyle!(g, "a&b"; font = (size = 16, name = "Liberation Mono"), format = "0.0%")
+        addCellStyle(g, "a&b"; font = (size = 16, name = "Liberation Mono"), format = "0.0%")
         w["A1"] = 0.25; setCellStyle(w, "A1", "a&b"); setCellStyle(w, "B1", "Warning")
         f2 = writeods(joinpath(dir, "patched2.ods"), g)
         run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to ods --outdir $(joinpath(dir, "lo")) $f1 $f2 $f3`;

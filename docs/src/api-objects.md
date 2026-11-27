@@ -72,7 +72,7 @@ addtable!
 deletetable!
 settotals!
 gettotals
-removetotals!
+deletetotals!
 appendtable!
 gettablerange
 ```
@@ -84,5 +84,5 @@ A sheet's AutoFilter is LibreOffice's anonymous database range of the sheet, wit
 ```@docs
 setAutoFilter
 getAutoFilter
-removeAutoFilter
+deleteAutoFilter
 ```

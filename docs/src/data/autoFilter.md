@@ -33,7 +33,7 @@ getAutoFilter(sh)           # CellRange("A1:C7")
 
 ```julia
 setAutoFilter(sh, :; sort = ["Region", "Revenue" => :descending], naturalSort = true)
-removeAutoFilter(sh)        # shows every row again
+deleteAutoFilter(sh)        # shows every row again
 ```
 
 ## Filtering

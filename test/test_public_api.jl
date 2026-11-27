@@ -22,7 +22,7 @@ const DOCUMENTED_NOT_MARKED = (
 const REEXPORTED = (
     # the chart names XLSX.jl also binds at its top level (phase 8)
     :AbstractChart, :Chart, :ChartEx, :ChartRef, :ChartSeries, :getChart, :getChartData, :getChartRanges, :getChartSchema,
-    :getChartType, :getCharts, :addSparklines, :getSparklines, :deleteSparklines)
+    :getChartType, :getCharts, :SchemeColor, :addSparklines, :getSparklines, :deleteSparklines)
 
 @testset "explicit imports" begin
     @test EI.check_no_implicit_imports(OpenDocumentSpreadsheets) === nothing
@@ -48,5 +48,19 @@ end
             isempty(hits) || @info "field access" f hits
             @test isempty(hits)
         end
+    end
+end
+
+@testset "XLSX.jl's names kept as aliases (Phase 5)" begin
+    O = OpenDocumentSpreadsheets
+    # D-104 (R2): one removal verb
+    for (old, new) in (:removeAutoFilter => :deleteAutoFilter, :removeHeaderFooter => :deleteHeaderFooter,
+                       :removeMergedCells => :deleteMergedCells, :removePanes => :deletePanes,
+                       :removePrintArea => :deletePrintArea, :removePrintTitles => :deletePrintTitles,
+                       :removeTabColor => :deleteTabColor, :removetotals! => :deletetotals!,
+                       :clearConditionalFormats => :deleteConditionalFormats)
+        @test getfield(O, old) === getfield(O, new)
+        @test !Base.isexported(O, old)
+        VERSION >= v"1.11" && @test Base.ispublic(O, old)
     end
 end

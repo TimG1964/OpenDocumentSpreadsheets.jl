@@ -58,7 +58,7 @@ setSheetVisibility
 getSheetVisibility
 setTabColor
 getTabColor
-removeTabColor
+deleteTabColor
 ```
 
 Groups of rows and columns, as LibreOffice nests them:
@@ -80,7 +80,7 @@ How a sheet looks when LibreOffice opens it, kept in its view settings (settings
 freezePanes
 splitFreeze
 splitPanes
-removePanes
+deletePanes
 setSheetView
 getSheetView
 ```
@@ -116,13 +116,13 @@ setPrintOptions
 getPrintOptions
 setPrintArea
 getPrintArea
-removePrintArea
+deletePrintArea
 setPrintTitles
 getPrintTitles
-removePrintTitles
+deletePrintTitles
 setHeaderFooter
 getHeaderFooter
-removeHeaderFooter
+deleteHeaderFooter
 headerFooterField
 headerFooterFont
 ```

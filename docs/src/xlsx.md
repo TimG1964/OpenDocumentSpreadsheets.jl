@@ -20,11 +20,41 @@ interface.
 
 The formatting functions work as in XLSX.jl too, with the differences listed below:
 - `setFont`, `setFill`, `setBorder`, `setAlignment`, `setFormat` and their getters
-- the `setUniform*` variants and `setOutsideBorder`
+- the `setUniform*` variants, and `setBorder`'s `outside`
 - `getText`
 - `mergeCells` and the other merge functions
 - `setColumnWidth`, `setRowHeight`, their getters and `autofitColumns`
 - `writetable`'s `column_widths` and `column_formats`
+
+## Renamed functions
+
+Every removal is named `delete…` here. XLSX.jl's names still work, as other names for the same
+functions, but they aren't exported: call them as `OpenDocumentSpreadsheets.removeAutoFilter`, or
+bring them in with `using OpenDocumentSpreadsheets: removeAutoFilter`.
+
+| XLSX.jl | OpenDocumentSpreadsheets |
+|---|---|
+| `removeAutoFilter` | [`deleteAutoFilter`](@ref) |
+| `removeHeaderFooter` | [`deleteHeaderFooter`](@ref) |
+| `removeMergedCells` | [`deleteMergedCells`](@ref) |
+| `removePanes` | [`deletePanes`](@ref) |
+| `removePrintArea` | [`deletePrintArea`](@ref) |
+| `removePrintTitles` | [`deletePrintTitles`](@ref) |
+| `removeTabColor` | [`deleteTabColor`](@ref) |
+| `removetotals!` | [`deletetotals!`](@ref) |
+| `clearConditionalFormats` | [`deleteConditionalFormats`](@ref) |
+
+```@docs
+removeAutoFilter
+removeHeaderFooter
+removeMergedCells
+removePanes
+removePrintArea
+removePrintTitles
+removeTabColor
+removetotals!
+clearConditionalFormats
+```
 
 ## Differences
 
@@ -55,7 +85,7 @@ The formatting functions work as in XLSX.jl too, with the differences listed bel
   - **Column widths** in characters are the widths LibreOffice gives an XLSX.jl file's, so a width
     looks the same in both; `getColumnWidth` reports them as XLSX.jl does.
   - **Merged cells** are an anchor cell and covered cells, as LibreOffice writes them.
-  - **Named cell styles** ([`setCellStyle`](@ref), [`addCellStyle!`](@ref)) are LibreOffice's,
+  - **Named cell styles** ([`setCellStyle`](@ref), [`addCellStyle`](@ref)) are LibreOffice's,
     which XLSX.jl lacks.
 - **Inserting and deleting rows and columns** ([`insertRows`](@ref), [`insertColumns`](@ref),
   [`deleteRows`](@ref), [`deleteColumns`](@ref)) take XLSX.jl's arguments and behave as
@@ -127,13 +157,13 @@ The formatting functions work as in XLSX.jl too, with the differences listed bel
   totals cell's setting is read from its formula, written as LibreOffice saves a structured
   reference (`SUBTOTAL(109,$Sheet.$B$2:$B$5)`). As in LibreOffice, a table's name is formed as a
   defined name's but is apart from them, tables may overlap, and a table may be its header alone.
-- **AutoFilters** ([`setAutoFilter`](@ref), [`getAutoFilter`](@ref), [`removeAutoFilter`](@ref)) take
+- **AutoFilters** ([`setAutoFilter`](@ref), [`getAutoFilter`](@ref), [`deleteAutoFilter`](@ref)) take
   XLSX.jl's arguments and criteria, stored in the sheet's anonymous database range as LibreOffice
   stores them. Rows are hidden as LibreOffice's Refresh Range hides them, not as Excel does: text
   LibreOffice reads as a number (`"10"`, `"2026-11-23"`) is compared with numbers by value, list
   items are compared as text (a date matches only at midnight), and rankings count text and
   errors. LibreOffice can't store above- or below-average or relative-date filters, so they are
-  errors. `removeAutoFilter` shows every row of the range, as LibreOffice does. `sort` puts the
+  errors. `deleteAutoFilter` shows every row of the range, as LibreOffice does. `sort` puts the
   rows in LibreOffice's order (numbers and logicals, text, errors; blanks last), and moves formats,
   validations, notes, links, pictures and hidden rows with them; formulas move as copied and are
   saved without a value. Merged cells (with formats) and array formulas are refused.
@@ -145,7 +175,7 @@ The formatting functions work as in XLSX.jl too, with the differences listed bel
   expressions, and a sort's `naturalSort` and `includeFormats`.
 - **Rich text** ([`RichTextString`](@ref), [`RichTextRun`](@ref), `getRichTextString`) is LibreOffice's: a run is a span whose text style holds only the run's attributes, so a run takes the attributes it doesn't set from the cell, as in LibreOffice. In Excel those come from the default font. Colours are stored as RGB, and a line break starts a new paragraph. Chart titles take rich text too.
 - **Conditional formats** ([`setConditionalFormat`](@ref), `getConditionalFormats`,
-  `clearConditionalFormats`, `setColoredDataBars`) take XLSX.jl's types, keywords and presets,
+  `deleteConditionalFormats`, `setColoredDataBars`) take XLSX.jl's types, keywords and presets,
   and are stored as LibreOffice's rules:
   - **Formats:** each rule's format is a named cell style (`ConditionalStyle_N`), as LibreOffice's
     import makes them; `style` applies any named style instead.

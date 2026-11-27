@@ -98,10 +98,14 @@ include("write/sort.jl")
 include("write/save.jl")
 include("write/stream.jl")
 include("write/writetable.jl")
+include("write/fileforms.jl")      # the cell-level functions' file forms (Phase 5, R6)
 
-# Charts (phase 8): a submodule, as in XLSX.jl, with the same few names bound here
+include("aliases.jl")               # XLSX.jl's names the consistency rules renamed (Phase 5)
+
+# Charts (phase 8): a submodule, as in XLSX.jl. Bound here (API consistency R8): the chart names XLSX.jl binds at
+# its top level, and the sparklines, which are a sheet's (cells), not a chart's.
 include("charts/Charts.jl")
-using .Charts: Charts, AbstractChart, Chart, ChartEx, ChartRef, ChartSeries, getChartSchema, getChartType, getCharts,
+using .Charts: Charts, AbstractChart, Chart, ChartEx, ChartRef, ChartSeries, SchemeColor, getChartSchema, getChartType, getCharts,
     getChart, getChartData, getChartRanges, addSparklines, getSparklines, deleteSparklines
 
 export
@@ -119,19 +123,19 @@ export
     RichTextString, RichTextRun,                # rich text (D-088), as XLSX.jl exports them
     setFormat, setUniformFormat,
     setUniformFont, setUniformBorder, setUniformFill, setUniformAlignment, setUniformStyle,
-    getMergedCells, isMergedCell, getMergedBaseCell, mergeCells, removeMergedCells,
+    getMergedCells, isMergedCell, getMergedBaseCell, mergeCells, deleteMergedCells,
     setColumnWidth, setRowHeight, autofitColumns,
-    setCellStyle, addCellStyle!,
+    setCellStyle, addCellStyle,
     # sheets
     insertRows, insertColumns, deleteRows, deleteColumns,
     renamesheet!, deletesheet!, copysheet!, movesheet!,
     addDefinedName, deleteDefinedName, deleteAllDefinedNames,
-    setRowHidden, setColumnHidden, setSheetVisibility, setTabColor, removeTabColor,
+    setRowHidden, setColumnHidden, setSheetVisibility, setTabColor, deleteTabColor,
     groupRows, groupColumns, ungroupRows, ungroupColumns,
-    freezePanes, splitFreeze, splitPanes, removePanes, setSheetView,
+    freezePanes, splitFreeze, splitPanes, deletePanes, setSheetView,
     protectSheet, unprotectSheet, setCellProtection, protectWorkbook, unprotectWorkbook,
-    setPageSetup, setPageMargins, setPrintOptions, setPrintArea, removePrintArea, setPrintTitles, removePrintTitles,
-    setHeaderFooter, removeHeaderFooter, headerFooterField, headerFooterFont,
+    setPageSetup, setPageMargins, setPrintOptions, setPrintArea, deletePrintArea, setPrintTitles, deletePrintTitles,
+    setHeaderFooter, deleteHeaderFooter, headerFooterField, headerFooterFont,
     setDocumentProperties, setCustomProperty, deleteCustomProperty,
     # rich objects
     addHyperlink, deleteHyperlink,
@@ -139,22 +143,23 @@ export
     addThreadedComment, addThreadedReply, setThreadedCommentResolved, deleteThreadedComment,
     addImage, deleteImage,
     addDataValidation, deleteDataValidation,
-    addtable!, deletetable!, settotals!, gettotals, removetotals!, appendtable!, gettablerange,
-    setAutoFilter, removeAutoFilter,
+    addtable!, deletetable!, settotals!, gettotals, deletetotals!, appendtable!, gettablerange,
+    setAutoFilter, deleteAutoFilter,
     setConditionalFormat,
     # sparklines
     addSparklines, getSparklines, deleteSparklines
 
 @static if VERSION >= v"1.11"
     eval(Meta.parse("public getcell, getcellrange, getFormula, getRichTextString, get_dimension, ODSError, Cell, EmptyCell, DataTable, TableRow, TableRowIterator, SheetRow, StreamWriter, StreamSheet, " *
-                    "getFont, getBorder, getFill, getAlignment, getFormat, getText, getDefaultFont, setOutsideBorder, CellFont, CellFill, CellBorder, CellAlignment, CellFormat, getColumnWidth, getRowHeight, getCellStyle, " *
+                    "getFont, getBorder, getFill, getAlignment, getFormat, getText, getDefaultFont, CellFont, CellFill, CellBorder, CellAlignment, CellFormat, getColumnWidth, getRowHeight, getCellStyle, " *
                     "getDefinedNames, getAllDefinedNames, DefinedName, isRowHidden, isColumnHidden, getSheetVisibility, getTabColor, getRowOutlineLevel, getColumnOutlineLevel, getSheetView, " *
                     "isSheetProtected, getSheetProtection, getCellProtection, isWorkbookProtected, getWorkbookProtection, " *
                     "getPageSetup, getPageMargins, getPrintOptions, getPrintArea, getPrintTitles, getHeaderFooter, " *
                     "getDocumentProperties, getCustomProperty, getCustomProperties, " *
                     "getHyperlink, getHyperlinks, getComment, getComments, getThreadedComment, getThreadedComments, getImages, getDataValidation, getDataValidations, " *
-                    "Table, TableStyleInfo, table, tables, getAutoFilter, getConditionalFormats, clearConditionalFormats, setColoredDataBars, " *
-                    "Charts, AbstractChart, Chart, ChartEx, ChartRef, ChartSeries, getChartSchema, getChartType, getCharts, getChart, getChartData, getChartRanges"))
+                    "Table, TableStyleInfo, table, tables, getAutoFilter, getConditionalFormats, deleteConditionalFormats, setColoredDataBars, " *
+                    "removeAutoFilter, removeHeaderFooter, removeMergedCells, removePanes, removePrintArea, removePrintTitles, removeTabColor, removetotals!, clearConditionalFormats, " *
+                    "Charts, AbstractChart, Chart, ChartEx, ChartRef, ChartSeries, SchemeColor, getChartSchema, getChartType, getCharts, getChart, getChartData, getChartRanges"))
 end
 
 include("precompile.jl")

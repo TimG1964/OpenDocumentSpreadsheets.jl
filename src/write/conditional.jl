@@ -1,5 +1,5 @@
 # Conditional formats (phase 7, D-081): the model, reading and clearing. XLSX.jl's
-# `getConditionalFormats` and `clearConditionalFormats` on LibreOffice's rules (F-073):
+# `getConditionalFormats` and `deleteConditionalFormats` on LibreOffice's rules (F-073):
 #   - a sheet's rules are the `calcext:conditional-format`s of its table's `calcext:conditional-formats`
 #     (its last child), each a target and one or more entries: conditions, dates, colour scales, data
 #     bars and icon sets
@@ -203,15 +203,15 @@ function getConditionalFormats(ws::Worksheet)
 end
 
 """
-    clearConditionalFormats(sheet, rng) -> Int
-    clearConditionalFormats(sheet, :) -> Int
+    deleteConditionalFormats(sheet, rng) -> Int
+    deleteConditionalFormats(sheet, :) -> Int
 
 Remove every conditional format whose range lies entirely within `rng` (a cell, a range, whole
 columns `"B:D"` or rows `"2:5"`, several of these separated by commas, or a `CellRange`), and
 return the number of rules removed. A format spanning a wider range is left alone,
 even where it overlaps. With `:`, every rule on the sheet goes. The file must be writable.
 """
-function clearConditionalFormats(ws::Worksheet, rng)
+function deleteConditionalFormats(ws::Worksheet, rng)
     _require_writable(ws, "clear conditional formats")
     target = rng isa Colon ? _Area[(1:SheetCore.MAX_ROWS, 1:SheetCore.MAX_COLS)] : _cf_blocks(ws, rng)
     within(a) = isempty(foldl((rest, b) -> [p for x in rest for p in _area_minus(x, b)], target; init = _Area[a]))

@@ -651,14 +651,14 @@ function _gettotals(t::Table)
 end
 
 """
-    removetotals!(t::Table) -> Table
-    removetotals!(sheet, name | id) -> Table
+    deletetotals!(t::Table) -> Table
+    deletetotals!(sheet, name | id) -> Table
 
 Remove a table's totals row: its cells are emptied and the table loses the row. Nothing changes
 for a table without one. The file must be writable.
 """
-removetotals!(t::Table) = _removetotals!(_resolve(t))
-removetotals!(ws::Worksheet, name::Union{AbstractString,Integer}) = _removetotals!(table(ws, name))
+deletetotals!(t::Table) = _removetotals!(_resolve(t))
+deletetotals!(ws::Worksheet, name::Union{AbstractString,Integer}) = _removetotals!(table(ws, name))
 function _removetotals!(t::Table)
     xf = get_odsfile(t.sheet)
     _require_writable(xf, "remove a totals row")

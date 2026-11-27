@@ -3,7 +3,7 @@
 # (experiment 038's oracle, `test/data/conditional/*.tsv`) and LibreOffice reading ours.
 using Test
 using OpenDocumentSpreadsheets
-using OpenDocumentSpreadsheets: ODSError, getConditionalFormats, clearConditionalFormats
+using OpenDocumentSpreadsheets: ODSError, getConditionalFormats, deleteConditionalFormats
 
 _cfd(f) = joinpath(@__DIR__, "..", "data", "conditional", f)
 
@@ -78,23 +78,23 @@ end
         @test isempty(getConditionalFormats(newods()[1]))
     end
 
-    @testset "clearConditionalFormats removes the formats inside the range, as XLSX.jl does" begin
+    @testset "deleteConditionalFormats removes the formats inside the range, as XLSX.jl does" begin
         xf = openods(_cfd("lo-cf-import.ods"); mode = "rw")
         ws = xf["CF"]
         n0 = length(getConditionalFormats(ws))
-        @test clearConditionalFormats(ws, "B1:K1") === 1
-        @test clearConditionalFormats(ws, "B1:K1") === 0
-        @test clearConditionalFormats(ws, "B79:J79") === 0          # wider than the range: kept
-        @test clearConditionalFormats(ws, "B79:K79") === 3          # a format's three rules
-        @test clearConditionalFormats(ws, "B82:C82") === 0          # only part of the format's areas
-        @test clearConditionalFormats(ws, "B82:G82") === 1
-        @test clearConditionalFormats(ws, "2:3") === 1              # rows: B3:K3 (row 2 has no rule)
-        @test clearConditionalFormats(ws, "O:O") === 1              # the whole column's data bar
+        @test deleteConditionalFormats(ws, "B1:K1") === 1
+        @test deleteConditionalFormats(ws, "B1:K1") === 0
+        @test deleteConditionalFormats(ws, "B79:J79") === 0          # wider than the range: kept
+        @test deleteConditionalFormats(ws, "B79:K79") === 3          # a format's three rules
+        @test deleteConditionalFormats(ws, "B82:C82") === 0          # only part of the format's areas
+        @test deleteConditionalFormats(ws, "B82:G82") === 1
+        @test deleteConditionalFormats(ws, "2:3") === 1              # rows: B3:K3 (row 2 has no rule)
+        @test deleteConditionalFormats(ws, "O:O") === 1              # the whole column's data bar
         @test length(getConditionalFormats(ws)) === n0 - 7
-        @test clearConditionalFormats(ws, "B5:K5,B6:K6") === 2
-        @test clearConditionalFormats(xf["Other"], :) === 3
+        @test deleteConditionalFormats(ws, "B5:K5,B6:K6") === 2
+        @test deleteConditionalFormats(xf["Other"], :) === 3
         @test isempty(getConditionalFormats(xf["Other"]))
-        @test_throws ODSError clearConditionalFormats(readods(_cfd("lo-cf-import.ods"))["CF"], :)
+        @test_throws ODSError deleteConditionalFormats(readods(_cfd("lo-cf-import.ods"))["CF"], :)
         # the patched save: the edited sheets' elements change, and nothing else
         dir = mktempdir()
         r = readods(writeods(joinpath(dir, "cleared.ods"), xf))
@@ -110,7 +110,7 @@ end
         getConditionalFormats(u["CF"])
         @test readods(writeods(joinpath(dir, "same.ods"), u)).content == orig.content
         # all of a new file's rules cleared: no element
-        n = newods(); clearConditionalFormats(n[1], :)
+        n = newods(); deleteConditionalFormats(n[1], :)
         @test !occursin("calcext:conditional-formats", readods(writeods(joinpath(dir, "n.ods"), n)).content)
     end
 
@@ -150,7 +150,7 @@ end
         @test _cf_ours(r["S2"]) == _cf_ours(r["S"]) == _cf_oracle("lo-cf-ops.tsv", "S"; prefix = "copy")
         @test occursin("target-range-address=\"'S2'.B1:'S2'.B10\"", _cf_elements(r)["S2"])   # quoted, as LibreOffice writes it
         # a sheet renamed: the targets follow
-        xf = openods(base; mode = "rw"); clearConditionalFormats(xf["S"], "A2:A3"); renamesheet!(xf["S"], "T T")
+        xf = openods(base; mode = "rw"); deleteConditionalFormats(xf["S"], "A2:A3"); renamesheet!(xf["S"], "T T")
         el = _cf_elements(readods(writeods(joinpath(dir, "ren.ods"), xf)))["T T"]
         @test occursin("target-range-address=\"'T T'.B1:'T T'.B10\"", el)
         @test !occursin("A2:", el)
@@ -164,7 +164,7 @@ end
             dir = mktempdir()
             profile = lo_profile_url(joinpath(dir, "lo-profile"))
             xf = openods(_cfd("lo-cf-import.ods"); mode = "rw")
-            clearConditionalFormats(xf["CF"], "B1:K10"); clearConditionalFormats(xf["Other"], :)
+            deleteConditionalFormats(xf["CF"], "B1:K10"); deleteConditionalFormats(xf["Other"], :)
             insertRows(xf["CF"], 20; count = 2); deleteColumns(xf["CF"], "C")
             a = writeods(joinpath(dir, "patched.ods"), xf)
             run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to fods --outdir $(joinpath(dir, "lo")) $a`;

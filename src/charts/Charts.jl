@@ -44,8 +44,8 @@ export
     getCharts, getChart, getChartSchema, getChartType, getChartTypes, getChartGroups, getChartTitle,
     getChartSeries, getChartRanges, getChartData,
     # chart-level formatting
-    getChartTitleText, getChartTitleRef, getChartTitleRange, getChartTitleShapeProps, getChartTitleTextProps,
-    getAutoTitleDeleted, getChartLegend, getLegendPos, getLegendOverlay, getLegendShapeProps, getLegendTextProps,
+    getChartTitleText, getChartTitleShapeProps, getChartTitleTextProps,
+    getChartLegend, getLegendPos, getLegendOverlay, getLegendShapeProps, getLegendTextProps,
     getLegendEntryDeleted, getPlotAreaShapeProps, getChartSpaceShapeProps, getChartSpaceTextProps,
     # series, points, markers and labels
     getSeriesShapeProps, getSeriesLabelTextProps, getSeriesMarker, getSeriesGroup, getSeriesAxes, getGroupAxes,
@@ -55,11 +55,11 @@ export
     # trendlines, error bars and groups
     getSeriesTrendlines, getTrendlineShapeProps, getTrendlineLabelText, getTrendlineLabelTextProps,
     getTrendlineLabelShapeProps, getSeriesErrorBars, getErrorBarsShapeProps, getErrorBarsCustomRefs,
-    getGroupDropLines, getGroupHiLowLines, getGroupSeriesLines, getGroupUpDownBars, getUpBarShapeProps,
+    getGroupUpDownBars, getUpBarShapeProps,
     getDownBarShapeProps, getGroupGapWidth, getGroupOverlap,
     # axes
     getChartAxes, getChartAxis, getAxisShapeProps, getAxisTextProps, getAxisTitle, getAxisTitleText,
-    getAxisTitleTextProps, getAxisTitleRef, getAxisTitleRange, getAxisGridlines, getAxisPartner,
+    getAxisTitleTextProps, getAxisGridlines, getAxisPartner,
     getAxisNumberFormatCode, getAxisNumberFormatLinked, getAxisMajorTickMark, getAxisMinorTickMark,
     getAxisTickLabelPos, getAxisOrientation, getAxisMin, getAxisMax, getAxisLogBase, getAxisCrosses,
     getAxisCrossesAt, getAxisMajorUnit, getAxisMinorUnit, getAxisLabelAlign, getAxisLabelOffset,
@@ -70,25 +70,28 @@ export
     setChartTitleText, setChartTitleTextProp, setChartSpaceTextProp, setLegendTextProp, setLegendEntryDeleted,
     setLegendPos, setLegendOverlay, setPlotAreaLine,
     setSeriesFill, setSeriesLine, setSeriesLineColor, setSeriesLineWidth, setSeriesLineDash, setSeriesLineCap,
-    setSeriesLineCompound, setSeriesLineJoin, setSeriesLineMiterLimit, setGroupLabelTextProp, setGroupGapWidth,
+    setGroupLabelTextProp, setGroupGapWidth,
     setGroupOverlap, setAxisTitleText, setAxisTitleTextProp, setAxisTickLabelPos, setAxisScaling, setAxisMin, setAxisMax,
     setAxisOrientation, setAxisCrosses, setAxisCrossesAt, setAxisNumberFormatCode, setAxisNumberFormatLinked,
     setAxisMajorTickMark, setAxisMinorTickMark, setAxisGridlines, setAxisTextProp, setAxisLine, setAxisMajorUnit,
-    setAxisMinorUnit, setMarker, setMarkerSymbol, setMarkerSize, setMarkerFill, setMarkerLineColor, setMarkerLineWidth,
+    setAxisMinorUnit, setMarker, setMarkerSymbol, setMarkerSize,
     setLabelText, setLabelTextProp, setLabelDeleted, setLabelFlag,
     # LibreOffice's own (D-076); a chart's kind read back (D-095)
-    getChartKind, addTrendline, deleteTrendlines, setErrorBars, deleteErrorBars, setAxisLabelArrangement, setSeriesExplosion,
+    getChartKind, addSeriesTrendline, deleteSeriesTrendlines, setSeriesErrorBars, deleteSeriesErrorBars, setAxisLabelArrangement, setSeriesExplosion,
+    setAxisLogBase, getSeriesExplosion, getAxisLabelArrangement, getLabelDeleted,
     # types users construct
     SchemeColor,
     # chartex charts and chart sheets (step 7)
     addChartEx, getChartSeriesCount, getSeriesLayout, getSeriesName, getSeriesNameRange, getChartDataBlocks, getSeriesData,
-    getSeriesHidden, getSeriesAxisIds, getChartAxisIds, getLabelPosition, getSeriesBinning, getSeriesSubtotals,
-    getSeriesAggregation, getSeriesQuartileMethod, getSeriesParentLabelLayout, getSeriesLayoutFlag, setSeriesName,
-    setSeriesBinning, setSeriesSubtotals, setSeriesAggregation, setSeriesQuartileMethod, setSeriesParentLabelLayout,
-    setSeriesLayoutFlag
+    getSeriesHidden, getSeriesAxisIds, getChartAxisIds, getLabelPosition, getSeriesBinning,
+    setSeriesName,
+    setSeriesBinning
 
-if VERSION >= v"1.11.0-DEV.469"
-    eval(Meta.parse("public AbstractChart, Chart, ChartEx, ChartRef, ChartRange, ChartRanges, ChartSeries, ChartGroup, " *
+# The functions for what LibreOffice can't store (D-084, D-086: they throw, or give `nothing`) are public,
+# not exported (API consistency R8): code written for XLSX.jl that calls them gets their clear error.
+@static if VERSION >= v"1.11"
+    eval(Meta.parse("public setMarkerFill, setMarkerLineColor, setMarkerLineWidth, setSeriesLineCompound, setSeriesLineJoin, setSeriesLineMiterLimit, setSeriesSubtotals, setSeriesQuartileMethod, setSeriesParentLabelLayout, setSeriesAggregation, setSeriesLayoutFlag, getAxisTitleRef, getAxisTitleRange, getAutoTitleDeleted, getChartTitleRef, getChartTitleRange, getGroupDropLines, getGroupHiLowLines, getGroupSeriesLines, getSeriesSubtotals, getSeriesAggregation, getSeriesQuartileMethod, getSeriesParentLabelLayout, getSeriesLayoutFlag, " *
+                    "AbstractChart, Chart, ChartEx, ChartRef, ChartRange, ChartRanges, ChartSeries, ChartGroup, " *
                     "ChartAxis, ChartDataPoint, ChartDataLabel, ChartMarker, ChartTrendline, ChartErrorBars, ChartUpDownBars, " *
                     "ColorSpec, DrawingColor, DrawingFill, DrawingLine, DrawingShapeProps, DrawingRunProps, DrawingParaProps, " *
                     "DrawingRun, DrawingParagraph, DrawingBodyProps, DrawingText, Effective, FormatSite, SCHEME_TOKENS, COLOR_TRANSFORMS, CX_KINDS, ChartExDimension, ChartExData, ChartExBinning, " *

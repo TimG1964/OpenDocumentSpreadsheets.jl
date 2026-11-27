@@ -122,7 +122,7 @@ end
     @test O_T.getFormula(p["Tables"], "G6") == f
 end
 
-@testset "settotals!, gettotals, removetotals!" begin
+@testset "settotals!, gettotals, deletetotals!" begin
     xf, ws = _tsheet()
     t = O_T.addtable!(ws, "A1:C5"; name = "Sales")
     @test O_T.gettotals(t) == NamedTuple()
@@ -160,9 +160,9 @@ end
     O_T.addtable!(ws2, "A1:C5"; name = "Full")
     @test_throws ODSError O_T.settotals!(ws2, "Full", "Num" => :sum)
     # removed: the cells emptied, the table a row shorter
-    t3 = O_T.removetotals!(ws, "Sales")
+    t3 = O_T.deletetotals!(ws, "Sales")
     @test !t3.has_totals_row && t3.ref == O_T.CellRange("A1:C5") && ws["B6"] === missing && ws["C6"] === missing
-    @test O_T.removetotals!(t3).ref == t3.ref                                  # nothing to do
+    @test O_T.deletetotals!(t3).ref == t3.ref                                  # nothing to do
     O_T.settotals!(t3, "Num" => :average)
     r = readods(_tpath(xf))
     @test O_T.gettotals(r["T"], "Sales").Num.setting === :average && table(r, "Sales").ref == O_T.CellRange("A1:C6")

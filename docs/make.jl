@@ -3,7 +3,7 @@ using Documenter, OpenDocumentSpreadsheets
 makedocs(
     sitename = "OpenDocumentSpreadsheets.jl",
     authors = "Tim Gebbels",
-    modules = [OpenDocumentSpreadsheets],
+    modules = [OpenDocumentSpreadsheets, OpenDocumentSpreadsheets.Charts],
     format = Documenter.HTML(
         prettyurls = get(ENV, "CI", nothing) == "true",
         # `dev/` until the first release: `stable/` exists only once a version is tagged

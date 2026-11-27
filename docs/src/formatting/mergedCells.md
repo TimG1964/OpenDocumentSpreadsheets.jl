@@ -26,7 +26,7 @@ setFont(sh, "A1"; bold = true)
 getMergedCells(sh)                     # [A1:C1], or nothing
 isMergedCell(sh, "B1")                 # true
 getMergedBaseCell(sh, "B1")            # (baseCell = A1, baseValue = "Project plan")
-removeMergedCells(sh, "A1:C1")         # or removeMergedCells(sh) for every merge
+deleteMergedCells(sh, "A1:C1")         # or deleteMergedCells(sh) for every merge
 ```
 
 A merge is an anchor cell and the cells it covers, as LibreOffice writes it (Format ▸ Merge and

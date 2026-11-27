@@ -3,7 +3,7 @@
 # sorted, the cases, and the rows its sort gave for each).
 using Dates
 const O_S = OpenDocumentSpreadsheets
-using OpenDocumentSpreadsheets: ODSError, setAutoFilter, getAutoFilter, removeAutoFilter, isRowHidden, getFormula
+using OpenDocumentSpreadsheets: ODSError, setAutoFilter, getAutoFilter, deleteAutoFilter, isRowHidden, getFormula
 const SD = joinpath(@__DIR__, "..", "data", "sort")
 _sx(s) = (i = findfirst("<table:database-ranges", s); i === nothing ? "" : s[first(i):last(findnext("</table:database-ranges>", s, last(i)))])
 _spath(xf, ext = "ods") = writeods(joinpath(mktempdir(), "s." * ext), xf)
@@ -99,7 +99,7 @@ end
     x = _sx(read(_spath(xf, "fods"), String))
     @test occursin("</table:filter><table:sort table:bind-styles-to-content=\"false\"", x)
     @test [isRowHidden(ws, i) for i in 2:5] == [false, true, true, false]
-    @test removeAutoFilter(ws)
+    @test deleteAutoFilter(ws)
     @test occursin("table:target-range-address=\"Sheet1.A1:Sheet1.B5\"><table:sort ", _sx(read(_spath(xf, "fods"), String)))
     setAutoFilter(ws, "A1:B4")                                          # a new range has no sort
     @test !occursin("table:sort", _sx(read(_spath(xf, "fods"), String)))

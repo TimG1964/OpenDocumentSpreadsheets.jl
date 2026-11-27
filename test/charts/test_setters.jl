@@ -28,8 +28,8 @@ function _setters_chart()
     OC.setAxisNumberFormatCode(c, :y, "0.0")
     OC.setAxisCrosses(c, :x, :min); OC.setAxisOrientation(c, :x, :maxMin); OC.setAxisTickLabelPos(c, :y, :low)
     OC.setAxisLine(c, :y; color = "00FF00", width = 1.5, dash = :dash)
-    OC.addTrendline(c, 1, :poly; order = 2, name = "Fit", displayEquation = true)
-    OC.setErrorBars(c, 2; type = :percent, value = 10)
+    OC.addSeriesTrendline(c, 1, :poly; order = 2, name = "Fit", displayEquation = true)
+    OC.setSeriesErrorBars(c, 2; type = :percent, value = 10)
     OC.setAxisLabelArrangement(c, :x; stagger = :odd)
     return xf, c
 end
@@ -87,7 +87,7 @@ const _SETTER_PROBES = [
     @test occursin(r"<chart:axis [^>]*primary-x[^>]*><chart:title\b.*?</chart:title><chart:categories"s, text)
     # :inherit removes; deletes
     OC.setAxisMin(c, :y, :inherit); @test OC.getAxisMin(c, :y) === nothing
-    OC.deleteTrendlines(c, 1); OC.deleteErrorBars(c, 2)
+    OC.deleteSeriesTrendlines(c, 1); OC.deleteSeriesErrorBars(c, 2)
     @test isempty(OC.getSeriesTrendlines(c, 1)) && isempty(OC.getSeriesErrorBars(c, 2))
     OC.setLegendPos(c, :inherit); @test OC.getLegendPos(c) === :r
     # the dash's definition is in the object's styles.xml, and saved
@@ -154,8 +154,8 @@ end
     @test_throws E OC.setMarkerSymbol(col, 1, :circle)              # not a line series
     @test_throws E OC.setAxisMinorUnit(col, :y, 1)                  # no major unit
     @test_throws E OC.setAxisMajorUnit(col, :x, 1)                  # a category axis
-    @test_throws E OC.addTrendline(col, 1, :poly)                   # no order
-    @test_throws E OC.setErrorBars(col, 1; type = :fixed)           # no value
+    @test_throws E OC.addSeriesTrendline(col, 1, :poly)                   # no order
+    @test_throws E OC.setSeriesErrorBars(col, 1; type = :fixed)           # no value
     # a file read for reading only can't be changed
     flat = readods(_ch("lo-charts-flat-cf.fods"))
     @test_throws E OC.setChartTitleText(first(getCharts(flat)), "x")
@@ -299,18 +299,18 @@ end
     sc = OC.addChart(ws, :scatter; anchor = "H2:O18")
     OC.addSeries(sc, "B2:B7"; categories = "F2:F7", name_ref = "B1")
     # x and y error bars together: setting one direction kept the other (it deleted both)
-    OC.setErrorBars(sc, 1; type = :percent, value = 10, direction = :y)
-    OC.setErrorBars(sc, 1; type = :fixed, value = 2, direction = :x)
+    OC.setSeriesErrorBars(sc, 1; type = :percent, value = 10, direction = :y)
+    OC.setSeriesErrorBars(sc, 1; type = :fixed, value = 2, direction = :x)
     @test sort([e.direction for e in OC.getSeriesErrorBars(sc, 1)]) == ["x", "y"]
-    OC.setErrorBars(sc, 1; type = :fixed, value = 3, direction = :x)          # replaces the x ones only
+    OC.setSeriesErrorBars(sc, 1; type = :fixed, value = 3, direction = :x)          # replaces the x ones only
     @test length(OC.getSeriesErrorBars(sc, 1)) == 2
-    OC.deleteErrorBars(sc, 1)
+    OC.deleteSeriesErrorBars(sc, 1)
     @test isempty(OC.getSeriesErrorBars(sc, 1))
     # an indicator with children is deleted too
     o = OC._editable(sc)
-    OC.setErrorBars(sc, 1; type = :percent, value = 10)
+    OC.setSeriesErrorBars(sc, 1; type = :percent, value = 10)
     o.text = replace(o.text, r"(<chart:error-indicator\b[^>]*)/>" => s"\1><text:p/></chart:error-indicator>")
-    OC.deleteErrorBars(sc, 1)
+    OC.deleteSeriesErrorBars(sc, 1)
     @test !occursin("chart:error-indicator", o.text)
 
     c = OC.addChart(ws, :line; anchor = "H20:O36")
@@ -330,4 +330,44 @@ end
     @test_throws E OC.SchemeColor(:accent1; alpha = 150)                     # was written as transparency -50
     @test_throws E OC.SchemeColor(:accent1; lumMod = NaN)
     @test_throws E OC.setLegendEntryDeleted(c, [1], :yes)                    # showed the entries
+end
+
+@testset "the missing halves (API consistency R4)" begin
+    E = OpenDocumentSpreadsheets.ODSError
+    xf, ws = _chart_data_sheet()
+    pie = OC.addChart(ws, :pie; anchor = "H2:O18")
+    OC.addSeries(pie, "B2:B7"; categories = "A2:A7")
+    @test OC.getSeriesExplosion(pie, 1) === nothing
+    OC.setSeriesExplosion(pie, 1, 10); OC.setSeriesExplosion(pie, 1, 25; point = 3)
+    ln = OC.addChart(ws, :line; anchor = "H20:O36")
+    OC.addSeries(ln, "B2:B7"; categories = "A2:A7"); OC.addSeries(ln, "C2:C7")
+    @test (a = OC.getAxisLabelArrangement(ln, :x); (a.stagger, a.overlap) == (nothing, nothing))   # addChart sets breakText
+    OC.setAxisLabelArrangement(ln, :x; stagger = :even, overlap = true, breakText = false)
+    @test OC.getAxisLogBase(ln, :y) === nothing
+    OC.setAxisLogBase(ln, :y, 10)
+    @test_throws E OC.setAxisLogBase(ln, :y, 2)                  # ODF stores base 10 only (D-084)
+    @test_throws E OC.setAxisLogBase(ln, :x, 10)                 # a category axis
+    OC.setLabelFlag(ln, 1, :value, true)
+    @test !OC.getLabelDeleted(ln, 1, 2)
+    OC.setLabelDeleted(ln, 1, 2, true)
+    check(p, l) = (@test OC.getSeriesExplosion(p, 1) == 10 && OC.getSeriesExplosion(p, 1; point = 3) == 25 &&
+                         OC.getSeriesExplosion(p, 1; point = 2) == 10;
+                   @test OC.getAxisLabelArrangement(l, :x) == (stagger = :even, overlap = true, breakText = false);
+                   @test OC.getAxisLogBase(l, :y) == 10;
+                   @test OC.getLabelDeleted(l, 1, 2) && !OC.getLabelDeleted(l, 1, 1))
+    check(pie, ln)
+    dir = mktempdir(); p = joinpath(dir, "halves.ods"); writeods(p, xf)
+    back = getCharts(readods(p)); check(back[1], back[2])
+    OC.setAxisLogBase(ln, :y, :inherit); @test OC.getAxisLogBase(ln, :y) === nothing
+    # LibreOffice keeps them: its own save, read back
+    if isfile(SOFFICE) && lo_major(SOFFICE) >= LO_FIXTURE_MAJOR
+        out = joinpath(dir, "lo")
+        run(pipeline(`$SOFFICE -env:UserInstallation=$(lo_profile_url(joinpath(dir, "profile"))) --headless --norestore --convert-to ods --outdir $out $p`;
+                     stdout = devnull, stderr = devnull))
+        lo = getCharts(readods(joinpath(out, "halves.ods")))
+        @test length(lo) == 2
+        check(lo[1], lo[2])
+    else
+        @test_skip false
+    end
 end

@@ -80,10 +80,13 @@ Trendlines and error bars, explosion and axis label arrangement. `addChart`'s ow
 the chart wizard's `data` and `seriesIn`) are under [`addChart`](@ref).
 
 ```@docs
-addTrendline
-setErrorBars
+addSeriesTrendline
+setSeriesErrorBars
 setSeriesExplosion
 setAxisLabelArrangement
+getSeriesExplosion
+getAxisLabelArrangement
+getLabelDeleted
 ```
 
 ## Finding charts

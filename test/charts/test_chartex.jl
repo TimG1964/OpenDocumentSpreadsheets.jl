@@ -105,8 +105,8 @@ end
         (c -> OC.setAxisGridlines(c, :y; minor = true), c -> OC.getAxisGridlines(c, :y; minor = true)),
         (c -> OC.setAxisNumberFormatCode(c, :y, "0.0"), c -> OC.getAxisNumberFormatCode(c, :y)),
         (c -> OC.setGroupGapWidth(c, g1(c), 50), c -> OC.getGroupGapWidth(c, g1(c))),
-        (c -> OC.addTrendline(c, 1, :linear), c -> OC.getSeriesTrendlines(c, 1)),
-        (c -> OC.setErrorBars(c, 1; type = :percent, value = 10), c -> OC.getSeriesErrorBars(c, 1)),
+        (c -> OC.addSeriesTrendline(c, 1, :linear), c -> OC.getSeriesTrendlines(c, 1)),
+        (c -> OC.setSeriesErrorBars(c, 1; type = :percent, value = 10), c -> OC.getSeriesErrorBars(c, 1)),
     ]
     # a getter's whole result, as text (a dump, without the memory addresses it shows)
     seen(x) = replace(sprint(io -> dump(io, x; maxdepth = 12)), r"Ptr\{Nothing\}\(0x[0-9a-f]+\)" => "", r"\s+" => " ")

@@ -1,4 +1,4 @@
-# Named cell styles (phase 4 step 8, D-045): `getCellStyle`, `setCellStyle`, `addCellStyle!`.
+# Named cell styles (phase 4 step 8, D-045): `getCellStyle`, `setCellStyle`, `addCellStyle`.
 #
 # ODF's named ("common") cell styles live in styles.xml's `office:styles`, with a
 # `style:name` encoded from the name shown to users (`style:display-name`, F-040). Cells refer
@@ -50,7 +50,7 @@ end
 #
 # LibreOffice's built-in cell styles (F-041), as LibreOffice 26.8.3 writes them in every
 # document's styles.xml (experiment 018, out/lo/blank.styles.xml). They are added to a
-# document, with their parents, the first time `setCellStyle` or `addCellStyle!(…; parent)`
+# document, with their parents, the first time `setCellStyle` or `addCellStyle(…; parent)`
 # names one it doesn't define.
 #
 
@@ -290,7 +290,7 @@ _family_kw(x::AbstractVector{<:Pair}) = (Symbol(k) => v for (k, v) in x)
 _family_kw(x) = throw(ODSError("A style's font, fill, border or alignment is a NamedTuple of the setter's keywords, such as `font = (bold = true, size = 14)`; got $(repr(x))."))
 
 """
-    addCellStyle!(xf, name; parent="Default", font, fill, border, alignment, format) -> String
+    addCellStyle(xf, name; parent="Default", font, fill, border, alignment, format) -> String
 
 Define the named cell style `name` in the file, to be applied with
 [`setCellStyle`](@ref). Its properties are given as the setters take them:
@@ -306,9 +306,9 @@ built-in styles are added when needed). The style is written to styles.xml with 
 encoded as LibreOffice encodes it (`"My Style"` is `My_20_Style`, shown as "My Style").
 Returns that name.
 """
-function addCellStyle!(xf::ODSFile, name::AbstractString; parent::AbstractString = "Default", font = nothing, fill = nothing,
+function addCellStyle(xf::ODSFile, name::AbstractString; parent::AbstractString = "Default", font = nothing, fill = nothing,
                        border = nothing, alignment = nothing, format::Union{Nothing,AbstractString} = nothing, kw...)
-    _check_keywords(:addCellStyle!, kw)
+    _check_keywords(:addCellStyle, kw)
     _require_writable(xf, "add a cell style")
     isempty(name) && throw(ODSError("A cell style needs a name."))
     _check_xml_text(name)
@@ -325,9 +325,9 @@ function addCellStyle!(xf::ODSFile, name::AbstractString; parent::AbstractString
     end
     for (T, v) in ((_font_transform, font), (_fill_transform, fill), (_border_transform, border), (_alignment_transform, alignment))
         v === nothing && continue
-        cs = T(st, :addCellStyle!; _family_kw(v)...)(cs)
+        cs = T(st, :addCellStyle; _family_kw(v)...)(cs)
     end
-    format === nothing || (cs = _format_transform(st, :addCellStyle!; format)(cs))
+    format === nothing || (cs = _format_transform(st, :addCellStyle; format)(cs))
     attrs = enc == name ? cs.attrs : sort!(vcat(cs.attrs, ["style:display-name" => sprint(_escape_attr, name)]); by = first)
     cs = CellStyle(cs.parent, cs.datastyle, attrs, cs.cell, cs.para, cs.text, cs.extra)
     _register_named!(st, enc, String(name), cs)

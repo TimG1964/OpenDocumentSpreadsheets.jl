@@ -165,7 +165,7 @@ end
 _cf_pairs(v) = Dict{String,Any}(String(first(p)) => last(p) for p in v)
 _cf_true(v) = v === true || v == "true"
 
-# XLSX.jl's differential format (font, fill, border, format pairs) as `addCellStyle!`'s keywords,
+# XLSX.jl's differential format (font, fill, border, format pairs) as `addCellStyle`'s keywords,
 # translated as LibreOffice's import translates a dxf (F-074).
 function _cf_style_keywords(kw)
     out = Dict{Symbol,Any}()
@@ -238,7 +238,7 @@ function _cf_rule_style(xf::ODSFile, kw)
     full = (font = get(dx, :font, nothing), fill = get(dx, :fill, nothing), border = get(dx, :border, nothing),
             format = get(dx, :format, nothing))
     name = _cf_next_style(st)
-    addCellStyle!(xf, name; _cf_style_keywords(full)...)
+    addCellStyle(xf, name; _cf_style_keywords(full)...)
     return name
 end
 
@@ -723,7 +723,7 @@ function setColoredDataBars(ws::Worksheet, rng; bands::Int = 5, colors = ["green
         bands < 1 && throw(ODSError("`bands` must be at least 1, got $bands."))
         if bands == 1
             col = only(_cf_band_colours(colors, 1))
-            clear && clearConditionalFormats(ws, whole)
+            clear && deleteConditionalFormats(ws, whole)
             bar(whole, col)
             return [1 => whole]
         end
@@ -758,7 +758,7 @@ function setColoredDataBars(ws::Worksheet, rng; bands::Int = 5, colors = ["green
         end
     end
     # everything is checked: now the range's formats go, and the bands' come
-    clear && clearConditionalFormats(ws, whole)
+    clear && deleteConditionalFormats(ws, whole)
     out = Pair{Int,NonContiguousRange}[]
     for b in 1:bands
         isempty(cells[b]) && continue

@@ -530,3 +530,27 @@ end
     zr(b) = String(O.ZipArchives.zip_readentry(O.ZipArchives.ZipReader(b), "content.xml", String))
     @test zr(take!(io)) == zr(read(p))
 end
+
+@testset "the cell-level functions' file forms (API consistency R6)" begin
+    O = OpenDocumentSpreadsheets
+    xf = newods("Data"); addsheet!(xf, "Other")
+    for r in 1:4; xf["Other"][r, 1] = r; end
+    O.addComment(xf, "Other.B2", "note"); @test O.getComment(xf, "Other.B2").text == "note"
+    @test O.getComment(xf["Other"], "B2").text == "note"                     # the same cell
+    O.deleteComment(xf, "Other.B2"); @test O.getComment(xf, "Other.B2") === nothing
+    O.addThreadedComment(xf, "Other.C3", "first"; author = "A")
+    O.addThreadedReply(xf, "Other.C3", "reply"; author = "B")
+    @test length(O.getThreadedComment(xf, "Other.C3").replies) == 1
+    O.setThreadedCommentResolved(xf, "Other.C3"); O.deleteThreadedComment(xf, "Other.C3")
+    @test O.getThreadedComment(xf, "Other.C3") === nothing
+    O.addHyperlink(xf, "Other.A1"; url = "https://example.org"); @test O.getHyperlink(xf, "Other.A1").url == "https://example.org/"
+    O.deleteHyperlink(xf, "Other.A1"); @test O.getHyperlink(xf, "Other.A1") === nothing
+    O.addImage(xf, "Other.D1", joinpath(DATA, "images", "red.png")); @test length(O.getImages(xf["Other"])) == 1
+    O.deleteImage(xf, "Other.D1"); @test isempty(O.getImages(xf["Other"]))
+    @test O.getDataValidation(xf, "Other.A1") === nothing
+    O.setFormula(xf, "Data.C1"; val = "=1+1"); @test O.getFormula(xf["Data"], "C1") == "=1+1"
+    @test length(O.setColoredDataBars(xf, "Other.A1:A4"; bands = 2)) == 2
+    # a reference without its sheet is refused, saying what is wanted
+    err = try O.getComment(xf, "B2"); nothing catch e; e end
+    @test err isa ODSError && occursin("with its sheet", err.msg)
+end

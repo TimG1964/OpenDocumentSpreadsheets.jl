@@ -35,7 +35,7 @@ function setters!(ch)
     OC.setAxisGridlines(ch, :y; minor = true); OC.setAxisNumberFormatCode(ch, :y, "0.0")
     OC.setAxisTitleText(ch, :x, "Rows"); OC.setLegendPos(ch, :b)
     OC.setChartTitleText(ch, "New title"); OC.setChartTitleTextProp(ch, :size, 16)
-    OC.setPlotAreaLine(ch; color = "333333"); OC.setErrorBars(ch, 2; type = :percent, value = 10)
+    OC.setPlotAreaLine(ch; color = "333333"); OC.setSeriesErrorBars(ch, 2; type = :percent, value = 10)
     return ch
 end
 function getters(ch)

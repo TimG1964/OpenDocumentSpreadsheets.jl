@@ -48,7 +48,7 @@ PCT.@setup_workload begin
                 setUniformBorder(sh, "A2:C3"; bottom = ["style" => "thin"])
                 setColumnWidth(sh, 1; width = 12)
                 mergeCells(sh, "J6:K7")
-                addCellStyle!(xf, "Total"; font = (bold = true,), fill = (pattern = "solid", fgColor = "yellow"))
+                addCellStyle(xf, "Total"; font = (bold = true,), fill = (pattern = "solid", fgColor = "yellow"))
                 setCellStyle(sh, "A4", "Total")       # OpenDocumentSpreadsheets only: named styles (D-045)
                 setCellStyle(sh, "B4", "Heading 1")
                 saveods(xf)
@@ -111,7 +111,7 @@ PCT.@setup_workload begin
                 setConditionalFormat(sh, "B2:B4", :colorScale; colorscale = "greenyellow")
                 setConditionalFormat(sh, "B2:B4", :iconSet)
                 setColoredDataBars(sh, "A2:A4"; bands = 2)
-                getConditionalFormats(sh); clearConditionalFormats(sh, "B:B")
+                getConditionalFormats(sh); deleteConditionalFormats(sh, "B:B")
                 writeods(IOBuffer(), xf)
             end
         finally

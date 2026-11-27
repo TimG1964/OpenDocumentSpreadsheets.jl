@@ -10,7 +10,6 @@ Fonts, fills, borders and alignment:
 setFont
 setFill
 setBorder
-setOutsideBorder
 setAlignment
 getFont
 getFill
@@ -58,14 +57,14 @@ Named cell styles:
 ```@docs
 setCellStyle
 getCellStyle
-addCellStyle!
+addCellStyle
 ```
 
 Merged cells:
 
 ```@docs
 mergeCells
-removeMergedCells
+deleteMergedCells
 getMergedCells
 isMergedCell
 getMergedBaseCell
@@ -78,5 +77,5 @@ Conditional formats, as LibreOffice stores them:
 setConditionalFormat
 setColoredDataBars
 getConditionalFormats
-clearConditionalFormats
+deleteConditionalFormats
 ```

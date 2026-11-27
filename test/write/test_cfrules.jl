@@ -4,7 +4,7 @@
 # what it can't store is an error here, the case is checked on its own (`_CF_DIFFERENT`).
 using Test, Dates
 using OpenDocumentSpreadsheets
-using OpenDocumentSpreadsheets: ODSError, getConditionalFormats, clearConditionalFormats, setColoredDataBars
+using OpenDocumentSpreadsheets: ODSError, getConditionalFormats, deleteConditionalFormats, setColoredDataBars
 
 const _ODS = OpenDocumentSpreadsheets
 _cfr(f) = joinpath(@__DIR__, "..", "data", "conditional", f)
@@ -307,7 +307,7 @@ _cf_is_band(t) = occursin(r"^CF\.[B-K]11[34]:CF\.[B-K]11[34]$", t)     # setColo
         @test_throws ODSError setConditionalFormat(ws, "A1", :iconSet; iconset = "3Arrows", icon_list = [1, 2, 3])
         @test_throws ODSError setConditionalFormat(ws, "A1", :cellIs; value = "1", stopIfTrue = "false")
         @test setConditionalFormat(ws, "A1", :iconSet; reverse = "false") === 0
-        clearConditionalFormats(ws, "A1")
+        deleteConditionalFormats(ws, "A1")
         @test_throws ODSError setConditionalFormat(ws, "A1", :colorScale; colorscale = "rainbow")
         @test_throws ODSError setConditionalFormat(ws, "A1", :colorScale; min_type = "percent")
         @test_throws ODSError setConditionalFormat(ws, "A1", :dataBar; min_type = "percent", min_val = "\$A\$1")
@@ -337,7 +337,7 @@ _cf_is_band(t) = occursin(r"^CF\.[B-K]11[34]:CF\.[B-K]11[34]$", t)     # setColo
         setConditionalFormat(ws, "H1:H5", :timePeriod; operator = "nextYear", style = "Good")
         setConditionalFormat(ws, "I1:I5", :iconSet; iconset = "3ColorSmilies")
         setConditionalFormat(ws, "J1:J5", :dataBar; minLength = 0, maxLength = 100)
-        addCellStyle!(xs, "My Rule"; font = (bold = true,))
+        addCellStyle(xs, "My Rule"; font = (bold = true,))
         setConditionalFormat(ws, "K1:K5", :cellIs; value = "1", style = "My Rule")
         setConditionalFormat(ws, "L1:L5", :cellIs; value = "1", font = ["name" => "Liberation Serif", "size" => "14", "color" => "red"])
         r = readods(writeods(joinpath(mktempdir(), "opts.ods"), xs))
@@ -365,7 +365,7 @@ _cf_is_band(t) = occursin(r"^CF\.[B-K]11[34]:CF\.[B-K]11[34]$", t)     # setColo
             p = openods(_cfr("lo-cf-own.ods"); mode = "rw")
             setConditionalFormat(p["Own"], "M1:M10", :dataBar; databar = "orange")
             setConditionalFormat(p["Own"], "B1:K1", :cellIs; operator = "lessThan", value = "0", dxStyle = "greenfilltext")
-            clearConditionalFormats(p["Own"], "B2:K10"); insertRows(p["Own"], 3)
+            deleteConditionalFormats(p["Own"], "B2:K10"); insertRows(p["Own"], 3)
             setConditionalFormat(p["Second"], "A5:A9", :timePeriod; operator = "lastYear", style = "Accent 1")
             pf = writeods(joinpath(d, "patched.ods"), p)
             run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to fods --outdir $(joinpath(d, "lo")) $n $nf $pf`;

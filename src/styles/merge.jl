@@ -1,4 +1,4 @@
-# Merged cells (phase 4): `mergeCells`, `removeMergedCells`, `getMergedCells`,
+# Merged cells (phase 4): `mergeCells`, `deleteMergedCells`, `getMergedCells`,
 # `isMergedCell`, `getMergedBaseCell`.
 #
 # The API follows XLSX.jl 0.13.4 (src/cellformats/mergedcells.jl), MIT License, Copyright
@@ -124,22 +124,22 @@ function _anchor_fix!(ws::Worksheet, r1::Int, c1::Int, rows, cols)
 end
 
 """
-    removeMergedCells(sheet, ref) -> 0
-    removeMergedCells(sheet) / removeMergedCells(sheet, :)
+    deleteMergedCells(sheet, ref) -> 0
+    deleteMergedCells(sheet) / deleteMergedCells(sheet, :)
 
 Unmerge the merged range that encloses `ref` (so naming any one of its cells is enough), or
 every merged range of the sheet. Values are not changed. A range no merge encloses is left
 alone.
 """
-function removeMergedCells(ws::Worksheet)
+function deleteMergedCells(ws::Worksheet)
     _require_writable(ws, "remove merged cells")
     for m in copy(_cached_store(ws).merges)
         _unmerge!(ws, m)
     end
     return 0
 end
-removeMergedCells(ws::Worksheet, ::Colon) = removeMergedCells(ws)
-function removeMergedCells(x::Union{Worksheet,ODSFile}, ref...)
+deleteMergedCells(ws::Worksheet, ::Colon) = deleteMergedCells(ws)
+function deleteMergedCells(x::Union{Worksheet,ODSFile}, ref...)
     for (ws, rows, cols) in _merge_blocks(x, ref)
         _require_writable(ws, "remove merged cells")
         for m in copy(_cached_store(ws).merges)

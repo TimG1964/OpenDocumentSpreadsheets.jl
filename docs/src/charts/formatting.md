@@ -47,8 +47,8 @@ for (i, y) in enumerate([2.1, 3.9, 6.2, 7.8, 10.1, 12.2, 13.8])
 end
 c = addChart(trend, :scatter; anchor = "D2:K18", title = "Measurements")
 addSeries(c, "B2:B8"; categories = "A2:A8", name_ref = "B1")
-addTrendline(c, 1, :linear; displayEquation = true)
-setErrorBars(c, 1; type = :percent, value = 10)
+addSeriesTrendline(c, 1, :linear; displayEquation = true)
+setSeriesErrorBars(c, 1; type = :percent, value = 10)
 ```
 
 ```@raw html

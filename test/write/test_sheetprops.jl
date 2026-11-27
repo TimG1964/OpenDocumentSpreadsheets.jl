@@ -76,7 +76,7 @@ end
     setTabColor(xf["A"], "#FF0000"); setTabColor(xf["B"], "80FF0000"); setTabColor(xf["C"], :orange)
     @test getTabColor(xf["A"]) == "FFFF0000" && getTabColor(xf["B"]) == "FFFF0000" && getTabColor(xf["C"]) == "FFFFA500"
     @test_throws ODSError setTabColor(xf["A"], :accent2)          # theme colours: Excel's
-    @test removeTabColor(xf["B"]) && !removeTabColor(xf["B"]) && getTabColor(xf["B"]) === nothing
+    @test deleteTabColor(xf["B"]) && !deleteTabColor(xf["B"]) && getTabColor(xf["B"]) === nothing
     for ext in ("ods", "fods")                                       # (a new flat file wrote no table styles until step 8)
         r = readods(writeods(joinpath(mktempdir(), "v.$ext"), xf))
         @test [getSheetVisibility(r[i]) for i in 1:3] == [:hidden, :hidden, :visible]
@@ -110,12 +110,12 @@ end
     @test out == want
     # changed and changed back: the file as it was
     xf = openods(src; mode = "rw")
-    setTabColor(xf["S4"], "0000FF"); removeTabColor(xf["S4"])
+    setTabColor(xf["S4"], "0000FF"); deleteTabColor(xf["S4"])
     setSheetVisibility(xf["S2"], :visible); setSheetVisibility(xf["S2"], :hidden)
     @test read(writeods(joinpath(dir, "b.fods"), xf), String) == orig
     # S3's colour removed: a style without it
     xf = openods(src; mode = "rw")
-    removeTabColor(xf["S3"])
+    deleteTabColor(xf["S3"])
     r = readods(writeods(joinpath(dir, "c.fods"), xf))
     @test getTabColor(r["S3"]) === nothing && getSheetVisibility(r["S3"]) === :visible && getTabColor(r["S5"]) == "FF008000"
     # rows shown again, a column hidden

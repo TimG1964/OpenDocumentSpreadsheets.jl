@@ -1,8 +1,8 @@
 # AutoFilters (phase 6 step 8; D-078): XLSX.jl's `setAutoFilter`, `getAutoFilter` and
-# `removeAutoFilter` on LibreOffice's sheet database range, with its criteria stored as LibreOffice
+# `deleteAutoFilter` on LibreOffice's sheet database range, with its criteria stored as LibreOffice
 # stores them (`table:filter`, F-063) and applied as LibreOffice's Refresh Range applies them (F-071).
 #
-# Adapted from XLSX.jl dev (src/autofilter.jl `setAutoFilter`, `getAutoFilter`, `removeAutoFilter`;
+# Adapted from XLSX.jl dev (src/autofilter.jl `setAutoFilter`, `getAutoFilter`, `deleteAutoFilter`;
 # src/filtersort.jl `_parse_criterion`, `_parse_condition`, `_filter_column_id`, `_criteria_pairs`),
 # MIT License, Copyright (c) 2018-2026 Felipe Noronha Tavares and other contributors. Changes: the
 # filter is the sheet's anonymous database range (`__Anonymous_Sheet_DB__<n>`, F-062); criteria are
@@ -599,7 +599,7 @@ setAutoFilter(st, "A1:B5"; filters = ["Colour" => ["Red", "Blue"], "Amount" => (
               sort = "Amount" => :descending)
 ```
 
-See also [`getAutoFilter`](@ref) and [`removeAutoFilter`](@ref).
+See also [`getAutoFilter`](@ref) and [`deleteAutoFilter`](@ref).
 """
 function setAutoFilter end
 setAutoFilter(xf::ODSFile, ref::AbstractString; kw...) = setAutoFilter(_dv_sheet_ref(xf, ref)...; kw...)
@@ -695,7 +695,7 @@ function getAutoFilter(ws::Worksheet)::Union{Nothing,CellRange}
 end
 
 """
-    removeAutoFilter(sheet) -> Bool
+    deleteAutoFilter(sheet) -> Bool
 
 Remove the sheet's AutoFilter and its criteria, as turning off LibreOffice's Data ▸ AutoFilter
 does: every row below the header is shown, those hidden by hand too, and the sheet keeps
@@ -704,7 +704,7 @@ no AutoFilter.
 
 The file must be writable.
 """
-function removeAutoFilter(ws::Worksheet)::Bool
+function deleteAutoFilter(ws::Worksheet)::Bool
     _require_writable(ws, "remove an AutoFilter")
     xf = get_odsfile(ws)
     d = _af_range(ws)

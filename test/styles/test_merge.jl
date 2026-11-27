@@ -6,7 +6,7 @@
 # replaced by a new sheet with the same values; the getters work on read-only files; a
 # range past the used area can be merged (D-033, D-041).
 
-using OpenDocumentSpreadsheets: ODSError, CellRange, getFont, getFill, getMergedCells, isMergedCell, getMergedBaseCell, mergeCells, removeMergedCells
+using OpenDocumentSpreadsheets: ODSError, CellRange, getFont, getFill, getMergedCells, isMergedCell, getMergedBaseCell, mergeCells, deleteMergedCells
 
 mtmp(name) = joinpath(mktempdir(), name)
 
@@ -76,15 +76,15 @@ end
     @test getMergedBaseCell(f, "Sheet1.B2") == (baseCell = CellRef("A1"), baseValue = 2)
 end
 
-@testset "removeMergedCells" begin
+@testset "deleteMergedCells" begin
     f = newods(); s = f[1]
     s["A1"] = 1; s["D1"] = 2
     mergeCells(s, "A1:B2"); mergeCells(s, "D1:E3"); mergeCells(s, "G1:G2")
-    @test removeMergedCells(s, "D47:J47") == 0 && length(getMergedCells(s)) == 3   # encloses nothing
-    removeMergedCells(s, "E2")                                             # one cell is enough
+    @test deleteMergedCells(s, "D47:J47") == 0 && length(getMergedCells(s)) == 3   # encloses nothing
+    deleteMergedCells(s, "E2")                                             # one cell is enough
     @test getMergedCells(s) == [CellRange("A1:B2"), CellRange("G1:G2")]
     @test s["D1"] == 2 && !isMergedCell(s, "E3")
-    removeMergedCells(s)
+    deleteMergedCells(s)
     @test getMergedCells(s) === nothing && s["A1"] == 1
     p = writeods(mtmp("unmerged.ods"), f)
     @test getMergedCells(openods(p)[1]) === nothing
@@ -109,7 +109,7 @@ end
     @test getMergedCells(b) == [CellRange("A2:C3")] && haskey(getFont(b, "B3").font, "b") && b["A1"] === Int64(1)
     # unmerging a merge LibreOffice wrote
     xf = openods(src; mode = "rw")
-    removeMergedCells(xf["S09-merge"], "A1")
+    deleteMergedCells(xf["S09-merge"], "A1")
     back = openods(writeods(mtmp("u.ods"), xf))
     @test getMergedCells(back["S09-merge"]) === nothing && back["S09-merge"]["A1"] === Int64(9)
 end

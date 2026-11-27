@@ -4,7 +4,7 @@
 # Range hides for each case) and experiment 033 (test/data/dbranges).
 using Dates
 const O_F = OpenDocumentSpreadsheets
-using OpenDocumentSpreadsheets: ODSError, setAutoFilter, getAutoFilter, removeAutoFilter, isRowHidden, setRowHidden
+using OpenDocumentSpreadsheets: ODSError, setAutoFilter, getAutoFilter, deleteAutoFilter, isRowHidden, setRowHidden
 const FD = joinpath(@__DIR__, "..", "data", "filters")
 _fd(f) = joinpath(FD, f)
 _fx(s) = (i = findfirst("<table:database-ranges", s); i === nothing ? "" : s[first(i):last(findnext("</table:database-ranges>", s, last(i)))])
@@ -144,7 +144,7 @@ end
     @test !occursin("<table:filter", x) && occursin("table:display-filter-buttons=\"true\"/>", x)
 end
 
-@testset "AutoFilter: ranges, getAutoFilter and removeAutoFilter" begin
+@testset "AutoFilter: ranges, getAutoFilter and deleteAutoFilter" begin
     xf = newods("S")
     ws = xf[1]
     ws[1, :] = ["K", "V"]
@@ -152,7 +152,7 @@ end
         ws[r, :] = [isodd(r) ? "x" : "y", r]
     end
     @test getAutoFilter(ws) === nothing
-    @test !removeAutoFilter(ws)
+    @test !deleteAutoFilter(ws)
     setAutoFilter(ws, :)                                                # the used range
     @test getAutoFilter(ws) == O_F.CellRange("A1:B7")
     setAutoFilter(xf, "S.A1:B5"; filters = ["K" => "x"])
@@ -168,10 +168,10 @@ end
     r = openods(p)                                                       # read-only
     @test getAutoFilter(r["S"]) == O_F.CellRange("A1:B7") && _hidden(r["S"], 1:7) == [2, 4, 6, 7]
     # removing it shows every row, as LibreOffice does, and keeps the anonymous range (F-071)
-    @test removeAutoFilter(ws)
+    @test deleteAutoFilter(ws)
     @test getAutoFilter(ws) === nothing && isempty(_hidden(ws, 1:7))
     @test _fx(read(_fpath(xf), String)) == "<table:database-ranges><table:database-range table:name=\"__Anonymous_Sheet_DB__0\" table:target-range-address=\"S.A1:S.B7\"/></table:database-ranges>"
-    @test !removeAutoFilter(ws)
+    @test !deleteAutoFilter(ws)
     setAutoFilter(ws, "A1:B7")                                           # the range again gets its buttons back
     @test getAutoFilter(ws) == O_F.CellRange("A1:B7") && length(O_F._db_now(xf)) == 1
     # the range moves with inserted rows, and copies with the sheet
@@ -210,7 +210,7 @@ end
     @test occursin("<table:filter><table:filter-and><table:filter-condition table:value=\"pig\" table:operator=\"=\" table:field-number=\"0\"/>", x1)
     # removing one keeps the range without its filter, and a sort it holds
     xf = openods(joinpath(DBD, "lo-dbranges-own.fods"); mode = "rw")
-    @test removeAutoFilter(xf["Own"])
+    @test deleteAutoFilter(xf["Own"])
     x = _fx(read(_fpath(xf), String))
     @test occursin(r"<table:database-range table:name=\"__Anonymous_Sheet_DB__0\" table:target-range-address=\"Own.A1:Own.D13\">\s*<table:sort>", x)
     @test getAutoFilter(xf["Own"]) === nothing
@@ -242,5 +242,5 @@ end
     O_F.addtable!(ws, "G1:H3"; name = "T")
     @test_throws ODSError setAutoFilter(ws, "A1:G3")
     @test_throws ODSError setAutoFilter(readods(_fd("lo-filters-data.fods"))["Data"], "A1:E19")
-    @test_throws ODSError removeAutoFilter(readods(_fd("lo-filters-data.fods"))["Data"])
+    @test_throws ODSError deleteAutoFilter(readods(_fd("lo-filters-data.fods"))["Data"])
 end

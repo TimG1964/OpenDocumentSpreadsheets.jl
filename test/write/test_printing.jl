@@ -127,13 +127,13 @@ end
     setPrintArea(s, "pa")
     @test getPrintArea(s) == CellRange("A2:C3")
     @test_throws ODSError setPrintArea(s, "A:C")
-    @test removePrintArea(s) && !removePrintArea(s) && getPrintArea(s) === nothing
+    @test deletePrintArea(s) && !deletePrintArea(s) && getPrintArea(s) === nothing
     setPrintTitles(s; rows = 1)
     setPrintTitles(s; cols = "A:B")
     @test getPrintTitles(s) == (rows = 1:1, cols = 1:2)
     @test_throws ODSError setPrintTitles(s)
     @test_throws ODSError setPrintTitles(s; rows = [1, 3])
-    @test removePrintTitles(s) && !removePrintTitles(s) && getPrintTitles(s) === nothing
+    @test deletePrintTitles(s) && !deletePrintTitles(s) && getPrintTitles(s) === nothing
     setPrintTitles(s; rows = 1:2)
     setHeaderFooter(s; header = (center = headerFooterFont(bold = true, size = 14) * "Quarterly report",),
                        footer = (left = "&F", right = "Page " * headerFooterField(:page) * " of " * headerFooterField(:pages)))
@@ -166,8 +166,8 @@ end
         @test getHeaderFooter(r["Other"]).header.center == "&A" && getPageSetup(r["Other"]).paperSize === nothing
         @test r["S"]["F40"] == 1
     end
-    removeHeaderFooter(s)
-    @test getHeaderFooter(s) === nothing && !removeHeaderFooter(s)
+    deleteHeaderFooter(s)
+    @test getHeaderFooter(s) === nothing && !deleteHeaderFooter(s)
     # titles inside a group, not across one
     groupRows(s, 1:5)
     r = readods(writeods(joinpath(mktempdir(), "g.ods"), xf))
@@ -229,7 +229,7 @@ end
         setPageSetup(xf["B"]; scale = 70)
         files = [writeods(joinpath(dir, "new.ods"), xf)]
         pf = openods(LOPRINT; mode = "rw")
-        setPageSetup(pf["Plain"]; paperSize = :legal); setPrintArea(pf["Area"], "A1:A3"); removePrintTitles(pf["TitleRows"])
+        setPageSetup(pf["Plain"]; paperSize = :legal); setPrintArea(pf["Area"], "A1:A3"); deletePrintTitles(pf["TitleRows"])
         setHeaderFooter(pf["HFCenter"]; header = (right = "new",))
         push!(files, writeods(joinpath(dir, "patched.fods"), pf))
         run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to fods --outdir $(joinpath(dir, "lo")) $files`;

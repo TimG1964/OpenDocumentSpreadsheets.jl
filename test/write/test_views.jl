@@ -93,7 +93,7 @@ end
     @test getSheetView(s).topLeftCell == CellRef("D10")
     splitFreeze(s; nrows = 1, ncols = 1)                     # LibreOffice has no frozen split: frozen
     @test OpenDocumentSpreadsheets._view_items_now(s)[1]["HorizontalSplitMode"] == ("short", "2")
-    removePanes(s)
+    deletePanes(s)
     items = OpenDocumentSpreadsheets._view_items_now(s)[1]
     @test !haskey(items, "HorizontalSplitMode") && getSheetView(s).topLeftCell == CellRef("A1")
     setSheetView(s; zoom = 80, showGridLines = false, rightToLeft = true)

@@ -3,7 +3,7 @@
 #
 # Adapted from XLSX.jl 0.13.4 (src/cellformats/rowscols.jl `setColumnHidden`, `setRowHidden`,
 # `isColumnHidden`, `isRowHidden`; src/sheetsettings.jl `setSheetVisibility`, `getSheetVisibility`,
-# `setTabColor`, `getTabColor`, `removeTabColor`), MIT License, Copyright (c) 2018-2026 Felipe Noronha
+# `setTabColor`, `getTabColor`, `deleteTabColor`), MIT License, Copyright (c) 2018-2026 Felipe Noronha
 # Tavares and other contributors. Changes: rows and columns are hidden through the formats layer
 # (`table:visibility="collapse"`); a sheet's visibility and tab colour are its table style's, so a
 # change derives a new automatic table style; `:veryHidden` is `:hidden`, as LibreOffice imports it.
@@ -288,7 +288,7 @@ Colour a sheet's tab: a hex colour (`"FF0000"`, `"#FF0000"`, `"FFFF0000"`: the a
 as LibreOffice ignores it), a Colors.jl colour name or a `Colorant`. Theme colours are
 not accepted, as elsewhere in OpenDocumentSpreadsheets.
 
-See also [`getTabColor`](@ref), [`removeTabColor`](@ref).
+See also [`getTabColor`](@ref), [`deleteTabColor`](@ref).
 """
 function setTabColor(ws::Worksheet, color)
     _require_writable(ws, "set a tab colour")
@@ -312,11 +312,11 @@ function getTabColor(ws::Worksheet)
 end
 
 """
-    removeTabColor(sheet) -> Bool
+    deleteTabColor(sheet) -> Bool
 
 Remove a sheet's tab colour. `false` if it had none.
 """
-function removeTabColor(ws::Worksheet)
+function deleteTabColor(ws::Worksheet)
     _require_writable(ws, "remove a tab colour")
     p = _sheet_props(ws)
     p.tabcolor === nothing && return false

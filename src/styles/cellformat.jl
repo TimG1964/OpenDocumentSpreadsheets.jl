@@ -420,7 +420,7 @@ function _border_transform(st::StyleIndex, caller::Symbol; outside::_BorderKw = 
                            bottom::_BorderKw = nothing, diagonal::_BorderKw = nothing, kw...)
     _check_keywords(caller, kw)
     outside === nothing ||
-        throw(ODSError("Keyword `outside` sets the border around a range: use it alone, with `setBorder` on a range (or `setOutsideBorder`)."))
+        throw(ODSError("Keyword `outside` sets the border around a range: use it alone, with `setBorder` on a range."))
     if allsides !== nothing
         all(isnothing, (left, right, top, bottom)) ||
             throw(ODSError("Keyword `allsides` is incompatible with `left`, `right`, `top`, or `bottom`."))
@@ -600,7 +600,7 @@ _styles_of(x::ODSFile) = x.styles
 for (F, T, _) in _SETTERS
     if F === :setBorder
         @eval function $F(x::Union{Worksheet,ODSFile}, ref...; outside::_BorderKw = nothing, kw...)
-            outside === nothing || return _set_outside(x, ref, outside, kw)
+            outside === nothing || return _set_outside_border(x, ref, outside, kw)
             t = writable_targets(x, ref)
             return apply_format!($T(_styles_of(x), $(QuoteNode(F)); kw...), t)
         end
@@ -691,7 +691,7 @@ setAlignment(sh, "C1"; rotation = 45)
 setAlignment
 
 # `outside`: the four edges of a range, each restyled with its side only.
-function _set_outside(x, ref, outside, kw)
+function _set_outside_border(x, ref, outside, kw)
     isempty(kw) || throw(ODSError("Keyword `outside` is incompatible with any other keywords."))
     st = _styles_of(x)
     targets = writable_targets(x, ref)
@@ -705,7 +705,7 @@ function _set_outside(x, ref, outside, kw)
         rows = b.kind === :cols ? (row_number(dim.start):row_number(dim.stop)) : b.rows
         cols = b.kind === :rows ? (column_number(dim.start):column_number(dim.stop)) : b.cols
         r1, r2, c1, c2 = first(rows), last(rows), first(cols), last(cols)
-        side(; kw...) = _style_map(_border_transform(st, :setOutsideBorder; kw...), st)
+        side(; kw...) = _style_map(_border_transform(st, :setBorder; kw...), st)
         if b.kind === :cols
             restyle_columns!(side(left = outside), ws, c1:c1)
             restyle_columns!(side(right = outside), ws, c2:c2)
@@ -723,14 +723,6 @@ function _set_outside(x, ref, outside, kw)
     end
     return -1
 end
-
-"""
-    setOutsideBorder(sheet, ref; outside) -> -1
-
-The border around a range as a whole: `setBorder(sheet, ref; outside)`.
-"""
-setOutsideBorder(x::Union{Worksheet,ODSFile}, ref...; outside::_BorderKw = nothing, kw...) =
-    setBorder(x, ref...; outside = something(outside, Pair{String,String}[]), kw...)
 
 for (F, G, what) in ((:getFont, :_get_font, "font"), (:getFill, :_get_fill, "fill"), (:getBorder, :_get_border, "borders"),
                      (:getAlignment, :_get_alignment, "alignment"))

@@ -2,18 +2,18 @@
 # and a link to its family, so that `?name` shows something. Generated, then checked by hand.
 
 """
-    deleteErrorBars(c, i) -> Chart
+    deleteSeriesErrorBars(c, i) -> Chart
 
-See [`setErrorBars`](@ref), which documents it with the functions like it.
+See [`setSeriesErrorBars`](@ref), which documents it with the functions like it.
 """
-deleteErrorBars
+deleteSeriesErrorBars
 
 """
-    deleteTrendlines(c, i) -> Chart
+    deleteSeriesTrendlines(c, i) -> Chart
 
-See [`addTrendline`](@ref), which documents it with the functions like it.
+See [`addSeriesTrendline`](@ref), which documents it with the functions like it.
 """
-deleteTrendlines
+deleteSeriesTrendlines
 
 """
     getAutoTitleDeleted(c) -> Nothing
@@ -476,6 +476,13 @@ setAxisMajorUnit
 See [`setAxisScaling`](@ref), which documents it with the functions like it.
 """
 setAxisMax
+
+"""
+    setAxisLogBase(c, ax, base) -> Chart
+
+See [`setAxisScaling`](@ref), which documents it with the functions like it.
+"""
+setAxisLogBase
 
 """
     setAxisMin(c, ax, value) -> Chart

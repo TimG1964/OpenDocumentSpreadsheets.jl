@@ -80,7 +80,7 @@ setUniformFont(regions, "A1:C2"; italic = true)  # every cell gets A1's font: bo
 
 `setUniformFill`, `setUniformBorder`, `setUniformAlignment` and `setUniformFormat` work the same way
 for their part. [`setUniformStyle`](@ref) gives every cell the first cell's whole style, and
-[`setOutsideBorder`](@ref) draws a frame round a range.
+[`setBorder`](@ref) with `outside` draws a frame round a range.
 
 ## Number formats
 
@@ -114,7 +114,7 @@ example.
 The Styles deck (F11) lists a file's cell styles: "Default", "Heading 1", "Good", and styles of your
 own.
 - [`setCellStyle`](@ref) applies a style.
-- [`addCellStyle!`](@ref) defines one, from the same keywords the setters take.
+- [`addCellStyle`](@ref) defines one, from the same keywords the setters take.
 - [`getCellStyle`](@ref OpenDocumentSpreadsheets.getCellStyle) gives a cell's style.
 
 ```julia
@@ -125,7 +125,7 @@ styled["A5"] = "Total"; styled["B5"] = 4321.5
 for r in 1:4
     setCellStyle(styled, "A$r", styled[r, 1])  # LibreOffice's built-in styles
 end
-addCellStyle!(xf, "Total"; parent = "Default",
+addCellStyle(xf, "Total"; parent = "Default",
               font = (bold = true,), border = (top = ["style" => "double"],), format = "#,##0.00")
 setCellStyle(styled, "A5:B5", "Total")
 setColumnWidth(styled, "A"; width = 14)

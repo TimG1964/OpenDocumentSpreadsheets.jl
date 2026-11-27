@@ -98,7 +98,7 @@ values, and `minLength` and `maxLength` its shortest and longest bar.
 
 ```julia
 OpenDocumentSpreadsheets.getConditionalFormats(sh)           # range => (type = "cellIs", priority = 1), …
-OpenDocumentSpreadsheets.clearConditionalFormats(sh, "B:B")  # 1 rule removed
+OpenDocumentSpreadsheets.deleteConditionalFormats(sh, "B:B")  # 1 rule removed
 ```
 
 ## LibreOffice's rules
