@@ -47,7 +47,11 @@ end
 function _make_histogram!(c::Chart)
     xf = c.package
     o = xf.chartobjs[c.name]
-    o.text = replace(o.text, r"(<chart:chart\b[^>]*?) chart:class=\"chart:bar\"" => s"\1 chart:class=\"chart:bar\" loext:class=\"loext:histogram\""; count = 1)
+    # `loext:class` after `chart:class`, as LibreOffice writes it
+    ce = _chart_el(o); cn = _tnode(o, ce)
+    a = _tpairs(cn)
+    insert!(a, something(findfirst(p -> p.first == "chart:class", a), length(a)) + 1, "loext:class" => "loext:histogram")
+    _treplace!(o, ce, _telement(cn, a, XML.children(cn)))
     _set_style_attrs!(o, _plot_style(o), ["chart:treat-empty-cells" => "use-zero", "loext:frequency-type" => "0",
                                           "loext:bin-width" => "2", "loext:bin-count" => "10"])
     _axis_set!(c, 2, ["chart:gap-width" => "0"])
@@ -66,7 +70,7 @@ function addSeries(c::ChartEx, values; name = nothing, name_ref = nothing, kw...
     isempty(kw) || throw(ODSError("A histogram's series takes `name` or `name_ref`; `$(first(keys(kw)))` is for other charts."))
     name !== nothing && name_ref !== nothing && throw(ODSError("Give the series' `name` or its `name_ref`, not both."))
     o = _editable(c)
-    occursin("<chart:series", o.text) && throw(ODSError("A histogram has one series: make another histogram for more data."))
+    _has_series(o) && throw(ODSError("A histogram has one series: make another histogram for more data."))
     vals = _odf_range(values, c.sheet)
     label = name_ref === nothing ? nothing : _odf_range(name_ref, c.sheet)
     st = _add_style!(o, """<style:chart-properties chart:link-data-style-to-source="true"/><style:graphic-properties draw:stroke="none" draw:fill-color="$(_PALETTE[1])"/>""" * _TEXT10;
@@ -141,7 +145,7 @@ function _chartsheet_chart(xf::ODSFile, kind::Symbol, sheetname::AbstractString;
     isempty(fe.added) && isempty(fe.removed) && isempty(fe.moved) && isempty(fe.objremoved) && delete!(ws.frames, (1, 1))
     img.width, img.height = w, h
     o = xf.chartobjs[c.name]
-    o.text = replace(o.text, r"<chart:chart svg:width=\"[^\"]*\" svg:height=\"[^\"]*\"" => "<chart:chart svg:width=\"$(_fmt_cm(w))\" svg:height=\"$(_fmt_cm(h))\""; count = 1)
+    _tset!(o, _chart_el(o), ["svg:width" => _fmt_cm(w), "svg:height" => _fmt_cm(h)])
     ws.pagecharts === nothing && (ws.pagecharts = ImageData[])
     push!(ws.pagecharts, img)
     er, ec = _page_end_cell(ws, w, h)

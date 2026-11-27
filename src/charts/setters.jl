@@ -1,89 +1,47 @@
 # Formatting setters (phase 8 step 6, D-085, D-086): XLSX.jl's setters on LibreOffice's chart styles,
 # for charts added here and LibreOffice's own (zipped files). Every setter returns the chart; `:inherit`
 # removes the setting. What LibreOffice can't store is an error (D-084, D-086).
+# Since Phase 3 of the code review (D-102) they work on the chart object's XML.jl tree (charts/tree.jl).
 
 #
-# Style editing
+# The elements and styles are found and changed in the object's tree (charts/tree.jl, D-102). An
+# element is a path; a style is its name.
 #
 
-# A match of a regex in the object's text: where it starts, and its text.
-struct _Hit
-    at::Int
-    match::String
-end
-_find(rx::Regex, text::AbstractString, start::Integer = 1) =
-    (r = findnext(rx, text, start); r === nothing ? nothing : _Hit(first(r), text[r]))
-# Every match, in order.
-function _find_all(rx::Regex, text::AbstractString)
-    out = _Hit[]
-    i = 1
-    while (h = _find(rx, text, i)) !== nothing
-        push!(out, h)
-        i = h.at + max(ncodeunits(h.match), 1)
-    end
-    return out
+# Series `i`'s element (from 1).
+function _series_start(o, i::Integer)
+    ps = _tall(o, "chart:series")
+    1 <= i <= length(ps) || throw(ODSError("The chart has $(length(ps)) series; there is no series $i."))
+    return ps[i]
 end
 
-# The start tag of the k-th element matching `rx`, or nothing.
-function _nth_tag(text::String, rx::Regex, k::Int)
-    hs = _find_all(rx, text)
-    return 1 <= k <= length(hs) ? hs[k] : nothing
-end
-
-_series_start(o, i::Integer) = (m = _nth_tag(o.text, r"<chart:series\b[^>]*>", Int(i));
-    m === nothing && throw(ODSError("The chart has $(count("<chart:series ", o.text)) series; there is no series $i.")); m)
-
-# An element's own automatic style (made, and given to it, when it has none or shares one): the
-# element is the match `m` of its start tag.
-function _own_style!(o, m::_Hit)
-    tag = m.match
-    s = match(r"chart:style-name=\"([^\"]*)\"", tag)
-    if s !== nothing && count("chart:style-name=\"$(s.captures[1])\"", o.text) == 1
-        return s.captures[1]
-    end
-    name = _next_style_name(o.text)
-    newtag = s === nothing ? (endswith(tag, "/>") ? tag[1:end-2] * " chart:style-name=\"$name\"/>" : tag[1:end-1] * " chart:style-name=\"$name\">") :
-                             replace(tag, s.match => "chart:style-name=\"$name\"")
-    o.text = o.text[1:prevind(o.text, m.at)] * newtag * o.text[m.at+ncodeunits(tag):end]
-    # the new style: a copy of the shared one (its data style too), or empty
-    old = s === nothing ? nothing : _style_block(o, s.captures[1])
-    st = old === nothing ? "<style:style style:name=\"$name\" style:family=\"chart\"></style:style>" :
-         replace(old.match, r"^<style:style style:name=\"[^\"]*\"" => "<style:style style:name=\"$name\""; count = 1)
-    i = findfirst("</office:automatic-styles>", o.text)
-    i === nothing && throw(ODSError("The chart's object has no automatic styles."))
-    o.text = o.text[1:prevind(o.text, first(i))] * st * o.text[first(i):end]
+# An element's own automatic style (made, and given to it, when it has none or shares one).
+function _own_style!(o, p::_Path)
+    s = _tget(o, p, "chart:style-name")
+    s !== nothing && _style_uses(o, s) == 1 && return s
+    name = _clone_style!(o, s)              # in the automatic styles, so `p` (in the body) still holds
+    _tset!(o, p, ["chart:style-name" => name])
     return name
 end
-_rx_escape(s::AbstractString) = replace(s, r"([\\^$.|?*+()\[\]{}])" => s"\\\1")
-_style_block(o, name::AbstractString) =
-    match(Regex("<style:style style:name=\"" * _rx_escape(name) * "\"[^>]*?(/>|>.*?</style:style>)", "s"), o.text)
+
+# A style's property element (`element`), or nothing.
+function _style_prop(o, style::AbstractString, element::AbstractString)
+    q = _style_el(o, style)
+    q === nothing && return nothing
+    k = _tkids(o, q, element)
+    return isempty(k) ? nothing : k[1]
+end
 
 # Removes attributes from a style's property element.
 function _del_style_attrs!(o, style::AbstractString, keys; element = "style:chart-properties")
-    m = match(Regex("<style:style style:name=\"" * style * "\"[^>]*>.*?</style:style>", "s"), o.text)
-    m === nothing && return
-    st = m.match
-    e = match(Regex("<" * element * "\\b[^>]*?/?>"), st)
+    e = _style_prop(o, style, element)
     e === nothing && return
-    tag = e.match
-    for k in keys
-        tag = replace(tag, Regex(" " * k * "=\"[^\"]*\"") => "")
-    end
-    o.text = replace(o.text, st => replace(st, e.match => tag; count = 1); count = 1)
+    any(k -> _tget(o, e, k) !== nothing, keys) && _tset!(o, e, Pair{String,Union{Nothing,String}}[k => nothing for k in keys])
+    return
 end
 
-# Sets (or, with `nothing`, removes) attributes of the element whose start tag is matched by `m`.
-function _set_tag_attrs!(o, m::_Hit, attrs)
-    tag = m.match
-    for (k, v) in attrs
-        tag = replace(tag, Regex(" " * k * "=\"[^\"]*\"") => "")
-        v === nothing && continue
-        close = endswith(tag, "/>") ? "/>" : ">"
-        tag = tag[1:end-ncodeunits(close)] * " $k=\"$(_esc(v))\"" * close
-    end
-    o.text = o.text[1:prevind(o.text, m.at)] * tag * o.text[m.at+ncodeunits(m.match):end]
-    return tag
-end
+# Sets (or, with `nothing`, removes) attributes of the element at `p`; values are text.
+_set_tag_attrs!(o, p::_Path, attrs) = (_tset!(o, p, Pair{String,Union{Nothing,String}}[String(k) => v for (k, v) in attrs]); p)
 
 _pts(x::Real) = _fmt_cm(x * 2.54 / 72)
 _fmt_cm(x::Real) = string(round(x; digits = 3)) * "cm"
@@ -222,9 +180,11 @@ end
 
 # Removes a theme reference an imported style holds (LibreOffice would draw it over the colour set).
 function _del_complex!(o, st, kind)
-    m = _style_block(o, st)
-    m === nothing && return
-    o.text = replace(o.text, m.match => replace(m.match, Regex("<loext:" * kind * "-complex-color\\b[^>]*?(/>|>.*?</loext:" * kind * "-complex-color>)", "s") => ""); count = 1)
+    q = _style_el(o, st)
+    q === nothing && return
+    for p in reverse(_tall(o, "loext:" * kind * "-complex-color"; within = q))   # the last first: paths before it hold
+        _tdelete!(o, p)
+    end
 end
 
 # XLSX.jl's dash names (and Excel's aliases) as LibreOffice's import writes them (F-081): dots and gaps in
@@ -330,12 +290,8 @@ end
 _series_style!(o, i) = _own_style!(o, _series_start(o, i))
 # A style's own attribute (of its property element), or nothing.
 function _style_attr(o, st, key; element = "style:graphic-properties")
-    m = _style_block(o, st)
-    m === nothing && return nothing
-    e = match(Regex("<" * element * "\\b[^>]*>"), m.match)
-    e === nothing && return nothing
-    a = match(Regex("\\s" * key * "=\"([^\"]*)\""), e.match)
-    return a === nothing ? nothing : String(a.captures[1])
+    e = _style_prop(o, st, element)
+    return e === nothing ? nothing : _tget(o, e, key)
 end
 _own_stroke(o, st) = _style_attr(o, st, "draw:stroke")
 
@@ -370,9 +326,7 @@ end
 
 # Whether series `i` is a line, XY or radar series: one colour for its line and symbols (LibreOffice's).
 function _line_like(o, i)
-    class = _chart_class(o)
-    m = match(r"chart:class=\"([^\"]*)\"", _series_start(o, i).match)
-    return (m === nothing ? class : m.captures[1]) in ("chart:line", "chart:scatter", "chart:radar")
+    return something(_tget(o, _series_start(o, i), "chart:class"), _chart_class(o)) in ("chart:line", "chart:scatter", "chart:radar")
 end
 
 """
@@ -411,77 +365,72 @@ setSeriesLineMiterLimit(c::AbstractChart, i::Integer, v) = setSeriesLine(c, i; m
 # (`chart:repeated`). LibreOffice writes a series' points after its trendlines and error bars.
 function _point_style!(o, i::Integer, point::Integer)
     point >= 1 || throw(ODSError("Points are numbered from 1."))
-    st = _series_start(o, i)
-    if endswith(st.match, "/>")                                   # a series with no children
-        o.text = o.text[1:prevind(o.text, st.at)] * st.match[1:end-2] * "></chart:series>" * o.text[st.at+ncodeunits(st.match):end]
-        st = _series_start(o, i)
-    end
-    a = st.at + ncodeunits(st.match)
-    b = first(findnext("</chart:series>", o.text, a)) - 1
-    inner = o.text[a:b]
-    pts = Tuple{String,String}[]                                  # (attributes but repeated, children) per point
-    rest = IOBuffer()
-    pos = 1
-    for h in _find_all(r"<chart:data-point\b([^>]*?)(/>|>(.*?)</chart:data-point>)"s, inner)
-        print(rest, inner[pos:prevind(inner, h.at)])
-        m = match(r"^<chart:data-point\b([^>]*?)(/>|>(.*?)</chart:data-point>)$"s, h.match)
-        r = match(r"chart:repeated=\"(\d+)\"", m.captures[1])
-        rep = r === nothing ? 1 : parse(Int, r.captures[1])
-        attrs = replace(m.captures[1], r"\s*chart:repeated=\"\d+\"" => "")
-        for _ in 1:rep
-            push!(pts, (attrs, something(m.captures[3], "")))
+    sp = _series_start(o, i)
+    series = _tnode(o, sp)
+    # each point (attributes but `chart:repeated`, children), and the series' other children
+    pts = Tuple{Vector{Pair{String,String}},Vector{Any}}[]
+    others = Any[]
+    for c in XML.children(series)
+        if _isel(c) && XML.tag(c) == "chart:data-point"
+            rep = something(tryparse(Int, something(_tattr(c, "chart:repeated"), "1")), 1)
+            attrs = filter(p -> p.first != "chart:repeated", _tpairs(c))
+            kids = collect(XML.children(c))
+            for r in 1:max(rep, 1)                   # each its own nodes (they are changed in place)
+                push!(pts, (copy(attrs), r == 1 ? kids : Any[_tcopy(x) for x in kids]))
+            end
+        else
+            push!(others, c)
         end
-        pos = h.at + ncodeunits(h.match)
     end
-    others = String(take!(rest)) * inner[pos:end]
     n = _series_length(o, i)
     while length(pts) < max(point, n)
-        push!(pts, ("", ""))
+        push!(pts, (Pair{String,String}[], Any[]))
     end
-    attrs, pin = pts[point]
-    s = match(r"chart:style-name=\"([^\"]*)\"", attrs)
-    sname = s === nothing ? nothing : String(s.captures[1])
-    if sname === nothing || count("chart:style-name=\"$sname\"", o.text) > 1 || count(p -> occursin("\"$sname\"", p[1]), pts) > 1
-        sname = _clone_style!(o, sname)
-        attrs = s === nothing ? attrs * " chart:style-name=\"$sname\"" : replace(attrs, s.match => "chart:style-name=\"$sname\"")
-        pts[point] = (attrs, pin)
-        st = _series_start(o, i)                                  # the styles moved the series
-        a = st.at + ncodeunits(st.match)
-        b = first(findnext("</chart:series>", o.text, a)) - 1
+    attrs = pts[point][1]                            # changed in place below
+    k = findfirst(p -> p.first == "chart:style-name", attrs)
+    sname = k === nothing ? nothing : attrs[k].second
+    if sname === nothing || _style_uses(o, sname) > 1 || count(p -> any(==("chart:style-name" => sname), p[1]), pts) > 1
+        sname = _clone_style!(o, sname)               # in the automatic styles: the series' path holds
+        k === nothing ? push!(attrs, "chart:style-name" => sname) : (attrs[k] = "chart:style-name" => sname)
     end
-    io = IOBuffer()                                               # written back, runs of alike points merged
+    # written back, runs of alike points (without children) merged
+    newpts = Any[]
     k = 1
     while k <= length(pts)
         j = k
         while j < length(pts) && pts[j+1] == pts[k] && isempty(pts[k][2])
             j += 1
         end
-        print(io, "<chart:data-point", pts[k][1], j > k ? " chart:repeated=\"$(j - k + 1)\"" : "",
-              isempty(pts[k][2]) ? "/>" : ">" * pts[k][2] * "</chart:data-point>")
+        a = j > k ? [pts[k][1]; "chart:repeated" => string(j - k + 1)] : pts[k][1]
+        push!(newpts, XML.Element("chart:data-point", pts[k][2]...; (Symbol(x) => y for (x, y) in a)...))
         k = j + 1
     end
-    lbl = _find(r"<chart:data-label\b.*$"s, others)              # a series' own label comes last
-    head = lbl === nothing ? others : others[1:prevind(others, lbl.at)]
-    o.text = o.text[1:a-1] * head * String(take!(io)) * (lbl === nothing ? "" : lbl.match) * o.text[b+1:end]
+    # LibreOffice writes a series' points after its trendlines and error bars, and its own label last
+    l = findfirst(c -> _isel(c) && XML.tag(c) == "chart:data-label", others)
+    kids = l === nothing ? vcat(others, newpts) : vcat(others[1:l-1], newpts, others[l:end])
+    _treplace!(o, sp, _telement(series, _tpairs(series), kids))
     return sname
 end
 
 # How many values series `i` has (its values range's cells), for the points written out.
 function _series_length(o, i)
-    v = match(r"chart:values-cell-range-address=\"([^\"]*)\"", _series_start(o, i).match)
+    v = _tget(o, _series_start(o, i), "chart:values-cell-range-address")
     v === nothing && return 0
-    return sum((length(r) * length(c) for (_, r, c) in _range_areas(XML.unescape(String(v.captures[1]))) if r !== nothing); init = 0)
+    return sum((length(r) * length(c) for (_, r, c) in _range_areas(v) if r !== nothing); init = 0)
 end
 
 # A new automatic style: a copy of `old` (its data style too), or empty.
 function _clone_style!(o, old::Union{Nothing,AbstractString})
-    name = _next_style_name(o.text)
-    m = old === nothing ? nothing : _style_block(o, old)
-    st = m === nothing ? "<style:style style:name=\"$name\" style:family=\"chart\"></style:style>" :
-         replace(m.match, r"^<style:style style:name=\"[^\"]*\"" => "<style:style style:name=\"$name\""; count = 1)
-    i = findfirst("</office:automatic-styles>", o.text)
-    i === nothing && throw(ODSError("The chart's object has no automatic styles."))
-    o.text = o.text[1:prevind(o.text, first(i))] * st * o.text[first(i):end]
+    name = _next_style_name(o)
+    q = old === nothing ? nothing : _style_el(o, old)
+    st = if q === nothing
+        XML.Element("style:style"; Symbol("style:name") => name, Symbol("style:family") => "chart")
+    else
+        n = _tnode(o, q)
+        a = [(k == "style:name" ? k => name : k => v) for (k, v) in _tpairs(n)]
+        _telement(n, a, [_tcopy(c) for c in XML.children(n)])
+    end
+    _tappend!(o, _auto_styles(o), st)
     return name
 end
 
@@ -496,7 +445,7 @@ function _set_marker!(o, st, symbol, size)
         elseif symbol !== :inherit
             haskey(_MARKERS, symbol) || throw(ODSError("Unknown marker `:$symbol`: use $(join(string.(":", sort!(collect(keys(_MARKERS)))), ", ")), :none or :auto."))
             attrs = ["chart:symbol-type" => "named-symbol", "chart:symbol-name" => _MARKERS[symbol]]
-            occursin("chart:symbol-width", something(match(Regex("<style:style style:name=\"" * st * "\".*?</style:style>", "s"), o.text)).match) ||
+            _style_attr(o, st, "chart:symbol-width"; element = "style:chart-properties") !== nothing ||
                 append!(attrs, ["chart:symbol-width" => "0.25cm", "chart:symbol-height" => "0.25cm"])
             _set_style_attrs!(o, st, attrs)
         end
@@ -616,13 +565,13 @@ function _style_text!(o, xf, st, field::Symbol, v)
     end
 end
 
-function _title_tag(o)
-    m = _find(r"<chart:title\b[^>]*>", o.text)          # the chart's title comes before the plot area
-    (m === nothing || m.at > something(findfirst("<chart:plot-area", o.text), 1:typemax(Int))[1]) &&
-        throw(ODSError("The chart has no title: set one with `setChartTitleText`."))
-    return m
-end
-_legend_tag(o) = (m = _find(r"<chart:legend\b[^>]*>", o.text); m === nothing && throw(ODSError("The chart has no legend: set one with `setLegendPos`.")); m)
+# The chart's element, and its title (a child of the chart, before the plot area), or nothing.
+_chart_el(o) = (p = _tfirst(o, "chart:chart"); p === nothing && throw(ODSError("The object holds no chart.")); p)
+_chart_title(o) = (t = _tkids(o, _chart_el(o), "chart:title"); isempty(t) ? nothing : t[1])
+_title_tag(o) = (t = _chart_title(o); t === nothing && throw(ODSError("The chart has no title: set one with `setChartTitleText`.")); t)
+_legend_tag(o) = (p = _tfirst(o, "chart:legend"); p === nothing && throw(ODSError("The chart has no legend: set one with `setLegendPos`.")); p)
+# An axis' title (its first child), or nothing.
+_axis_title(o, p::_Path) = (k = _tkids(o, p); !isempty(k) && _ttag(o, k[1]) == "chart:title" ? k[1] : nothing)
 
 """
     setChartTitleTextProp(c, field, value) / setAxisTitleTextProp(c, ax, field, value) / setLegendTextProp(c, field, value)
@@ -640,10 +589,9 @@ setChartTitleTextProp(c::AbstractChart, field::Symbol, v) = (o = _editable(c); _
 setLegendTextProp(c::AbstractChart, field::Symbol, v) = (o = _editable(c); _style_text!(o, c.package, _own_style!(o, _legend_tag(o)), field, v); c)
 function setAxisTitleTextProp(c::AbstractChart, ax, field::Symbol, v)
     o = _editable(c)
-    m = _axis_tag(o, c, ax)
-    t = endswith(m.match, "/>") ? nothing : _find(r"^<chart:title\b[^>]*>", o.text[m.at+ncodeunits(m.match):end])
+    t = _axis_title(o, _axis_tag(o, c, ax))
     t === nothing && throw(ODSError("The axis has no title: set one with `setAxisTitleText`."))
-    _style_text!(o, c.package, _own_style!(o, _Hit(m.at + ncodeunits(m.match), t.match)), field, v)
+    _style_text!(o, c.package, _own_style!(o, t), field, v)
     return c
 end
 setAxisTextProp(c::AbstractChart, ax, field::Symbol, v) = (o = _editable(c); _style_text!(o, c.package, _own_style!(o, _axis_tag(o, c, ax)), field, v); c)
@@ -659,13 +607,13 @@ function setGroupLabelTextProp(c::AbstractChart, g::ChartGroup, field::Symbol, v
 end
 setChartSpaceTextProp(c::AbstractChart, field::Symbol, v) = (foreach(i -> setLabelTextProp(c, i, field, v), 1:length(_series_nodes(_doc(c)))); c)
 
-# An axis' start tag: the axes are the plot area's `chart:axis` children, in order.
+# An axis' element: one of the plot area's `chart:axis` children, by its id.
 function _axis_tag(o, c, ax)
     a = getChartAxis(c, ax)
-    k = findfirst(n -> _axis_id(n) == a.axid, _children(_plot_area(_chart_doc(o.text)), "chart:axis"))
-    m = k === nothing ? nothing : _nth_tag(o.text, r"<chart:axis\b[^>]*>", k)
-    m === nothing && throw(ODSError("The chart has no axis `$ax`."))
-    return m
+    pa = _tfirst(o, "chart:plot-area")
+    k = pa === nothing ? nothing : findfirst(p -> _axis_id(_tnode(o, p)) == a.axid, _tkids(o, pa, "chart:axis"))
+    k === nothing && throw(ODSError("The chart has no axis `$ax`."))
+    return _tkids(o, pa, "chart:axis")[k]
 end
 _axis_style!(o, c, ax) = _own_style!(o, _axis_tag(o, c, ax))
 
@@ -682,40 +630,31 @@ LibreOffice's titles can't follow a cell: a `CellRef` is an error.
 """
 function setChartTitleText(c::AbstractChart, text)
     o = _editable(c)
-    paras = _title_xml(text, o, c.package)
-    m = _find(r"<chart:title\b[^>]*>.*?</chart:title>"s, o.text)
-    pa = first(something(findfirst("<chart:plot-area", o.text), 1:typemax(Int)))
-    if m !== nothing && m.at < pa
-        st = something(match(r"chart:style-name=\"[^\"]*\"", m.match), (match = "",)).match
-        o.text = replace(o.text, m.match => "<chart:title $st>" * paras * "</chart:title>"; count = 1)
+    paras = _tfrag(_title_xml(text, o, c.package))       # its text styles go in the automatic styles
+    t = _chart_title(o)
+    if t !== nothing
+        _treplace!(o, t, _title_element(_tget(o, t, "chart:style-name"), paras))   # its position goes: placed anew
     else
         st = _add_style!(o, """<style:chart-properties chart:auto-position="true"/>""" * _text_pt(13))
-        h = _find(r"<chart:chart\b[^>]*>", o.text)
-        o.text = o.text[1:h.at+ncodeunits(h.match)-1] * "<chart:title chart:style-name=\"$st\">" * paras * "</chart:title>" * o.text[h.at+ncodeunits(h.match):end]
+        _tinsert!(o, _chart_el(o), 1, _title_element(st, paras))
     end
     return c
 end
 function setAxisTitleText(c::AbstractChart, ax, text)
     o = _editable(c)
-    paras = _title_xml(text, o, c.package)
-    m = _axis_tag(o, c, ax)
-    a = getChartAxis(c, ax)
-    after = o.text[m.at+ncodeunits(m.match):end]
-    tm = match(r"^<chart:title\b[^>]*>.*?</chart:title>"s, after)
-    if tm !== nothing
-        st = something(match(r"chart:style-name=\"[^\"]*\"", tm.match), (match = "",)).match
-        new = "<chart:title $st>" * paras * "</chart:title>"
-        o.text = o.text[1:m.at+ncodeunits(m.match)-1] * new * after[ncodeunits(tm.match)+1:end]
+    paras = _tfrag(_title_xml(text, o, c.package))
+    p = _axis_tag(o, c, ax)
+    t = _axis_title(o, p)
+    if t !== nothing
+        _treplace!(o, t, _title_element(_tget(o, t, "chart:style-name"), paras))
     else
-        rot = a.pos in (:l, :r) ? " style:rotation-angle=\"90\"" : ""
+        rot = getChartAxis(c, ax).pos in (:l, :r) ? " style:rotation-angle=\"90\"" : ""
         st = _add_style!(o, """<style:chart-properties chart:auto-position="true"$rot/>""" * _text_pt(11))
-        m = _axis_tag(o, c, ax)
-        tag = endswith(m.match, "/>") ? m.match[1:end-2] * ">" : m.match
-        o.text = o.text[1:m.at-1] * tag * "<chart:title chart:style-name=\"$st\">" * paras * "</chart:title>" *
-                 (endswith(m.match, "/>") ? "</chart:axis>" : "") * o.text[m.at+ncodeunits(m.match):end]
+        _tinsert!(o, p, 1, _title_element(st, paras))
     end
     return c
 end
+_title_element(st, paras) = XML.Element("chart:title", paras...; (st === nothing ? () : (Symbol("chart:style-name") => st,))...)
 # A rich title's paragraphs (D-088): a span per run with attributes, its text style (`style:family="text"`)
 # in the object's automatic styles, as LibreOffice's import writes one (F-087); the font as
 # `fo:font-family`, and colours as their RGB (LibreOffice keeps no theme link in a chart, F-085).
@@ -763,14 +702,20 @@ end
 
 # The object's text style with `props`, made (`T1`, `T2`, …) when it has none.
 function _chart_text_style!(o, props::AbstractString)
-    for m in eachmatch(r"<style:style style:name=\"([^\"]*)\" style:family=\"text\"><style:text-properties([^>]*?)/></style:style>", o.text)
-        m.captures[2] == props && return String(m.captures[1])
+    want = _tpairs(_tfrag1("<x$props/>"))                 # `props`: ` k="v"` pairs, as written
+    a = _auto_styles(o)
+    for q in _tkids(o, a, "style:style")
+        _tget(o, q, "style:family") == "text" || continue
+        k = _tkids(o, q)
+        length(k) == 1 && _ttag(o, k[1]) == "style:text-properties" && _tpairs(_tnode(o, k[1])) == want &&
+            return _tget(o, q, "style:name")
     end
+    names = Set{String}(); _teach(c -> (n = _tattr(c, "style:name"); n === nothing || push!(names, n)), o)
     k = 1
-    while occursin("style:name=\"T$k\"", o.text)
+    while "T$k" in names
         k += 1
     end
-    _insert_before!(o, "</office:automatic-styles>", "<style:style style:name=\"T$k\" style:family=\"text\"><style:text-properties$props/></style:style>")
+    _tappend!(o, a, _tfrag1("<style:style style:name=\"T$k\" style:family=\"text\"><style:text-properties$props/></style:style>"))
     return "T$k"
 end
 
@@ -860,17 +805,16 @@ function setLegendPos(c::AbstractChart, pos::Symbol; overlay = nothing, expansio
     _set_style_attrs!(o, _own_style!(o, _legend_or_new!(o)), ["chart:auto-position" => string(corner === nothing)])
     return c
 end
-_style_attr_legend(o) = (m = _find(r"<chart:legend\b[^>]*>", o.text);
-    m === nothing ? nothing : (a = match(r"style:legend-expansion=\"([^\"]*)\"", m.match); a === nothing ? nothing : a.captures[1]))
+_style_attr_legend(o) = (p = _tfirst(o, "chart:legend"); p === nothing ? nothing : _tget(o, p, "style:legend-expansion"))
 setLegendOverlay(c::AbstractChart, overlay::Union{Bool,Symbol}) =
     (o = _editable(c); _set_tag_attrs!(o, _legend_or_new!(o), ["loext:overlay" => overlay === :inherit ? nothing : string(Bool(overlay))]); c)
 # The legend's start tag, a legend made (on the right, as LibreOffice's) when there is none.
 function _legend_or_new!(o)
-    m = _find(r"<chart:legend\b[^>]*>", o.text)
-    m === nothing || return m
+    p = _tfirst(o, "chart:legend")
+    p === nothing || return p
     st = _add_style!(o, """<style:chart-properties chart:auto-position="true"/>""" * _TEXT10)
     _insert_before!(o, "<chart:plot-area", "<chart:legend chart:legend-position=\"end\" svg:x=\"0cm\" svg:y=\"0cm\" chart:style-name=\"$st\"/>")
-    return _find(r"<chart:legend\b[^>]*>", o.text)
+    return _tfirst(o, "chart:legend")
 end
 function setLegendEntryDeleted(c::AbstractChart, positions, deleted::Union{Bool,Symbol})
     # any other Symbol showed the entries
@@ -891,7 +835,7 @@ The plot area's border: LibreOffice's wall.
 """
 function setPlotAreaLine(c::AbstractChart; kw...)
     o = _editable(c)
-    m = _find(r"<chart:wall\b[^>]*>", o.text)
+    m = _tfirst(o, "chart:wall")
     m === nothing && throw(ODSError("The chart has no wall (a pie or doughnut)."))
     _style_line!(o, c.package, _own_style!(o, m); kw...)
     return c
@@ -915,14 +859,14 @@ function setLabelFlag(c::AbstractChart, i::Integer, flag::Symbol, on::Bool)
         throw(ODSError("Unknown label flag `:$flag`: use :value, :percent, :categoryName, :seriesName or :legendKey."))
     o = _editable(c)
     st = _series_style!(o, i)
-    cur = match(Regex("<style:style style:name=\"" * st * "\".*?</style:style>", "s"), o.text).match
-    num = something(match(r"chart:data-label-number=\"([^\"]*)\"", cur), (captures = ["none"],)).captures[1]
+    cur(k) = _style_attr(o, st, k; element = "style:chart-properties")
+    num = something(cur("chart:data-label-number"), "none")
     v = num in ("value", "value-and-percentage"); p = num in ("percentage", "value-and-percentage")
     flag === :value && (v = on); flag === :percent && (p = on)
     attrs = ["chart:data-label-number" => v && p ? "value-and-percentage" : v ? "value" : p ? "percentage" : "none"]
-    occursin("chart:data-label-text", cur) || push!(attrs, "chart:data-label-text" => "false")
-    occursin("chart:data-label-symbol", cur) || push!(attrs, "chart:data-label-symbol" => "false")
-    occursin("loext:data-label-series", cur) || push!(attrs, "loext:data-label-series" => "false")
+    cur("chart:data-label-text") === nothing && push!(attrs, "chart:data-label-text" => "false")
+    cur("chart:data-label-symbol") === nothing && push!(attrs, "chart:data-label-symbol" => "false")
+    cur("loext:data-label-series") === nothing && push!(attrs, "loext:data-label-series" => "false")
     flag === :categoryName && push!(attrs, "chart:data-label-text" => string(on))
     flag === :legendKey && push!(attrs, "chart:data-label-symbol" => string(on))
     flag === :seriesName && push!(attrs, "loext:data-label-series" => string(on))
@@ -938,19 +882,11 @@ A point's label: custom text (LibreOffice's custom label fields), or none.
 """
 function setLabelText(c::AbstractChart, i::Integer, point::Integer, text::AbstractString)
     o = _editable(c)
-    _point_style!(o, i, point)
-    lbl = "<chart:data-label><text:p><text:span>" * _esct(text) * "</text:span></text:p></chart:data-label>"
-    m = _nth_point(o, i, point)
-    full = endswith(m.match, "/>") ? m.match[1:end-2] * ">" * lbl * "</chart:data-point>" :
-           (e = findnext("</chart:data-point>", o.text, m.at); inner = o.text[m.at+ncodeunits(m.match):first(e)-1];
-            o.text = o.text[1:m.at+ncodeunits(m.match)-1] * replace(inner, r"<chart:data-label\b.*?</chart:data-label>"s => "") * o.text[first(e):end];
-            nothing)
-    if full === nothing
-        m = _nth_point(o, i, point)
-        o.text = o.text[1:m.at+ncodeunits(m.match)-1] * lbl * o.text[m.at+ncodeunits(m.match):end]
-    else
-        o.text = o.text[1:m.at-1] * full * o.text[m.at+ncodeunits(m.match):end]
-    end
+    _point_style!(o, i, point)                       # the point has an element of its own
+    lbl = _tfrag1("<chart:data-label><text:p><text:span>" * _esct(text) * "</text:span></text:p></chart:data-label>")
+    p = _nth_point(o, i, point)
+    _tdelete_kids!(o, p, c -> XML.tag(c) == "chart:data-label")
+    _tinsert!(o, p, 1, lbl)                          # first, as before
     return c
 end
 function setLabelDeleted(c::AbstractChart, i::Integer, point::Integer, deleted::Bool)
@@ -961,16 +897,12 @@ function setLabelDeleted(c::AbstractChart, i::Integer, point::Integer, deleted::
               _del_style_attrs!(o, st, ["chart:data-label-number", "chart:data-label-text", "chart:data-label-symbol", "loext:data-label-series"])
     return c
 end
-# The start tag of a series' point (from 1), once points have their own elements.
+# The element of a series' point (from 1): a `chart:data-point` child of the series, repeats counted.
 function _nth_point(o, i, point)
-    st = _series_start(o, i)
-    close = findnext("</chart:series>", o.text, st.at)
     k = 0
-    for m in _find_all(r"<chart:data-point\b[^>]*>", o.text[1:first(close)])
-        m.at < st.at && continue
-        r = match(r"chart:repeated=\"(\d+)\"", m.match)
-        rep = r === nothing ? 1 : parse(Int, r.captures[1])
-        k + rep >= point && return m
+    for p in _tkids(o, _series_start(o, i), "chart:data-point")
+        rep = something(tryparse(Int, something(_tget(o, p, "chart:repeated"), "1")), 1)
+        k + rep >= point && return p
         k += rep
     end
     throw(ODSError("Series $i has no point $point."))
@@ -1063,24 +995,13 @@ function setAxisGridlines(c::AbstractChart, ax; major = nothing, minor = nothing
     for (on, class, col) in ((major, "major", "#b3b3b3"), (minor, "minor", "#dddddd"))
         on === nothing && continue
         on isa Bool || throw(ODSError("`$class` is true or false."))
-        m = _axis_tag(o, c, ax)
-        rest = o.text[m.at+ncodeunits(m.match):end]
-        e = endswith(m.match, "/>") ? 0 : first(something(findfirst("</chart:axis>", rest), 0:0))
-        g = e == 0 ? nothing : _find(Regex("<chart:grid\\b[^>]*chart:class=\"" * class * "\"[^>]*/>"), rest[1:e-1])
+        p = _axis_tag(o, c, ax)
+        g = findfirst(q -> _tget(o, q, "chart:class") == class, _tkids(o, p, "chart:grid"))
         if on && g === nothing
-            st = _add_style!(o, "<style:graphic-properties svg:stroke-color=\"$col\"/>")
-            m = _axis_tag(o, c, ax)
-            grid = "<chart:grid chart:style-name=\"$st\" chart:class=\"$class\"/>"
-            if endswith(m.match, "/>")
-                o.text = o.text[1:m.at-1] * m.match[1:end-2] * ">" * grid * "</chart:axis>" * o.text[m.at+ncodeunits(m.match):end]
-            else
-                rest = o.text[m.at+ncodeunits(m.match):end]
-                e = first(findfirst("</chart:axis>", rest))
-                o.text = o.text[1:m.at+ncodeunits(m.match)-1] * rest[1:e-1] * grid * rest[e:end]
-            end
+            st = _add_style!(o, "<style:graphic-properties svg:stroke-color=\"$col\"/>")   # the axis' path holds
+            _tappend!(o, p, XML.Element("chart:grid"; Symbol("chart:style-name") => st, Symbol("chart:class") => class))
         elseif !on && g !== nothing
-            s = m.at + ncodeunits(m.match) + g.at - 1
-            o.text = o.text[1:s-1] * o.text[s+ncodeunits(g.match):end]
+            _tdelete!(o, _tkids(o, p, "chart:grid")[g])
         end
     end
     return c
@@ -1101,21 +1022,24 @@ function setAxisNumberFormatCode(c::AbstractChart, ax, code)
         maps, main = r
         isempty(maps) || throw(ODSError("A chart axis takes a format of one section."))
         body = _ds_body(main)
+        a = _auto_styles(o)
+        named(n) = (q = findfirst(q -> _tget(o, q, "style:name") == n, _tkids(o, a)); q === nothing ? nothing : _tkids(o, a)[q])
         # the object's data style with this body, if it has one: each call added another
         k = 100
-        while occursin("style:name=\"N$k\"", o.text)
-            occursin(replace(body, "\$NAME" => "N$k"), o.text) && break
+        while (q = named("N$k")) !== nothing
+            _tnode(o, q) == _tfrag1(replace(body, "\$NAME" => "N$k")) && break
             k += 1
         end
         name = "N$k"
-        occursin("style:name=\"$name\"", o.text) || _insert_before!(o, "<style:style", replace(body, "\$NAME" => name))
+        if named(name) === nothing                   # before the styles, as LibreOffice writes them
+            i = findfirst(c -> _isel(c) && XML.tag(c) == "style:style", collect(XML.children(_tnode(o, a))))
+            _tinsert!(o, a, something(i, typemax(Int)), _tfrag1(replace(body, "\$NAME" => name)))
+        end
     end
-    m = match(Regex("<style:style style:name=\"" * st * "\"[^>]*>"), o.text)
-    old = match(r"style:data-style-name=\"([^\"]*)\"", m.match)
-    tag = old !== nothing ? replace(m.match, r"style:data-style-name=\"[^\"]*\"" => "style:data-style-name=\"$name\"") :
-          m.match[1:end-1] * " style:data-style-name=\"$name\">"
-    o.text = replace(o.text, m.match => tag; count = 1)
-    old === nothing || _drop_own_data_style!(o, old.captures[1])
+    q = _style_el(o, st)
+    old = _tget(o, q, "style:data-style-name")
+    _tset!(o, q, ["style:data-style-name" => name])
+    old === nothing || old == name || _drop_own_data_style!(o, old)
     _set_style_attrs!(o, st, ["chart:link-data-style-to-source" => "false"])
     return c
 end
@@ -1125,8 +1049,8 @@ end
 function _drop_own_data_style!(o, name::AbstractString)
     k = match(r"^N(\d+)$", name)
     (k === nothing || parse(Int, k.captures[1]) < 100) && return
-    occursin("style:data-style-name=\"$name\"", o.text) && return
-    o.text = replace(o.text, Regex("<number:([a-z-]+-style) style:name=\"$name\"[^>]*>.*?</number:\\1>", "s") => ""; count = 1)
+    used = false; _teach(c -> _tattr(c, "style:data-style-name") == name && (used = true), o); used && return
+    _tdelete_kids!(o, _auto_styles(o), c -> startswith(XML.tag(c), "number:") && _tattr(c, "style:name") == name)
     return
 end
 setAxisNumberFormatLinked(c::AbstractChart, ax, linked::Bool) = _axis_set!(c, ax, ["chart:link-data-style-to-source" => string(linked)])
@@ -1181,7 +1105,7 @@ function addTrendline(c::AbstractChart, i::Integer, kind::Symbol = :linear; orde
                        before = ("<chart:error-indicator", "<chart:data-point", "<chart:data-label"))
     return c
 end
-deleteTrendlines(c::AbstractChart, i::Integer) = (o = _editable(c); _remove_in_series!(o, i, r"<chart:regression-curve\b.*?</chart:regression-curve>|<chart:regression-curve\b[^>]*/>"s); c)
+deleteTrendlines(c::AbstractChart, i::Integer) = (o = _editable(c); _remove_in_series!(o, i, c -> XML.tag(c) == "chart:regression-curve"); c)
 
 const _ERR_ODF = Dict(:fixed => "constant", :percent => "percentage", :stdDev => "standard-deviation", :stdErr => "standard-error",
                       :range => "cell-range")
@@ -1218,42 +1142,23 @@ function setErrorBars(c::AbstractChart, i::Integer; type::Symbol, value = nothin
 end
 deleteErrorBars(c::AbstractChart, i::Integer) = (_delete_error_bars!(_editable(c), i, nothing); c)
 
-# An error indicator, empty or with children (one with children was left)
-const _ERR_INDICATOR = r"<chart:error-indicator\b[^>]*?(?:/>|>.*?</chart:error-indicator>)"s
 # Removes series `i`'s error bars in `direction` (`:x` or `:y`; `nothing`: both). An indicator
 # without `chart:dimension` is a y one, as ODF's default.
 function _delete_error_bars!(o, i::Integer, direction::Union{Nothing,Symbol})
-    function keep(m)
-        direction === nothing && return ""
-        d = match(r"chart:dimension=\"([^\"]*)\"", m)
-        return something(d === nothing ? nothing : d.captures[1], "y") == string(direction) ? "" : m
-    end
-    _remove_in_series!(o, i, _ERR_INDICATOR => keep)
+    _remove_in_series!(o, i, c -> XML.tag(c) == "chart:error-indicator" &&
+        (direction === nothing || something(_tattr(c, "chart:dimension"), "y") == string(direction)))
 end
 
-# Inserts a child of series `i` before the first of the children `before` (ODF's order), else last.
+# Inserts a child of series `i` before the first of its children with a tag of `before` (ODF's
+# order: tags written `"<chart:data-point"`), else last.
 function _insert_in_series!(o, i, xml; before = ())
-    st = _series_start(o, i)
-    if endswith(st.match, "/>")
-        o.text = o.text[1:st.at-1] * st.match[1:end-2] * ">" * xml * "</chart:series>" * o.text[st.at+ncodeunits(st.match):end]
-    else
-        a = st.at + ncodeunits(st.match)
-        e = first(findnext("</chart:series>", o.text, a))
-        for b in before
-            r = findnext(b, o.text, a)
-            r !== nothing && first(r) < e && (e = first(r))
-        end
-        o.text = o.text[1:e-1] * xml * o.text[e:end]
-    end
+    p = _series_start(o, i)
+    tags = [lstrip(b, '<') for b in before]
+    k = findfirst(c -> _isel(c) && XML.tag(c) in tags, collect(XML.children(_tnode(o, p))))
+    _tinsert!(o, p, something(k, typemax(Int)), _tfrag(xml)...)
 end
-# Removes what `rx` matches in series `i` (or replaces it, given `rx => f`).
-function _remove_in_series!(o, i, rx)
-    st = _series_start(o, i)
-    endswith(st.match, "/>") && return
-    e = findnext("</chart:series>", o.text, st.at)
-    a = st.at + ncodeunits(st.match)
-    o.text = o.text[1:a-1] * replace(o.text[a:first(e)-1], rx isa Pair ? rx : rx => "") * o.text[first(e):end]
-end
+# Removes series `i`'s children for which `pred(element)` holds.
+_remove_in_series!(o, i, pred::Function) = (_tdelete_kids!(o, _series_start(o, i), pred); nothing)
 
 """
     setAxisLabelArrangement(c, ax; stagger = nothing, overlap = nothing, breakText = nothing) -> Chart

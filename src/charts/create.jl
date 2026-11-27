@@ -146,6 +146,19 @@ function _editable(c::AbstractChart)
     return o
 end
 
+# The next free automatic style name, `ch1`, `ch2`, … (of the object's tree, or of a text).
+function _next_style_name(o::ChartObj)
+    k = 0
+    for c in XML.children(_tnode(o, _auto_styles(o)))          # the styles' names (`chN`) are there
+        _isel(c) || continue
+        n = _tattr(c, "style:name")
+        if n !== nothing && startswith(n, "ch")
+            v = tryparse(Int, SubString(n, 3))
+            v === nothing || (k = max(k, v))
+        end
+    end
+    return "ch$(k + 1)"
+end
 function _next_style_name(t::AbstractString)
     k = 0
     for m in eachmatch(r"style:name=\"ch(\d+)\"", t)
@@ -156,47 +169,33 @@ end
 
 # A new automatic style (its property elements' XML), returning its name.
 function _add_style!(o, props::AbstractString; datastyle::Bool = false)
-    name = _next_style_name(o.text)
+    name = _next_style_name(o)
     st = "<style:style style:name=\"$name\" style:family=\"chart\"" * (datastyle ? " style:data-style-name=\"N0\"" : "") * ">" * props * "</style:style>"
-    i = findfirst("</office:automatic-styles>", o.text)
-    i === nothing && throw(ODSError("The chart's object has no automatic styles."))
-    o.text = o.text[1:prevind(o.text, first(i))] * st * o.text[first(i):end]
+    _tappend!(o, _auto_styles(o), _tfrag1(st))
     return name
 end
 
-# Inserts XML before the first match of `before` (a string) inside the plot area.
+# Inserts XML before the first element named by `before` (`"<chart:plot-area"`).
 function _insert_before!(o, before::AbstractString, xml::AbstractString)
-    i = findfirst(before, o.text)
-    i === nothing && throw(ODSError("The chart's object has no `$before`."))
-    o.text = o.text[1:prevind(o.text, first(i))] * xml * o.text[first(i):end]
+    p = _tfirst(o, strip(lstrip(before, '<')))
+    p === nothing && throw(ODSError("The chart's object has no `$before`."))
+    _tinsert!(o, p[1:end-1], p[end], _tfrag(xml)...)
 end
 
-# Sets attributes on an automatic style's `style:chart-properties` (made if absent).
+# Sets attributes on an automatic style's `style:chart-properties` (or `element`; made, first, if absent).
 function _set_style_attrs!(o, style::AbstractString, attrs::Vector{Pair{String,String}}; element = "style:chart-properties")
-    m = match(Regex("<style:style style:name=\"" * style * "\"[^>]*>.*?</style:style>", "s"), o.text)
-    m === nothing && throw(ODSError("The chart has no style `$style`."))
-    st = m.match
-    e = match(Regex("<" * element * "\\b[^>]*?/?>"), st)
+    q = _style_el(o, style)
+    q === nothing && throw(ODSError("The chart has no style `$style`."))
+    e = _style_prop(o, style, element)
     if e === nothing
-        new = "<" * element * join(" $k=\"$(_esc(v))\"" for (k, v) in attrs) * "/>"
-        st2 = replace(st, r"(<style:style[^>]*>)" => SubstitutionString("\\1" * replace(new, "\\" => "\\\\")); count = 1)
+        foreach(p -> _check_xml_text(p.second), attrs)
+        _tinsert!(o, q, 1, XML.Element(element; (Symbol(k) => v for (k, v) in attrs)...))
     else
-        tag = e.match
-        for (k, v) in attrs
-            a = "$k=\"$(_esc(v))\""
-            if occursin(Regex("\\b" * k * "=\""), tag)
-                tag = replace(tag, Regex("\\b" * k * "=\"[^\"]*\"") => a)
-            else
-                close = endswith(tag, "/>") ? "/>" : ">"
-                tag = tag[1:end-ncodeunits(close)] * " " * a * close
-            end
-        end
-        st2 = replace(st, e.match => tag; count = 1)
+        _tset!(o, e, attrs)
     end
-    o.text = replace(o.text, st => st2; count = 1)
 end
 
-_plot_style(o) = match(r"<chart:plot-area\b[^>]*chart:style-name=\"([^\"]*)\"", o.text).captures[1]
+_plot_style(o) = _tget(o, _tfirst(o, "chart:plot-area"), "chart:style-name")
 
 #
 # Addresses
@@ -342,9 +341,12 @@ function addChart(ws::Worksheet, kind::Symbol; anchor::Union{AbstractString,Cell
     # rich titles (D-088): their runs in place of the plain text written with the object
     for (t, st) in ((title, "ch2"), (subtitle, "ch3"), (xtitle, "ch11"), (ytitle, "ch12"))
         t isa RichTextString || continue
-        m = match(Regex("(<chart:(?:sub)?title chart:style-name=\"" * st * "\">).*?(</chart:(?:sub)?title>)", "s"), o.text)
-        m === nothing && continue
-        o.text = replace(o.text, m.match => m.captures[1] * _rich_title_paras(o, t) * m.captures[2]; count = 1)
+        p = _tfirst(o, "chart:title"; pred = n -> _tattr(n, "chart:style-name") == st)
+        p === nothing && (p = _tfirst(o, "chart:subtitle"; pred = n -> _tattr(n, "chart:style-name") == st))
+        p === nothing && continue
+        paras = _tfrag(_rich_title_paras(o, t))            # its text styles go in the automatic styles
+        n = _tnode(o, p)
+        _treplace!(o, p, _telement(n, _tpairs(n), paras))
     end
     data === nothing || _add_data_series!(ch, o, data, seriesIn, firstRowLabels, firstColumnLabels)
     return ch
@@ -385,9 +387,8 @@ function _add_data_series!(c::Chart, o, data, seriesIn::Symbol, firstRow::Bool, 
     end
     # the range and its layout, as the wizard writes them on the plot area
     labels = firstRow && firstCol ? "both" : firstRow ? "row" : firstCol ? "column" : "none"
-    m = match(r"<chart:plot-area\b[^>]*>", o.text)
-    o.text = replace(o.text, m.match => m.match[1:end-1] * " table:cell-range-address=\"" * _esc(ref(r0, c0, last(rows), last(cols))) *
-                                        "\" chart:data-source-has-labels=\"$labels\">"; count = 1)
+    _tset!(o, _tfirst(o, "chart:plot-area"), ["table:cell-range-address" => ref(r0, c0, last(rows), last(cols)),
+                                             "chart:data-source-has-labels" => labels])
     seriesIn === :rows && _set_style_attrs!(o, _plot_style(o), ["chart:series-source" => "rows"])
     return c
 end
@@ -398,15 +399,19 @@ end
 function _secondary_y!(o)
     ax = _add_style!(o, """<style:chart-properties chart:display-label="true" chart:logarithmic="false" chart:reverse-direction="false" text:line-break="false" chart:link-data-style-to-source="true" chart:axis-position="end"/><style:graphic-properties svg:stroke-color="#b3b3b3"/>""" * _TEXT10;
                      datastyle = true)
-    _insert_before!(o, occursin("<chart:series ", o.text) ? "<chart:series " : "<chart:wall",
+    _insert_before!(o, _has_series(o) ? "<chart:series" : "<chart:wall",
                     "<chart:axis chart:dimension=\"y\" chart:name=\"secondary-y\" chart:style-name=\"$ax\"/>")
 end
 
 # The class of the chart and whether it is an XY, bubble, pie, line-like or combo chart.
-_chart_class(o) = match(r"<chart:chart\b[^>]*chart:class=\"([^\"]*)\"", o.text).captures[1]
+_chart_class(o) = _tget(o, _chart_el(o), "chart:class")
 # A column and line chart: a bar chart with a secondary y axis or line series (F-081).
+# (the line series were looked for with a regex holding a backspace character: never found)
 _is_combo(o) = _chart_class(o) == "chart:bar" &&
-    (occursin("chart:name=\"secondary-y\"", o.text) || occursin(r"<chart:series[^>]*chart:class=\"chart:line\"", o.text))
+    (_has_secondary_y(o) || _tfirst(o, "chart:series"; pred = n -> _tattr(n, "chart:class") == "chart:line") !== nothing)
+_has_series(o) = _tfirst(o, "chart:series") !== nothing
+_series_count(o) = length(_tall(o, "chart:series"))
+_has_secondary_y(o) = _tfirst(o, "chart:axis"; pred = n -> _tattr(n, "chart:name") == "secondary-y") !== nothing
 
 const _MARKERS = Dict(:circle => "circle", :square => "square", :diamond => "diamond", :triangle => "arrow-up", :x => "x",
     :plus => "plus", :star => "asterisk", :dash => "horizontal-bar", :dot => "arrow-right",
@@ -505,24 +510,25 @@ function addSeries(c::Chart, values; categories = nothing, name = nothing, name_
     line === nothing || xy || throw(ODSError("`line` is for XY (scatter) series."))
     xy && markers === false && line !== true && throw(ODSError("An XY series without markers needs `line = true`."))
     (pie && color !== nothing) && throw(ODSError("A $(class == "chart:ring" ? "doughnut" : "pie")'s points are coloured one by one: `color` is for other charts."))
-    pie && occursin("<chart:series", o.text) && throw(ODSError("A pie or doughnut chart has one series."))
+    pie && _has_series(o) && throw(ODSError("A pie or doughnut chart has one series."))
     vals = _odf_range(values, c.sheet)
     cats = categories === nothing ? nothing : _odf_range(categories, c.sheet)
     # categories belong to the x axis (D-086)
     if cats !== nothing && !xy && !bubble
-        m = match(r"<chart:categories table:cell-range-address=\"([^\"]*)\"", o.text)
-        if m === nothing
+        cp = _tfirst(o, "chart:categories")
+        now = cp === nothing ? nothing : _tget(o, cp, "table:cell-range-address")
+        if now === nothing
             _add_categories!(o, cats)
-        elseif XML.unescape(m.captures[1]) != cats
-            throw(ODSError("LibreOffice's categories are the chart's, not a series': this chart's are `$(XML.unescape(m.captures[1]))` (D-086)."))
+        elseif now != cats
+            throw(ODSError("LibreOffice's categories are the chart's, not a series': this chart's are `$now` (D-086)."))
         end
     end
     class == "chart:stock" && return _add_stock_series!(c, o, vals, name, name_ref, color)
     # smoothing is the chart's (D-086)
     plot = _plot_style(o)
-    cur = match(Regex("<style:style style:name=\"" * plot * "\"[^>]*>.*?</style:style>", "s"), o.text).match
-    smoothed = occursin("chart:interpolation=\"cubic-spline\"", cur)
-    nseries = count("<chart:series ", o.text)
+    plotattr(k) = _style_attr(o, plot, k; element = "style:chart-properties")
+    smoothed = plotattr("chart:interpolation") == "cubic-spline"
+    nseries = _series_count(o)
     if smooth !== nothing && nseries > 0 && smooth != smoothed
         throw(ODSError("LibreOffice smooths a chart's lines all or none (D-086): this chart's are $(smoothed ? "" : "not ")smooth."))
     end
@@ -531,7 +537,7 @@ function addSeries(c::Chart, values; categories = nothing, name = nothing, name_
     col, slot = something(_color_spec(xf, color), (_PALETTE[mod1(k, length(_PALETTE))], nothing))
     # the series' style
     chartprops = Pair{String,String}[]
-    autosym = occursin("chart:symbol-type=\"automatic\"", cur)
+    autosym = plotattr("chart:symbol-type") == "automatic"
     if isline || xy
         sym = markers === nothing ? (autosym ? "auto" : "none") : markers === false || markers === :none ? "none" :
               markers === true ? "circle" : markers === :auto ? "auto" : _MARKERS[markers]
@@ -576,7 +582,7 @@ function addSeries(c::Chart, values; categories = nothing, name = nothing, name_
         end
     end
     print(io, "</chart:series>")
-    _insert_before!(o, occursin("<chart:stock-gain-marker", o.text) ? "<chart:stock-gain-marker" : "<chart:wall", String(take!(io)))
+    _insert_before!(o, _tfirst(o, "chart:stock-gain-marker") !== nothing ? "<chart:stock-gain-marker" : "<chart:wall", String(take!(io)))
     return c
 end
 
@@ -584,9 +590,9 @@ end
 # the volume, columns on the primary y axis; the prices (open, low, high, close) follow on the secondary.
 function _add_stock_series!(c::Chart, o, vals, name, name_ref, color)
     color === nothing || throw(ODSError("A stock chart's prices are drawn as LibreOffice's candlesticks and range line: `color` is for other charts."))
-    volume = occursin("chart:name=\"secondary-y\"", o.text)
-    ohlc = occursin("chart:japanese-candle-stick=\"true\"", o.text)
-    n = count("<chart:series ", o.text)
+    volume = _has_secondary_y(o)
+    ohlc = _tfirst(o, "style:chart-properties"; pred = n -> _tattr(n, "chart:japanese-candle-stick") == "true") !== nothing
+    n = _series_count(o)
     nmax = 3 + ohlc + volume
     n < nmax || throw(ODSError("This stock chart has its $nmax series: " *
                                (volume ? "volume, " : "") * (ohlc ? "open, " : "") * "low, high, close."))
@@ -611,18 +617,12 @@ function _add_stock_series!(c::Chart, o, vals, name, name_ref, color)
 end
 
 function _add_categories!(o, cats::AbstractString)
-    m = match(r"<chart:axis\b[^>]*chart:name=\"primary-x\"[^>]*?(/?)>", o.text)
-    m === nothing && return                    # a pie: no axes; its categories are the chart's
-    cat = "<chart:categories table:cell-range-address=\"" * _esc(cats) * "\"/>"
-    if m.captures[1] == "/"
-        o.text = replace(o.text, m.match => m.match[1:end-2] * ">" * cat * "</chart:axis>"; count = 1)
-    else
-        # after the axis' title: ODF's order is title, categories, grids
-        i = first(findfirst(m.match, o.text)) + ncodeunits(m.match)
-        t = findnext(r"^<chart:title\b.*?</chart:title>"s, o.text[i:end], 1)
-        t === nothing || (i += last(t))
-        o.text = o.text[1:i-1] * cat * o.text[i:end]
-    end
+    p = _tfirst(o, "chart:axis"; pred = n -> _tattr(n, "chart:name") == "primary-x")
+    p === nothing && return                    # a pie: no axes; its categories are the chart's
+    _check_xml_text(cats)
+    cat = XML.Element("chart:categories"; Symbol("table:cell-range-address") => cats)
+    # after the axis' title: ODF's order is title, categories, grids
+    _tinsert!(o, p, _axis_title(o, p) === nothing ? 1 : 2, cat)
 end
 
 """
@@ -636,33 +636,36 @@ function makeCombo(c::Chart)
     o = _editable(c)
     class = _chart_class(o)
     class in ("chart:bar", "chart:line") || throw(ODSError("`makeCombo` makes a column or line chart a combo chart."))
-    occursin("chart:name=\"secondary-y\"", o.text) && throw(ODSError("The chart is already a combo chart."))
+    _has_secondary_y(o) && throw(ODSError("The chart is already a combo chart."))
     plot = _plot_style(o)
-    cur = match(Regex("<style:style style:name=\"" * plot * "\"[^>]*>.*?</style:style>", "s"), o.text).match
-    (occursin("chart:vertical=\"true\"", cur) || occursin("chart:percentage=\"true\"", cur)) &&
+    plotattr(k) = _style_attr(o, plot, k; element = "style:chart-properties")
+    (plotattr("chart:vertical") == "true" || plotattr("chart:percentage") == "true") &&
         throw(ODSError("`makeCombo` makes a column, stacked column or line chart a combo chart."))
-    n = count("<chart:series ", o.text)
+    series = _tall(o, "chart:series")
+    n = length(series)
     n >= 2 || throw(ODSError("A combo chart needs two series or more."))
     # columns, unstacked; the last series a line on the secondary axis
-    o.text = replace(o.text, r"(<chart:chart\b[^>]*chart:class=\")chart:line\"" => s"\1chart:bar\""; count = 1)
+    _chart_class(o) == "chart:line" && _tset!(o, _chart_el(o), ["chart:class" => "chart:bar"])
     _set_style_attrs!(o, plot, ["chart:stacked" => "false"])
-    o.text = replace(o.text, r"(<chart:series\b[^>]*chart:class=\")chart:line\"" => s"\1chart:bar\"")
-    k = 0
-    o.text = replace(o.text, r"<chart:series\b[^>]*>" => m -> (k += 1; k == n ?
-        replace(replace(m, r" chart:attached-axis=\"[^\"]*\"" => ""), r"chart:class=\"[^\"]*\"" => "chart:attached-axis=\"secondary-y\" chart:class=\"chart:line\"") : m))
+    for (k, p) in enumerate(series)
+        if k == n
+            _tset!(o, p, ["chart:attached-axis" => "secondary-y", "chart:class" => "chart:line"])
+        elseif _tget(o, p, "chart:class") == "chart:line"
+            _tset!(o, p, ["chart:class" => "chart:bar"])
+        end
+    end
     # each series drawn as its group is, in its own colour, as addSeries draws them: the columns
     # filled without an outline, the line stroked (a column's style has no stroke, which hides a line)
-    styles = [m.captures[1] for m in eachmatch(r"<chart:series\b[^>]*chart:style-name=\"([^\"]*)\"", o.text)]
-    for (j, st) in enumerate(styles)
-        sm = match(Regex("<style:style style:name=\"" * st * "\"[^>]*>.*?</style:style>", "s"), o.text)
-        sm === nothing && continue
-        g = match(r"<style:graphic-properties\b[^>]*?(?:/>|>.*?</style:graphic-properties>)"s, sm.match)
-        cm = g === nothing ? nothing : match(r"draw:fill-color=\"([^\"]*)\"", g.match)
-        col = cm === nothing ? _PALETTE[mod1(j, length(_PALETTE))] : cm.captures[1]
-        gp = j == n ? """<style:graphic-properties svg:stroke-width="0.08cm" svg:stroke-color="$col" draw:fill-color="$col"/>""" :
-                      """<style:graphic-properties draw:stroke="none" draw:fill-color="$col"/>"""
-        new = g === nothing ? replace(sm.match, r"(</style:style>)$" => SubstitutionString(gp * "\\1")) : replace(sm.match, g.match => gp)
-        o.text = replace(o.text, sm.match => new; count = 1)
+    for (j, p) in enumerate(series)
+        st = _tget(o, p, "chart:style-name")
+        st === nothing && continue
+        q = _style_el(o, st)
+        q === nothing && continue
+        g = _style_prop(o, st, "style:graphic-properties")
+        col = something(g === nothing ? nothing : _tget(o, g, "draw:fill-color"), _PALETTE[mod1(j, length(_PALETTE))])
+        gp = _tfrag1(j == n ? """<style:graphic-properties svg:stroke-width="0.08cm" svg:stroke-color="$col" draw:fill-color="$col"/>""" :
+                              """<style:graphic-properties draw:stroke="none" draw:fill-color="$col"/>""")
+        g === nothing ? _tappend!(o, q, gp) : _treplace!(o, g, gp)
     end
     _secondary_y!(o)
     return c

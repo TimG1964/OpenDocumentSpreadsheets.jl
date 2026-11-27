@@ -169,7 +169,8 @@ end
     text = OC._object_text(OC._frame(s))
     @test occursin("chart:japanese-candle-stick=\"true\"", text) && occursin("chart:name=\"secondary-y\"", text)
     @test occursin(r"<chart:series [^>]*chart:class=\"chart:bar\"", text)
-    @test occursin(r"</chart:series><chart:stock-gain-marker [^>]*/><chart:stock-loss-marker [^>]*/><chart:stock-range-line [^>]*/><chart:wall"s, text)
+    # (an element without children is written `<x/>` once edited as a tree: XML.jl's writer, D-102)
+    @test occursin(r"(?:</chart:series>|<chart:series [^>]*/>)<chart:stock-gain-marker [^>]*/><chart:stock-loss-marker [^>]*/><chart:stock-range-line [^>]*/><chart:wall"s, text)
     @test OC.getChartTypes(s) == [:barChart, :stockChart]
     w = OC.addChart(ws, :line; anchor = "H20:O36", data = "A1:D7", seriesIn = :rows, interpolation = :stepStart,
                     emptyCells = :zero, includeHidden = false, dataTable = true)
