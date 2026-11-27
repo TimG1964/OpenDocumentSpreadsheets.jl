@@ -60,6 +60,13 @@ println( cellname(cn) ) # will print out AB1
 struct CellRef
     row_number::Int32
     column_number::Int32
+    # The one constructor, so every CellRef is a cell of the sheet. (An outer method beside the
+    # default `CellRef(::Int32, ::Int32)` was bypassed by Int32 arguments, every call on 32-bit.)
+    function CellRef(row::Integer, col::Integer)
+        (1 <= row <= MAX_ROWS && 1 <= col <= MAX_COLS) ||
+            throw(SheetCoreError("Row $row, column $col is not a cell: rows are 1 to $MAX_ROWS and columns 1 to $MAX_COLS."))
+        return new(Int32(row), Int32(col))
+    end
 end
 
 #=
@@ -256,11 +263,6 @@ function CellRef(n::AbstractString)
     return CellRef(Int32(row), Int32(col))
 end
 
-@inline function CellRef(row::Integer, col::Integer)
-    (1 <= row <= MAX_ROWS && 1 <= col <= MAX_COLS) ||
-        throw(SheetCoreError("Row $row, column $col is not a cell: rows are 1 to $MAX_ROWS and columns 1 to $MAX_COLS."))
-    return CellRef(Int32(row), Int32(col))
-end
 @inline CellPosition(ref::CellRef) = CellPosition(row_number(ref), column_number(ref))
 @inline row_number(p::CellPosition) = p.row
 @inline column_number(p::CellPosition) = p.column

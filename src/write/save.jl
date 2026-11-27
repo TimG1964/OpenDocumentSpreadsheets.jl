@@ -289,6 +289,7 @@ writeods("template.ots", newods("Sheet1"); overwrite = true)   # a template
 """
 function writeods(dest::Union{AbstractString,IO}, xf::ODSFile; overwrite::Bool = false,
                   version::AbstractString = DEFAULT_ODF_VERSION, display_text::Bool = true)
+    _require_whole(xf, "save the file")
     _check_overwrite(dest, overwrite)
     display = display_text
     fmt = _output_format(dest, xf)

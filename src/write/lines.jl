@@ -484,6 +484,15 @@ function shift_lines!(ws::Worksheet, axis::Int, at::Int, n::Int)
         p === nothing ||
             throw(ODSError("Can't insert $n $(word)$(n == 1 ? "" : "s") into `$(ws.name)`: cell $(p) would be pushed off the sheet (LibreOffice refuses this too)."))
     end
+    what = n > 0 ? "inserting $(word)s into `$(ws.name)`" : "deleting $(word)s of `$(ws.name)`"
+    _all_or_nothing(xf, what) do
+        _shift_lines_now!(xf, ws, sheets, s, f, axis, at, n, maxl)
+    end
+    return ws
+end
+
+# The changes of `shift_lines!`, once its checks are done.
+function _shift_lines_now!(xf::ODSFile, ws::Worksheet, sheets, s::SheetStore, f::SheetFormats, axis::Int, at::Int, n::Int, maxl::Int)
     d1 = at; d2 = at - n - 1
     # shapes in deleted cells that reach beyond them stay, in the cell now at their place (F-060)
     rescued = n < 0 ? _rescued_frames(ws, axis, d1, d2) : nothing
@@ -555,7 +564,7 @@ function shift_lines!(ws::Worksheet, axis::Int, at::Int, n::Int)
     _shift_frames!(ws, axis, at, n, rescued)          # pictures (phase 6 step 5): after the edits moved
     _shift_valrects!(ws, axis, at, n, vcopy)          # validations (phase 6 step 6): likewise
     isnewfile(xf) || push!(xf.ops, op)
-    return ws
+    return
 end
 
 #

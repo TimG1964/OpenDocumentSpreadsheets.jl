@@ -230,6 +230,8 @@
         end
         for (r, c) in ((0, 1), (1, 0), (SheetCore.MAX_ROWS + 1, 1), (1, SheetCore.MAX_COLS + 1), (-1, -1))
             @test_throws SheetCore.SheetCoreError SheetCore.CellRef(r, c)
+            # Int32, as every Int is on a 32-bit build: the default constructor skipped the check
+            @test_throws SheetCore.SheetCoreError SheetCore.CellRef(Int32(r), Int32(c))
         end
         @test string(SheetCore.CellRef("XFD1048576")) == "XFD1048576"
         @test SheetCore.CellRef(SheetCore.MAX_ROWS, SheetCore.MAX_COLS) == SheetCore.CellRef("XFD1048576")

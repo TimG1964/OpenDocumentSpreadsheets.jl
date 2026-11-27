@@ -2,53 +2,56 @@
 # the entries keyed by sheet name follow renames, deletes and copies, as LibreOffice keeps them
 # (F-047): each view's per-sheet entries (`Tables`), the sheets' code names
 # (`ScriptConfiguration`), and the active sheet (`ActiveTable`). Everything else is kept as it is.
+# The settings are read as XML.jl trees (write/xmlparts.jl): names are compared unescaped, so a
+# sheet LibreOffice writes as `Bob&apos;s` is found (D-101).
 
 const _SHEET_MAPS = ("Tables", "ScriptConfiguration")
 
-# Applies `f` to the content of every named map holding entries keyed by sheet name.
+# Applies `f(inner, mapname)` to the content of every named map holding entries keyed by sheet
+# name; an empty map (`<…/>`) is left as it is.
 function _in_sheet_maps(f::Function, s::String)
-    for m in _SHEET_MAPS
-        open_tag = "<config:config-item-map-named config:name=\"$m\">"
-        i = 1
-        while (r = findnext(open_tag, s, i)) !== nothing
-            a = last(r) + 1
-            z = findnext("</config:config-item-map-named>", s, a)
-            z === nothing && break
-            inner = f(String(SubString(s, a, prevind(s, first(z)))), m)
-            s = s[1:last(r)] * inner * s[first(z):end]
-            i = last(r) + ncodeunits(inner) + 1
-        end
+    splices = Tuple{Int,Int,Any}[]
+    for e in _xelements(s)
+        (e.tag == "config:config-item-map-named" && e.inner !== nothing) || continue
+        m = _xattr(e, "config:name")
+        m in _SHEET_MAPS || continue
+        inner = String(SubString(s, first(e.inner), last(e.inner)))
+        new = f(inner, m)
+        new == inner || push!(splices, (first(e.inner), last(e.inner), new))
     end
-    return s
+    return isempty(splices) ? s : _apply_splices(s, splices)
 end
 
 _entry_open(name) = "<config:config-item-map-entry config:name=\"" * _escape_attr(name) * "\">"
 
-# The span of the entry for `name` in a map's content, or nothing.
-function _entry_span(inner::String, name::String)
-    r = findfirst(_entry_open(name), inner)
-    r === nothing && return nothing
-    z = findnext("</config:config-item-map-entry>", inner, last(r))
-    z === nothing && return nothing
-    return first(r):last(z)
+# The span of the entry for `name` among a map's entries (`inner`, its content), or nothing.
+function _entry_span(inner::AbstractString, name::AbstractString)
+    e = _xfirst(inner, "config:config-item-map-entry", "config:name", name; depth = 1)
+    return e === nothing ? nothing : e.span
 end
 
-const _ACTIVE_RX = r"(<config:config-item config:name=\"ActiveTable\" config:type=\"string\">)([^<]*)(</config:config-item>)"
+# `text` (an entry) with its name `name`.
+_entry_named(text::AbstractString, name::AbstractString) =
+    _set_attrs(text, Pair{String,Union{Nothing,String}}["config:name" => _escape_attr(name)]; open = !endswith(text, "/>")) *
+    SubString(text, nextind(text, _start_tag_end(text)))
 
+# The settings with the active sheet's name `f(current)`.
 function _set_active(s::String, f::Function)
-    return replace(s, _ACTIVE_RX => m -> begin
-        mm = match(_ACTIVE_RX, m)
-        cur = XML.unescape(mm.captures[2])
+    splices = Tuple{Int,Int,Any}[]
+    for e in _xfind(s, "config:config-item", "config:name", "ActiveTable")
+        (e.inner === nothing || _xattr(e, "config:type") != "string") && continue
+        cur = XML.unescape(String(SubString(s, first(e.inner), last(e.inner))))
         new = f(cur)
-        mm.captures[1] * _escape_attr(new) * mm.captures[3]
-    end)
+        new == cur || push!(splices, (first(e.inner), last(e.inner), sprint(_escape_text, new)))
+    end
+    return isempty(splices) ? s : _apply_splices(s, splices)
 end
 
 function _settings_rename(s::String, old::String, new::String)
     s = _in_sheet_maps(s) do inner, _
         sp = _entry_span(inner, old)
         sp === nothing && return inner
-        replace(inner, _entry_open(old) => _entry_open(new); count = 1)
+        return inner[1:prevind(inner, first(sp))] * _entry_named(inner[sp], new) * inner[nextind(inner, last(sp)):end]
     end
     return _set_active(s, cur -> _same_sheet(cur, old) ? new : cur)
 end
@@ -67,10 +70,10 @@ function _settings_copy(s::String, src::String, dst::String)
     return _in_sheet_maps(s) do inner, m
         if m == "ScriptConfiguration"
             inner * _entry_open(dst) * "<config:config-item config:name=\"CodeName\" config:type=\"string\">" *
-                _escape_attr(dst) * "</config:config-item></config:config-item-map-entry>"
+                sprint(_escape_text, dst) * "</config:config-item></config:config-item-map-entry>"
         else
             sp = _entry_span(inner, src)
-            sp === nothing ? inner : inner * replace(inner[sp], _entry_open(src) => _entry_open(dst); count = 1)
+            sp === nothing ? inner : inner * _entry_named(inner[sp], dst)
         end
     end
 end

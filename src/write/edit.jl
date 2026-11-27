@@ -8,9 +8,32 @@
 
 function _require_writable(xf::ODSFile, what::AbstractString)
     xf.writable || throw(ODSError("Can't $what: the file is read-only. Open it with `openods(…; mode=\"rw\")`, or start one with `newods()`."))
+    _require_whole(xf, what)
     return nothing
 end
-_require_writable(ws::Worksheet, what::AbstractString) = _require_writable(get_odsfile(ws), what)
+function _require_writable(ws::Worksheet, what::AbstractString)
+    _require_writable(get_odsfile(ws), what)
+    ws.touched = true            # its patched save writes it again (D-100)
+    return nothing
+end
+
+# A file whose model a structural edit left half-changed is not edited or saved (`_all_or_nothing`).
+_require_whole(xf::ODSFile, what::AbstractString) = xf.broken === nothing ||
+    throw(ODSError("Can't $what: $(xf.broken) failed part-way, so the file's contents in memory are " *
+                   "only partly changed. The file on disk is as it was: open it again."))
+
+# Runs the changing part of a structural edit (`what`, as "`insertRows`"): one that fails part-way
+# leaves the model half-changed, so the file is marked and refuses edits and saves from then on.
+# Its checks run before, so a refused call changes nothing. (Phase 2 of the code review: a snapshot
+# of everything an edit touches, to restore, would cost a copy of most of the model.)
+function _all_or_nothing(f::Function, xf::ODSFile, what::AbstractString)
+    try
+        return f()
+    catch
+        xf.broken = what
+        rethrow()
+    end
+end
 
 """
     newods(sheetname="") -> ODSFile

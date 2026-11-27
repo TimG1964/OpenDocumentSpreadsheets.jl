@@ -49,12 +49,14 @@ function renamesheet!(ws::Worksheet, name::AbstractString)
     xf = get_odsfile(ws)
     _check_rename(xf, ws, name)
     _load_all!(xf)
-    op = SheetRename(ws.name, name)
-    _rewrite_model_refs!(xf, op)
-    ws.localnames === nothing ||
-        (ws.localnames = [NameDef(dn.name, name, dn.range, dn.expression, dn.base, dn.span) for dn in ws.localnames])
-    ws.name = name
-    isnewfile(xf) || push!(xf.ops, op)
+    _all_or_nothing(xf, "renaming `$(ws.name)`") do
+        op = SheetRename(ws.name, name)
+        _rewrite_model_refs!(xf, op)
+        ws.localnames === nothing ||
+            (ws.localnames = [NameDef(dn.name, name, dn.range, dn.expression, dn.base, dn.span) for dn in ws.localnames])
+        ws.name = name
+        isnewfile(xf) || push!(xf.ops, op)
+    end
     return nothing
 end
 
@@ -76,12 +78,14 @@ function deletesheet!(ws::Worksheet)
     length(sheets) == 1 && throw(ODSError("Can't delete `$(ws.name)`: it is the only sheet of $(xf.source)."))
     i = findfirst(s -> s === ws, sheets)
     i === nothing && throw(ODSError("The sheet `$(ws.name)` is not in $(xf.source)."))
-    op = SheetDelete(ws.name, [s.name for s in sheets])
-    deleteat!(xf.sheets, i)
-    _renumber!(xf)
-    _rewrite_model_refs!(xf, op)
-    ws.entry === nothing || ws.copied || push!(xf.gone, ws)
-    isnewfile(xf) || push!(xf.ops, op)
+    _all_or_nothing(xf, "deleting `$(ws.name)`") do
+        op = SheetDelete(ws.name, [s.name for s in sheets])
+        deleteat!(xf.sheets, i)
+        _renumber!(xf)
+        _rewrite_model_refs!(xf, op)
+        ws.entry === nothing || ws.copied || push!(xf.gone, ws)
+        isnewfile(xf) || push!(xf.ops, op)
+    end
     return xf
 end
 deletesheet!(xf::ODSFile, name::AbstractString) = (hassheet(xf, name) ||
@@ -319,6 +323,11 @@ function copysheet!(ws::Worksheet, name::AbstractString = "")
     end
     name = String(name)
     _check_rename(xf, nothing, name)
+    return _all_or_nothing(() -> _copysheet_now!(xf, ws, sheets, name), xf, "copying `$(ws.name)`")
+end
+
+# The changes of `copysheet!`, once its checks are done.
+function _copysheet_now!(xf::ODSFile, ws::Worksheet, sheets, name::String)
     order = [[s.name for s in sheets]; name]
     op = SheetCopy(ws.name, name, false, order)
     localize = _names_to_localize(xf, ws)

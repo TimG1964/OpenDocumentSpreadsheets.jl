@@ -215,3 +215,111 @@ end
         end
     end
 end
+
+# An error part-way through a structural edit (Phase 2 of the code review): injected by a more
+# specific method of a step late in the edit, which throws while `_FAIL` is set and otherwise
+# calls the package's own.
+const _FAIL = Ref(false)
+@eval OpenDocumentSpreadsheets function _rewrite_chart_refs!(xf::ODSFile, op::RefOp)
+    Main._FAIL[] && error("injected")
+    return invoke(_rewrite_chart_refs!, Tuple{Any,Any}, xf, op)
+end
+@eval OpenDocumentSpreadsheets function _copy_chart_frames!(xf::ODSFile, ws::Worksheet)
+    Main._FAIL[] && error("injected")
+    return invoke(_copy_chart_frames!, Tuple{Any,Any}, xf, ws)
+end
+@eval OpenDocumentSpreadsheets function _sort_move_objects!(ws::Worksheet, rows::UnitRange{Int}, r1::Int, c1::Int, c2::Int,
+                                                            perm::Vector{Int}, inv::Vector{Int}, moved::Vector{Bool}, now::NamedTuple)
+    Main._FAIL[] && error("injected")
+    return invoke(_sort_move_objects!, Tuple{Worksheet,UnitRange{Int},Int,Int,Int,Vector{Int},Vector{Int},Vector{Bool},Any},
+                  ws, rows, r1, c1, c2, perm, inv, moved, now)
+end
+
+@testset "a structural edit that fails part-way leaves the file unsaveable" begin
+    O = OpenDocumentSpreadsheets
+    dir = mktempdir()
+    src = joinpath(dir, "src.ods")
+    let xf = newods("Data")
+        ws = xf[1]
+        for r in 1:6; ws[r, 1] = 7 - r; ws[r, 2] = "=A$r*2"; end
+        addsheet!(xf, "Other")
+        writeods(src, xf)
+    end
+    ops = [("insertRows", xf -> insertRows(xf["Data"], 2)),
+           ("deleteRows of two spans", xf -> deleteRows(xf["Data"], "2,4:5")),
+           ("deleteColumns", xf -> deleteColumns(xf["Data"], 1)),
+           ("renamesheet!", xf -> renamesheet!(xf["Data"], "D2")),
+           ("deletesheet!", xf -> deletesheet!(xf["Other"])),
+           ("sort", xf -> O.setAutoFilter(xf["Data"], "A1:B6"; sort = "A"))]
+    for (what, op) in ops
+        p = joinpath(dir, "t.ods"); cp(src, p; force = true)
+        before = read(p)
+        xf = openods(p; mode = "rw")
+        _FAIL[] = true
+        try
+            @test_throws ErrorException op(xf)
+        finally
+            _FAIL[] = false
+        end
+        @test xf.broken !== nothing
+        # reads still work; edits and saves are refused, naming what failed
+        @test xf["Data"]["A1"] isa Real || xf["D2"]["A1"] isa Real
+        err = try saveods(xf); nothing catch e; e end
+        @test err isa ODSError && occursin("failed part-way", err.msg)
+        @test_throws ODSError writeods(IOBuffer(), xf)
+        @test_throws ODSError (xf[1]["C1"] = 1)
+        @test read(p) == before                                       # the file is as it was
+        # the same edit, not failing, is fine
+        xf2 = openods(p; mode = "rw"); op(xf2); @test xf2.broken === nothing
+        writeods(IOBuffer(), xf2)
+    end
+    # a new file's sheet copy
+    xf = newods("A"); xf[1]["A1"] = 1
+    _FAIL[] = true
+    try
+        @test_throws ErrorException copysheet!(xf[1], "B")
+    finally
+        _FAIL[] = false
+    end
+    @test xf.broken !== nothing && occursin("copying `A`", xf.broken)
+    @test_throws ODSError writeods(IOBuffer(), xf)
+    # an edit refused by its checks changes nothing, and marks nothing
+    xf = openods(src; mode = "rw")
+    @test_throws ODSError insertRows(xf["Data"], 2; count = 0)
+    @test_throws ODSError renamesheet!(xf["Data"], "Other")
+    @test_throws ODSError deletesheet!(xf, "NoSuch")
+    @test xf.broken === nothing
+    writeods(IOBuffer(), xf)
+end
+
+@testset "settings and page styles read as trees (D-101)" begin
+    O = OpenDocumentSpreadsheets
+    # LibreOffice writes `'` in a name as &apos; (scratchpad set/n.ods): the entry was not found by its text
+    s = """<office:settings><config:config-item-set config:name="ooo:view-settings"><config:config-item-map-indexed config:name="Views">""" *
+        """<config:config-item-map-entry><config:config-item config:name="ActiveTable" config:type="string">Bob&apos;s</config:config-item>""" *
+        """<config:config-item-map-named config:name="Tables"><config:config-item-map-entry config:name="Bob&apos;s">""" *
+        """<config:config-item config:name="ZoomValue" config:type="int">120</config:config-item></config:config-item-map-entry>""" *
+        """<config:config-item-map-entry config:name='A&gt;B'><config:config-item config:name='ZoomValue' config:type='int'>90</config:config-item>""" *
+        """</config:config-item-map-entry></config:config-item-map-named></config:config-item-map-entry></config:config-item-map-indexed>""" *
+        """</config:config-item-set></office:settings>"""
+    r = O._settings_rename(s, "Bob's", "Renamed")
+    @test O._sheet_entry(r, "Renamed") !== nothing && O._sheet_entry(r, "Bob's") === nothing
+    @test O._items(r)["ActiveTable"] == ("string", "Renamed")
+    # single quotes, as any XML writer may use: found, and its items read
+    e = O._sheet_entry(s, "A>B")
+    @test e !== nothing && O._items(s[e.span])["ZoomValue"] == ("int", "90")
+    d = O._settings_delete(s, "A>B", ["Bob's", "A>B"])
+    @test O._sheet_entry(d, "A>B") === nothing && O._sheet_entry(d, "Bob's") !== nothing
+    c = O._settings_copy(s, "A>B", "C'2")
+    e2 = O._sheet_entry(c, "C'2")
+    @test e2 !== nothing && O._items(c[e2.span])["ZoomValue"] == ("int", "90")
+    # an item set in an entry written with single quotes replaces it
+    w = O._with_items("<config:config-item config:name='ZoomValue' config:type='int'>90</config:config-item>", ["ZoomValue" => ("int", "50")])
+    @test O._items(w) == Dict("ZoomValue" => ("int", "50"))
+    # a font face by a name with regex characters (it was put in a regex)
+    doc = """<office:document-styles><office:font-face-decls><style:font-face style:name="A+B (x)" svg:font-family="&apos;Fam One&apos;"/>""" *
+          """<style:font-face style:name="AAB (x)" svg:font-family="Wrong"/></office:font-face-decls></office:document-styles>"""
+    f = O._named_element(doc, "style:font-face", "A+B (x)")
+    @test f !== nothing && occursin("Fam One", f)
+    @test O._named_element(doc, "style:font-face", "AB") === nothing
+end

@@ -247,6 +247,25 @@ function _sort_rows!(ws::Worksheet, r1::Int, c1::Int, r2::Int, c2::Int, keys::Ve
     s = _cached_store(ws)
     f = sheet_formats(ws)
     cache = _CodeCache()
+    perm = _sort_perm(ws, s, rows, c1, keys, cs, nat, cache)
+    moved = [perm[i] != i for i in 1:n]           # a moved row's source moved too (a permutation)
+    any(moved) || return over
+    inv = similar(perm)
+    for i in 1:n
+        inv[perm[i]] = i
+    end
+    now = _sort_now(ws, s, f, rows, r1, r2, c1, c2, perm, inv, moved, formats, cache, over)
+    # everything is read: the changes (Phase 2 of the code review)
+    _all_or_nothing(get_odsfile(ws), "sorting `$(ws.name)`") do
+        _sort_move_cells!(ws, s, f, rows, c1, c2, perm, moved, formats, now)
+        _sort_move_objects!(ws, rows, r1, c1, c2, perm, inv, moved, now)
+    end
+    return over
+end
+
+# The order of the rows by `keys`: `perm[i]` is the row (of `rows`, counted from 1) that goes to the i-th.
+function _sort_perm(ws::Worksheet, s::SheetStore, rows::UnitRange{Int}, c1::Int, keys::Vector{_SortKey}, cs::Bool, nat::Bool, cache)
+    n = length(rows)
     cells = Dict{Int,Vector{_AFCell}}()
     texts = Dict{Int,Vector{_SortText}}()
     for k in keys
@@ -263,7 +282,7 @@ function _sort_rows!(ws::Worksheet, r1::Int, c1::Int, r2::Int, c2::Int, keys::Ve
         end
         0
     end
-    perm = if nat && n <= 5000
+    return if nat && n <= 5000
         # natural comparisons need not be transitive ("a 1" < "a%" < "a01" < "a 1"): LibreOffice's own
         # sort, with its test for sorted rows, gives its order. Its pivot makes nearly sorted rows
         # quadratic, so longer ranges are sorted stably (the same order wherever comparisons are transitive)
@@ -273,17 +292,16 @@ function _sort_rows!(ws::Worksheet, r1::Int, c1::Int, r2::Int, c2::Int, keys::Ve
     else
         sortperm(collect(1:n); lt = (i, j) -> cmpij(i, j) < 0, alg = MergeSort)   # stable: equal rows keep their order
     end
-    moved = [perm[i] != i for i in 1:n]           # a moved row's source moved too (a permutation)
-    any(moved) || return over
-    inv = similar(perm)
-    for i in 1:n
-        inv[perm[i]] = i
-    end
+end
+
+# What each moved cell holds now, and what goes with it: values, formats, notes, links, validations,
+# shapes and row visibility, as a NamedTuple. Adds the formulas moved with a value to `over`.
+function _sort_now(ws::Worksheet, s::SheetStore, f::SheetFormats, rows::UnitRange{Int}, r1::Int, r2::Int, c1::Int, c2::Int,
+                   perm::Vector{Int}, inv::Vector{Int}, moved::Vector{Bool}, formats::Bool, cache, over::Dict)
+    n = length(rows)
     xf = get_odsfile(ws)
     file = ws.entry !== nothing
     m = c2 - c1 + 1
-
-    # what each cell holds now
     vals = Matrix{Union{Nothing,CellData}}(nothing, n, m)
     fmts = Matrix{Union{Nothing,CellData}}(nothing, n, m)
     for i in 1:n, j in 1:m
@@ -338,7 +356,14 @@ function _sort_rows!(ws::Worksheet, r1::Int, c1::Int, r2::Int, c2::Int, keys::Ve
     end
     vis = [(x = _fmt_at(f.rows, r); x === nothing ? _VISIBLE : x.visibility) for r in rows]
 
-    # the cells move
+    return (; vals, fmts, notes, links, valnames, shapes, vis, file, m)
+end
+
+# Moves the cells of the sorted rows (values, and formats if `formats`).
+function _sort_move_cells!(ws::Worksheet, s::SheetStore, f::SheetFormats, rows::UnitRange{Int}, c1::Int, c2::Int,
+                           perm::Vector{Int}, moved::Vector{Bool}, formats::Bool, now)
+    n = length(rows)
+    (; vals, fmts, links, file, m) = now
     _rows_singles!(s.rows, first(rows), last(rows))
     _rows_singles!(f.cells, first(rows), last(rows))
     for i in 1:n
@@ -379,7 +404,14 @@ function _sort_rows!(ws::Worksheet, r1::Int, c1::Int, r2::Int, c2::Int, keys::Ve
         end
     end
 
-    # notes, validations and shapes go with their cells; hidden rows with their rows
+    return
+end
+
+# Moves the notes, validations and shapes with their cells, and the rows' visibility with the rows.
+function _sort_move_objects!(ws::Worksheet, rows::UnitRange{Int}, r1::Int, c1::Int, c2::Int, perm::Vector{Int}, inv::Vector{Int},
+                             moved::Vector{Bool}, now)
+    n = length(rows)
+    (; notes, valnames, shapes, vis, m) = now
     for i in 1:n
         moved[i] || continue
         r = rows[i]; o = rows[perm[i]]
@@ -431,7 +463,7 @@ function _sort_rows!(ws::Worksheet, r1::Int, c1::Int, r2::Int, c2::Int, keys::Ve
         v = vis[perm[i]]
         v == vis[i] || set_row_formats!(ws, rows[i]:rows[i]; visibility = v)
     end
-    return over
+    return
 end
 
 #

@@ -218,22 +218,7 @@ end
 function _mapped_rows!(st::_PatchState, ln::XML.LazyNode, text::SubString{String}, o::Int, n::Int, cr::Int, orig)
     r0 = cr; r1 = cr + n - 1
     f = st.fmt
-    bps = Int[]
-    lo = searchsortedfirst(st.drows, r0)
-    hi = searchsortedlast(st.drows, r1)
-    for k in lo:hi
-        push!(bps, st.drows[k], st.drows[k] + 1)
-    end
-    for (rr, _) in f.rects
-        push!(bps, first(rr), last(rr) + 1)
-    end
-    for tr in f.rows_touched
-        push!(bps, first(tr), last(tr) + 1)
-    end
-    _row_bounds!(bps, st.store.rows, r0, r1)
-    _row_bounds!(bps, f.cells, r0, r1)
-    _row_bounds!(bps, f.rows, r0, r1)
-    pts = _segment_points(bps, r0, r1)
+    pts = _row_segments(st, r0, r1)
     for k in 1:length(pts)-1
         a = pts[k]; m = pts[k + 1] - a
         cols = _edited_cols(st, a)

@@ -368,11 +368,14 @@ mutable struct Worksheet
     pagecharts::Union{Nothing,Vector{ImageData}}   # charts added anchored to the page: a chart sheet's (phase 8 step 7)
     sparks::Union{Nothing,SparkState}   # its sparkline groups, once read (phase 8 step 8)
     filerich::Union{Nothing,Vector{Tuple{Int,Int,Int,Int,String,String}}}   # the cells of its file with rich text, once read (D-088)
+    # whether a setter has run on it (`_require_writable`): a patched save then writes it again, so an
+    # edit that no `_sheet_edited` check knows of is not lost (Phase 2 of the code review, D-100)
+    touched::Bool
 end
 
 Worksheet(xf, name, index, entry, visible, store, localnames, lock) =
     Worksheet(xf, name, index, entry, visible, store, localnames, lock, Dict{Int,Vector{Int}}(), nothing, nothing, nothing, 0, false,
-              NameEdits(), nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing)
+              NameEdits(), nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, false)
 
 # Whether the sheet was made by OpenDocumentSpreadsheets (so it is written whole), not read from the file.
 isnewsheet(ws::Worksheet) = ws.entry === nothing
@@ -414,14 +417,17 @@ mutable struct ODSFile
     valedits::ValEdits                # validation rules read and added (phase 6 step 6)
     dbedits::DBEdits                  # database ranges (tables) read, added and changed (phase 6 step 7)
     chartobjs::Dict{String,ChartObj}  # charts added or edited, by object name (phase 8)
+    # what failed part-way through a structural edit, which leaves the model half-changed: the
+    # file can still be read, but not edited or saved (Phase 2 of the code review)
+    broken::Union{Nothing,String}
 end
 
 ODSFile(source, container, content, version, styles, sheets, names, null_date, use_cache) =
     ODSFile(source, container, content, version, styles, sheets, names, null_date, use_cache, false, nothing,
-            nothing, ReentrantLock(), Any[], Any[], Any[], Pair{String,String}[], NameEdits(), TableStyleEdits(), ViewEdits(), nothing, PageEdits(), nothing, PersonEdits(), Tuple{String,String,Vector{UInt8}}[], nothing, ValEdits(), DBEdits(), Dict{String,ChartObj}())
+            nothing, ReentrantLock(), Any[], Any[], Any[], Pair{String,String}[], NameEdits(), TableStyleEdits(), ViewEdits(), nothing, PageEdits(), nothing, PersonEdits(), Tuple{String,String,Vector{UInt8}}[], nothing, ValEdits(), DBEdits(), Dict{String,ChartObj}(), nothing)
 ODSFile(source, container, content, version, styles, sheets, names, null_date, use_cache, writable, source_io) =
     ODSFile(source, container, content, version, styles, sheets, names, null_date, use_cache, writable, source_io,
-            nothing, ReentrantLock(), Any[], Any[], Any[], Pair{String,String}[], NameEdits(), TableStyleEdits(), ViewEdits(), nothing, PageEdits(), nothing, PersonEdits(), Tuple{String,String,Vector{UInt8}}[], nothing, ValEdits(), DBEdits(), Dict{String,ChartObj}())
+            nothing, ReentrantLock(), Any[], Any[], Any[], Pair{String,String}[], NameEdits(), TableStyleEdits(), ViewEdits(), nothing, PageEdits(), nothing, PersonEdits(), Tuple{String,String,Vector{UInt8}}[], nothing, ValEdits(), DBEdits(), Dict{String,ChartObj}(), nothing)
 
 #
 # The sheet index is built as far as it is needed: `xf["Sheet1"]` or `xf[1]` finds the first

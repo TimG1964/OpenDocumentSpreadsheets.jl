@@ -63,13 +63,30 @@ function _put!(v::Vector{Pair{String,String}}, k, x)
     return v
 end
 
-# The element `<tag … name="name"…>…</tag>` in a document, or nothing.
+# The style sections of a document (styles.xml, or a flat document) where named styles are.
+const _STYLE_SECTIONS = ("office:font-face-decls", "office:styles", "office:automatic-styles", "office:master-styles")
+
+# The element `<tag style:name="name" …>` of a document's style sections, as text, or nothing. Read
+# as XML.jl trees (D-101): any quoting, and names with any character.
 function _named_element(doc::AbstractString, tag::AbstractString, name::AbstractString)
-    for m in eachmatch(Regex("<" * tag * "\\b[^>]*?(?:/>|>.*?</" * tag * ">)", "s"), doc)
-        st = SubString(m.match, 1, _start_tag_end(m.match))
-        _start_tag_attr(st, "style:name") == name && return String(m.match)
+    isempty(doc) && return nothing
+    _, _, kids = _top_elements(doc)
+    for sec in _STYLE_SECTIONS
+        n = get(kids, sec, nothing)
+        n === nothing && continue
+        t = XML.sourcetext(n)
+        e = _xfirst(t, tag, "style:name", name)
+        e === nothing || return String(SubString(t, first(e.span), last(e.span)))
     end
     return nothing
+end
+
+# The start tag of the first `tag` element in `x`, or nothing.
+function _first_start_tag(x::AbstractString, tag::AbstractString)
+    e = _xfirst(x, tag)
+    e === nothing && return nothing
+    t = SubString(x, first(e.span), last(e.span))
+    return SubString(t, 1, _start_tag_end(t))
 end
 
 # The children of an element's text, as (tag => XML) in order.
@@ -94,7 +111,8 @@ end
 #
 
 _cm_attr(v::Vector{Pair{String,String}}, k, default) = something(_length_cm(_get(v, k)), default)
-_shown(regions, tag) = (i = findfirst(p -> p.first == tag, regions); i !== nothing && !occursin("style:display=\"false\"", regions[i].second[1:_start_tag_end(regions[i].second)]))
+_shown(regions, tag) = (i = findfirst(p -> p.first == tag, regions); i !== nothing &&
+    _get(_attr_pairs(SubString(regions[i].second, 1, _start_tag_end(regions[i].second))), "style:display") != "false")
 
 function _print_state(ws::Worksheet)
     ws.print === nothing || return ws.print
@@ -115,8 +133,8 @@ function _print_state(ws::Worksheet)
             lprops = _attr_pairs(SubString(x, 1, _start_tag_end(x)))
             linner = endswith(x, "/>") ? "" : x[nextind(x, _start_tag_end(x)):prevind(x, first(findlast("</", x)))]
         elseif tag in ("style:header-style", "style:footer-style")
-            m = match(r"<style:header-footer-properties\b[^>]*>", x)
-            pr = m === nothing ? Pair{String,String}[] : _attr_pairs(m.match)
+            m = _first_start_tag(x, "style:header-footer-properties")
+            pr = m === nothing ? Pair{String,String}[] : _attr_pairs(m)
             tag == "style:header-style" ? (hprops = pr) : (fprops = pr)
         end
     end
@@ -860,13 +878,15 @@ function _text_style_font(xf::ODSFile, doc::AbstractString, name::AbstractString
     x === nothing && (x = _named_element(doc, "style:style", name))
     f = _HFFont()
     x === nothing && return f
-    m = match(r"<style:text-properties\b[^>]*>", x)
+    m = _first_start_tag(x, "style:text-properties")
     m === nothing && return f
-    a = _attr_pairs(m.match)
+    a = _attr_pairs(m)
     fn = _get(a, "fo:font-family")
     if fn === nothing && (sn = _get(a, "style:font-name")) !== nothing
-        face = match(Regex("<style:font-face style:name=\"" * sn * "\"[^>]*svg:font-family=\"([^\"]*)\""), doc)
-        fn = face === nothing ? sn : replace(XML.unescape(face.captures[1]), "'" => "")
+        # the face by its name (which was put in a regex: a `+` or `(` in it matched another, or threw)
+        face = _named_element(doc, "style:font-face", sn)
+        fam = face === nothing ? nothing : _get(_attr_pairs(SubString(face, 1, _start_tag_end(face))), "svg:font-family")
+        fn = fam === nothing ? sn : replace(fam, "'" => "")
     end
     f.name = fn
     f.bold = _get(a, "fo:font-weight", "normal") in ("bold", "700", "800", "900")
@@ -913,11 +933,11 @@ const _ODF_FIELD_CODES = Dict("text:page-number" => "&P", "text:page-count" => "
 function _odf_section_codes(xf::ODSFile, doc::AbstractString, x::AbstractString, base::_HFFont)
     io = IOBuffer()
     cur = _copyfont(base)
-    paras = [m.match for m in eachmatch(r"<text:p\b[^>]*?(?:/>|>.*?</text:p>)"s, x)]
+    paras = _xfind(x, "text:p")
     for (pi, p) in enumerate(paras)
         pi > 1 && print(io, '\n')
-        endswith(p, "/>") && continue
-        inner = p[nextind(p, _start_tag_end(p)):prevind(p, first(findlast("</text:p>", p)))]
+        p.inner === nothing && continue
+        inner = x[p.inner]
         fonts = [base]
         pos = 1
         while pos <= ncodeunits(inner)
@@ -980,12 +1000,23 @@ function _base_font(xf::ODSFile, doc::AbstractString, regions)
     counts = Dict{String,Int}()
     plain = 0                                       # paragraphs with text outside any span
     for (_, x) in regions
-        for m in eachmatch(r"<text:span text:style-name=\"([^\"]*)\"", x)
-            counts[m.captures[1]] = get(counts, m.captures[1], 0) + 1
+        els = _xelements(x)
+        for e in els
+            e.tag == "text:span" && (n = _xattr(e, "text:style-name")) !== nothing && (counts[n] = get(counts, n, 0) + 1)
         end
-        for p in eachmatch(r"<text:p\b[^>]*>(.*?)</text:p>"s, x)
-            rest = replace(p.captures[1], r"<text:span\b[^>]*>.*?</text:span>"s => "")
-            occursin(r"[^\s<>]|<text:(?!s\b)", replace(rest, r"<text:s\b[^>]*/>" => "")) && (plain += 1)
+        for p in els
+            (p.tag == "text:p" && p.inner !== nothing) || continue
+            # text outside its spans: a character, or an element other than a span or text:s
+            inner = x[p.inner]
+            pos = 1; plaintext = false
+            for e in _xelements(inner)
+                e.depth == 1 || continue
+                first(e.span) > pos && occursin(r"\S", SubString(inner, pos, prevind(inner, first(e.span)))) && (plaintext = true)
+                e.tag in ("text:span", "text:s") || (plaintext = true)
+                pos = nextind(inner, last(e.span))
+            end
+            pos <= ncodeunits(inner) && occursin(r"\S", SubString(inner, pos)) && (plaintext = true)
+            plaintext && (plain += 1)
         end
     end
     isempty(counts) && return _HFFont()
@@ -1095,9 +1126,9 @@ function getHeaderFooter(ws::Worksheet)
     function part(tag)
         _shown(p.regions, tag) || return nothing
         x = p.regions[findfirst(q -> q.first == tag, p.regions)].second
-        if occursin("<style:region-", x)
-            sec(n) = (m = match(Regex("<style:region-" * n * ">(.*?)</style:region-" * n * ">", "s"), x);
-                      m === nothing ? nothing : _odf_section_codes(xf, doc, m.captures[1], base))
+        if any(e -> startswith(e.tag, "style:region-"), _xelements(x))
+            sec(n) = (e = _xfirst(x, "style:region-" * n);
+                      e === nothing ? nothing : _odf_section_codes(xf, doc, e.inner === nothing ? "" : x[e.inner], base))
             return (left = sec("left"), center = sec("center"), right = sec("right"))
         end
         return (left = nothing, center = _odf_section_codes(xf, doc, x, base), right = nothing)

@@ -509,3 +509,24 @@ end
     xf = newods()
     @test addComment(xf[1], "A1", "tab\there\nnew line, Ünïcödé 宋体").text == "tab\there\nnew line, Ünïcödé 宋体"
 end
+
+@testset "the patched save's splices (code review, Phase 2 item 2)" begin
+    O = OpenDocumentSpreadsheets
+    # overlapping splices would write both texts: refused
+    @test O._apply_splices("abcdefgh", Tuple{Int,Int,Any}[(2, 3, "X"), (7, 6, "Y")]) == "aXdefYgh"
+    @test O._apply_splices("abcdefgh", Tuple{Int,Int,Any}[(2, 3, "X"), (4, 3, "I"), (2, 1, "J")]) == "aJXIdefgh"
+    err = try O._apply_splices("abcdefgh", Tuple{Int,Int,Any}[(2, 5, "X"), (4, 6, "Y")]); nothing catch e; e end
+    @test err isa ODSError && occursin("Internal error", err.msg)
+    @test_throws ODSError O._apply_splices("abcdefgh", Tuple{Int,Int,Any}[(2, 5, "X"), (4, 3, "Y")])   # an insert inside it
+    # a setter on a sheet marks it, so the save writes it again (D-100)
+    p = joinpath(mktempdir(), "t.ods")
+    let xf = newods("S"); xf[1]["A1"] = 1; xf[1]["B2"] = "x"; addsheet!(xf, "T"); writeods(p, xf) end
+    xf = openods(p; mode = "rw")
+    @test !xf["S"].touched && !O._sheet_edited(xf["S"], nothing)
+    @test_throws ODSError setFont(xf["S"], "A1"; nosuchkeyword = 1)       # refused by its checks, after marking
+    @test xf["S"].touched && O._sheet_edited(xf["S"], nothing) && !xf["T"].touched
+    # writing an unedited sheet again gives the same content
+    io = IOBuffer(); writeods(io, xf)
+    zr(b) = String(O.ZipArchives.zip_readentry(O.ZipArchives.ZipReader(b), "content.xml", String))
+    @test zr(take!(io)) == zr(read(p))
+end

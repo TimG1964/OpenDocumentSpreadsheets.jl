@@ -418,10 +418,10 @@ end
 # A row element covering rows nextrow…nextrow+cnt-1, some of them edited, at `st.pos`. It is
 # cut into segments within which the edits and the model are the same for every row;
 # segments without edits keep the original element (with their repeat count).
-function _patch_row!(st::_PatchState, ln::XML.LazyNode, text::SubString{String}, cnt::Int, orig)
-    r0 = st.nextrow
-    r1 = r0 + cnt - 1
-    st.nextrow = r1 + 1
+# The rows r0:r1 of an original row element (its repeats) cut where edits begin and end: edited
+# rows, rectangles and rows touched by formats, and the model's own row breaks. Shared by the
+# plain walk (`_patch_row!`) and the mapped one (`_mapped_rows!`, write/patchmap.jl).
+function _row_segments(st::_PatchState, r0::Int, r1::Int)
     bps = Int[]
     lo = searchsortedfirst(st.drows, r0)
     hi = searchsortedlast(st.drows, r1)
@@ -440,7 +440,15 @@ function _patch_row!(st::_PatchState, ln::XML.LazyNode, text::SubString{String},
         _row_bounds!(bps, f.cells, r0, r1)
         _row_bounds!(bps, f.rows, r0, r1)
     end
-    pts = _segment_points(bps, r0, r1)
+    return _segment_points(bps, r0, r1)
+end
+
+function _patch_row!(st::_PatchState, ln::XML.LazyNode, text::SubString{String}, cnt::Int, orig)
+    r0 = st.nextrow
+    r1 = r0 + cnt - 1
+    st.nextrow = r1 + 1
+    f = st.fmt
+    pts = _row_segments(st, r0, r1)
     plain = 0                                    # untouched rows waiting to be written
     extent = -1                                  # the columns the original row's cells cover
     for k in 1:length(pts)-1
@@ -850,6 +858,9 @@ function _apply_splices(out::IO, src::AbstractString, splices::Vector{<:Tuple{In
     sort!(splices; by = x -> (x[1], x[2]))
     pos = firstindex(src)
     for (a, b, rep) in splices
+        # one that starts inside the text another replaces would write both, a corrupt part (a bug)
+        a < pos && throw(ODSError("Internal error: two edits of the same text in a patched save ($a:$b overlaps " *
+                                  "what ends at $(prevind(src, pos))). Please report it."))
         if a > pos
             rw === nothing ? write(out, SubString(src, pos, prevind(src, a))) :
                              rewrite_xml(out, rw, String(src), pos, prevind(src, a))   # phase 5: references replayed
@@ -877,156 +888,205 @@ Writes the content.xml (or flat document) of a file that was read, with its edit
 sheets and new styles, to `out` as it is made. A flat document also gets
 the named styles OpenDocumentSpreadsheets added. Text that isn't edited is copied from the
 original in pieces as large as the gaps between edits.
+
+Each part of the document adds its splices in one of the functions of `_CONTENT_PARTS`, in
+order (splices at the same place keep it).
 """
 function write_patched_content(out::_ChunkedIO, xf::ODSFile; display::Bool = true)
     src, rootspan, kids = _top_elements(xf.content)
-    autostyles = get(kids, "office:automatic-styles", nothing)
     body = get(kids, "office:body", nothing)
-    facedecls = get(kids, "office:font-face-decls", nothing)
-    splices = _Splice[]
-    fx = added_faces_xml(xf.styles)
-    _ns_splice!(splices, src, rootspan, !isempty(fx) || _has_notes(xf) || _has_frames(xf), _needs_loext(xf.styles) || _needs_protection_loext(xf) || _has_threads(xf);
-                xlink = _needs_xlink(xf.styles) || _has_frames(xf), draw = _has_frames(xf), calcext = _has_footers(xf) || _has_cfs(xf) || _has_sparks(xf))
-    # font faces (phase 4): in office:font-face-decls, which comes before the styles
-    stylesnode = get(kids, "office:styles", nothing)
-    isempty(fx) || _append_splice!(splices, src, facedecls, "office:font-face-decls", fx,
-                                   something(stylesnode, autostyles, body, Some(nothing)))
-    # named styles (a flat document holds office:styles), before the automatic styles
-    nx = xf.container.format === :fods ? named_styles_xml(xf.styles) : ""
-    isempty(nx) || _append_splice!(splices, src, stylesnode, "office:styles", nx, something(autostyles, body, Some(nothing)))
     # structural edits (phase 5): their references are replayed on all the text that is copied
     rw = any(op -> !(op isa SheetCopy), xf.ops) ? RefRewriter(xf.ops, String(src)) : nothing
     sheets = _sheets(xf)
     orig = [ws for ws in sheets if ws.entry !== nothing && !ws.copied]
     spans = Dict(ws => XML.sourcespan(ws.entry.node) for ws in vcat(orig, Worksheet[w for w in xf.gone]))
     last_table_end = isempty(spans) ? 0 : maximum(last, values(spans))
-    # deleted, copied or moved sheets (phase 5): the tables are written in their new order
+    cx = (; xf, src, rootspan, kids, body, rw, sheets, orig, spans, last_table_end, display)
+    splices = _Splice[]
+    for part! in _CONTENT_PARTS
+        part!(splices, cx)
+    end
+    _apply_splices(out, src, splices; rw)
+    return nothing
+end
+
+# Whether the patched save writes sheet `ws` again: it was edited, a setter ran on it (D-100), or
+# structural edits rewrite its references. Every feature with state of a sheet's own is here.
+_sheet_edited(ws::Worksheet, rw) = ws.touched || _has_edits(ws) || rw !== nothing || _start_tag_changed(ws) ||
+    _names_edited(ws) || _cf_edited(ws) || _spark_edited(ws)
+
+# The namespaces the written XML needs, on the root's start tag.
+function _ns_splices!(splices, cx)
+    xf = cx.xf
+    svg = !isempty(added_faces_xml(xf.styles)) || _has_notes(xf) || _has_frames(xf)
+    loext = _needs_loext(xf.styles) || _needs_protection_loext(xf) || _has_threads(xf)
+    _ns_splice!(splices, cx.src, cx.rootspan, svg, loext; xlink = _needs_xlink(xf.styles) || _has_frames(xf),
+                draw = _has_frames(xf), calcext = _has_footers(xf) || _has_cfs(xf) || _has_sparks(xf))
+end
+
+# Font faces (phase 4), in office:font-face-decls, which comes before the styles; and a flat
+# document's named styles, before the automatic styles.
+function _face_and_named_style_splices!(splices, cx)
+    xf, src, kids = cx.xf, cx.src, cx.kids
+    autostyles = get(kids, "office:automatic-styles", nothing)
+    stylesnode = get(kids, "office:styles", nothing)
+    fx = added_faces_xml(xf.styles)
+    isempty(fx) || _append_splice!(splices, src, get(kids, "office:font-face-decls", nothing), "office:font-face-decls", fx,
+                                   something(stylesnode, autostyles, cx.body, Some(nothing)))
+    nx = xf.container.format === :fods ? named_styles_xml(xf.styles) : ""
+    isempty(nx) || _append_splice!(splices, src, stylesnode, "office:styles", nx, something(autostyles, cx.body, Some(nothing)))
+end
+
+# The tables: edited sheets written again, new sheets (and copies) after the last one, or, after
+# sheets were deleted, copied or moved (phase 5), all of them in their new order.
+function _table_splices!(splices, cx)
+    (; xf, src, rw, sheets, orig, spans, last_table_end, display) = cx
     k = findfirst(ws -> ws.entry === nothing || ws.copied, sheets)
     restructured = !isempty(xf.gone) || !issorted(orig; by = ws -> first(spans[ws])) ||
                    (k !== nothing && any(ws -> ws.entry !== nothing && !ws.copied, sheets[k:end]))
     if restructured && !isempty(spans)
         a = minimum(first, values(spans))
         push!(splices, (a, last_table_end, io -> foreach(ws -> _write_sheet(io, ws, rw; display), sheets)))
+        return
+    end
+    for ws in orig
+        sp = spans[ws]
+        _sheet_edited(ws, rw) && push!(splices, (first(sp), last(sp), io -> _write_sheet(io, ws, rw; display)))
+    end
+    newsheets = [ws for ws in sheets if ws.entry === nothing || ws.copied]
+    isempty(newsheets) || push!(splices, (_after_tables(cx), _after_tables(cx) - 1, io -> foreach(ws -> _write_sheet(io, ws, rw; display), newsheets)))
+end
+
+# Validations (phase 6 step 6): before the tables, so first among splices at the same place.
+function _rules_part_splices!(splices, cx)
+    ft = isempty(cx.spans) ? _spreadsheet_end(cx.body, cx.src) : minimum(first, values(cx.spans))
+    prepend!(splices, _rules_splices(cx.xf, ft))
+end
+
+# The threads' people (phase 6 step 4): added to the file's loext:persons, or in a new one after
+# the tables (before the names, as LibreOffice writes them).
+function _persons_splices!(splices, cx)
+    isempty(cx.xf.persons.added) && return
+    px = _persons_xml(cx.xf.persons.added)
+    k = findfirst("</loext:persons>", cx.src)
+    if k !== nothing
+        push!(splices, (first(k), first(k) - 1, px))
     else
-        # edited sheets (and, after structural edits, every other sheet: its references are rewritten)
-        for ws in orig
-            sp = spans[ws]
-            (_has_edits(ws) || rw !== nothing || _start_tag_changed(ws) || _names_edited(ws) || _cf_edited(ws) || _spark_edited(ws)) &&
-                push!(splices, (first(sp), last(sp), io -> _write_sheet(io, ws, rw; display)))
-        end
-        # new sheets (and copies), after the last one
-        newsheets = [ws for ws in sheets if ws.entry === nothing || ws.copied]
-        if !isempty(newsheets)
-            at = last_table_end > 0 ? nextind(src, last_table_end) : _spreadsheet_end(body, src)
-            push!(splices, (at, at - 1, io -> foreach(ws -> _write_sheet(io, ws, rw; display), newsheets)))
-        end
+        push!(splices, (_after_tables(cx), _after_tables(cx) - 1, "<loext:persons>" * px * "</loext:persons>"))
     end
-    # validations (phase 6 step 6): before the tables, so first among splices at the same place
-    ft = isempty(spans) ? _spreadsheet_end(body, src) : minimum(first, values(spans))
-    prepend!(splices, _rules_splices(xf, ft))
-    # the threads' people (phase 6 step 4): added to the file's loext:persons, or in a new one after the
-    # tables (before the names, as LibreOffice writes them)
-    if !isempty(xf.persons.added)
-        px = _persons_xml(xf.persons.added)
-        k = findfirst("</loext:persons>", src)
-        if k !== nothing
-            push!(splices, (first(k), first(k) - 1, px))
-        else
-            at = last_table_end > 0 ? nextind(src, last_table_end) : _spreadsheet_end(body, src)
-            push!(splices, (at, at - 1, "<loext:persons>" * px * "</loext:persons>"))
-        end
-    end
-    # the workbook's names (phase 5): deleted ones removed, added ones written, in a new element after
-    # the tables if there is none
-    if _names_edited(xf)
-        ed = xf.nameedits
-        if isempty(ed.at)
-            at = last_table_end > 0 ? nextind(src, last_table_end) : _spreadsheet_end(body, src)
-            ed = NameEdits(ed.removed, at:at-1)
-        end
-        append!(splices, _name_splices(xf.names, ed, src))
-    end
-    # database ranges added by copies (phase 5), through the operations after each copy, and the tables
-    # added or changed (phase 6 step 7): the file's they replace, or that were removed, go
+end
+
+# The workbook's names (phase 5): deleted ones removed, added ones written, in a new element after
+# the tables if there is none.
+function _wb_name_splices!(splices, cx)
+    xf = cx.xf
+    _names_edited(xf) || return
+    ed = xf.nameedits
+    isempty(ed.at) && (ed = NameEdits(ed.removed, _after_tables(cx):_after_tables(cx)-1))
+    append!(splices, _name_splices(xf.names, ed, cx.src))
+end
+
+# Database ranges added by copies (phase 5), through the operations after each copy, and the
+# tables added or changed (phase 6 step 7): the file's they replace, or that were removed, go.
+function _db_splices!(splices, cx)
+    xf, src = cx.xf, cx.src
+    (!isempty(xf.extras) || _db_edited(xf)) || return
     de = xf.dbedits
-    if !isempty(xf.extras) || _db_edited(xf)
-        # a file's range changed is written in its place, so the tables keep their order (D-077)
-        repl = Dict{Int,DBRange}(Int(m.order) => m for m in de.model if m.order < 1.0e6 && _db_alive(xf, m))
-        x = join(_rewritten(xx, xf.ops[n+1:end]) for (k, (xx, n)) in enumerate(xf.extras) if !(k in de.removedx)) *
-            join(_db_xml(m) for m in de.model if m.order >= 1.0e6 && _db_alive(xf, m))
-        for k in de.removed
-            sp = _file_dbranges(xf)[k][1]
-            if haskey(repl, k)
-                push!(splices, (first(sp), last(sp), _db_xml(repl[k])))
-            else
-                a = first(sp)
-                # by byte: white space is one byte, and `src[a-1]` would throw after a multi-byte character
-                while a > 1 && codeunit(src, a - 1) in (0x20, 0x0a, 0x09, 0x0d); a -= 1; end
-                push!(splices, (a, last(sp), ""))
-            end
-        end
-        k = findlast("</table:database-ranges>", src)
-        if k !== nothing
-            push!(splices, (first(k), first(k) - 1, x))
+    # a file's range changed is written in its place, so the tables keep their order (D-077)
+    repl = Dict{Int,DBRange}(Int(m.order) => m for m in de.model if m.order < 1.0e6 && _db_alive(xf, m))
+    x = join(_rewritten(xx, xf.ops[n+1:end]) for (k, (xx, n)) in enumerate(xf.extras) if !(k in de.removedx)) *
+        join(_db_xml(m) for m in de.model if m.order >= 1.0e6 && _db_alive(xf, m))
+    for k in de.removed
+        sp = _file_dbranges(xf)[k][1]
+        if haskey(repl, k)
+            push!(splices, (first(sp), last(sp), _db_xml(repl[k])))
         else
-            ne = findlast("</table:named-expressions>", src)
-            at = ne !== nothing && last(ne) > last_table_end ? last(ne) + 1 :
-                 last_table_end > 0 ? nextind(src, last_table_end) : _spreadsheet_end(body, src)
-            push!(splices, (at, at - 1, "<table:database-ranges>" * x * "</table:database-ranges>"))
+            a = first(sp)
+            # by byte: white space is one byte, and `src[a-1]` would throw after a multi-byte character
+            while a > 1 && codeunit(src, a - 1) in (0x20, 0x0a, 0x09, 0x0d); a -= 1; end
+            push!(splices, (a, last(sp), ""))
         end
     end
-    # a flat document's properties (phase 5 step 11): office:meta written again (first, where it has none)
-    if _meta_edited(xf)
-        meta = get(kids, "office:meta", nothing)
-        if meta === nothing
-            at = first(rootspan) + _start_tag_end(SubString(src, first(rootspan), last(rootspan)))
-            push!(splices, (at, at - 1, _meta_element(xf)))
-        else
-            sp = XML.sourcespan(meta)
-            push!(splices, (first(sp), last(sp), _meta_element(xf)))
-        end
+    k = findlast("</table:database-ranges>", src)
+    if k !== nothing
+        push!(splices, (first(k), first(k) - 1, x))
+    else
+        ne = findlast("</table:named-expressions>", src)
+        at = ne !== nothing && last(ne) > cx.last_table_end ? last(ne) + 1 : _after_tables(cx)
+        push!(splices, (at, at - 1, "<table:database-ranges>" * x * "</table:database-ranges>"))
     end
-    # a flat document's settings (phase 5): the sheets' entries follow renames, deletes and copies
+end
+
+# Where content goes after the tables (with none, at the spreadsheet's end), found when needed.
+_after_tables(cx) = cx.last_table_end > 0 ? nextind(cx.src, cx.last_table_end) : _spreadsheet_end(cx.body, cx.src)
+
+# The end of the root's start tag, where an element that comes first is inserted.
+_root_start_end(cx) = first(cx.rootspan) + _start_tag_end(SubString(cx.src, first(cx.rootspan), last(cx.rootspan)))
+
+# A flat document's properties (phase 5 step 11): office:meta written again (first, where it has none).
+function _meta_splices!(splices, cx)
+    _meta_edited(cx.xf) || return
+    meta = get(cx.kids, "office:meta", nothing)
+    if meta === nothing
+        at = _root_start_end(cx)
+        push!(splices, (at, at - 1, _meta_element(cx.xf)))
+    else
+        sp = XML.sourcespan(meta)
+        push!(splices, (first(sp), last(sp), _meta_element(cx.xf)))
+    end
+end
+
+# A flat document's settings (phase 5): the sheets' entries follow renames, deletes and copies;
+# view settings (phase 5 step 8) in a flat document without settings go after its meta.
+function _settings_splices!(splices, cx)
+    xf, src, kids = cx.xf, cx.src, cx.kids
     setnode = get(kids, "office:settings", nothing)
     if setnode !== nothing && _settings_edited(xf)
         sp = XML.sourcespan(setnode)
         push!(splices, (first(sp), last(sp), patched_settings(xf, String(SubString(src, first(sp), last(sp))))))
     elseif setnode === nothing && xf.container.format === :fods && _views_edited(xf)
-        # view settings (phase 5 step 8) in a flat document without settings: after its meta
         meta = get(kids, "office:meta", nothing)
-        at = meta === nothing ? first(rootspan) + _start_tag_end(SubString(src, first(rootspan), last(rootspan))) :
-                                last(XML.sourcespan(meta)) + 1
+        at = meta === nothing ? _root_start_end(cx) : last(XML.sourcespan(meta)) + 1
         push!(splices, (at, at - 1, _settings_views(xf, "<office:settings></office:settings>")))
     end
     if _views_edited(xf) && xf.container.format === :fods
         # LibreOffice reads view settings only with the config and ooo namespaces declared (F-053)
-        roottext = SubString(src, first(rootspan), first(rootspan) - 1 + _start_tag_end(SubString(src, first(rootspan), last(rootspan))))
+        roottext = SubString(src, first(cx.rootspan), _root_start_end(cx) - 1)
         ns = (occursin("xmlns:config=", roottext) ? "" : " xmlns:config=\"$_CONFIG_NS\"") *
              (occursin("xmlns:ooo=", roottext) ? "" : " xmlns:ooo=\"$_OOO_NS\"")
-        e = first(rootspan) - 1 + _start_tag_end(roottext)
+        e = _root_start_end(cx) - 1
         isempty(ns) || push!(splices, (e, e - 1, ns))
     end
-    # typed and formatting styles (before the sheets are written, which add none)
-    # the file's structure protection (phase 5 step 9): office:spreadsheet's start tag
-    if _wbprot_changed(xf)
-        r = _spreadsheet_tag_span(xf)
-        tag = SubString(src, first(r), last(r))
-        ch = Pair{String,Union{Nothing,String}}[k => (haskey(xf.wbprotection.attrs, k) ? _escape_attr(xf.wbprotection.attrs[k]) : nothing)
-                                                for k in _WB_PROT_ATTRS]
-        push!(splices, (first(r), last(r), _set_attrs(tag, ch; open = !endswith(tag, "/>"))))
-    end
-    pautos, pmasters = _page_styles_xml(xf)                                       # page styles: phase 5 step 10
-    if xf.container.format === :fods && !isempty(pmasters)
-        _append_splice!(splices, src, get(kids, "office:master-styles", nothing), "office:master-styles", pmasters, body)
-    end
-    sx = added_styles_xml(xf.styles, used_styles(xf)) * _table_styles_xml(xf) *  # table styles: phase 5 step 6
-         (xf.container.format === :fods ? pautos : "")
-    if !isempty(sx)
-        _append_splice!(splices, src, autostyles, "office:automatic-styles", sx, body)
-    end
-    _apply_splices(out, src, splices; rw)
-    return nothing
 end
+
+# The file's structure protection (phase 5 step 9): office:spreadsheet's start tag.
+function _wbprot_splices!(splices, cx)
+    xf = cx.xf
+    _wbprot_changed(xf) || return
+    r = _spreadsheet_tag_span(xf)
+    tag = SubString(cx.src, first(r), last(r))
+    ch = Pair{String,Union{Nothing,String}}[k => (haskey(xf.wbprotection.attrs, k) ? _escape_attr(xf.wbprotection.attrs[k]) : nothing)
+                                            for k in _WB_PROT_ATTRS]
+    push!(splices, (first(r), last(r), _set_attrs(tag, ch; open = !endswith(tag, "/>"))))
+end
+
+# Page styles (phase 5 step 10) and the typed, formatting and table styles (phase 5 step 6), in
+# the automatic styles (a flat document's master pages in office:master-styles).
+function _auto_style_splices!(splices, cx)
+    xf, src, kids = cx.xf, cx.src, cx.kids
+    pautos, pmasters = _page_styles_xml(xf)
+    if xf.container.format === :fods && !isempty(pmasters)
+        _append_splice!(splices, src, get(kids, "office:master-styles", nothing), "office:master-styles", pmasters, cx.body)
+    end
+    sx = added_styles_xml(xf.styles, used_styles(xf)) * _table_styles_xml(xf) * (xf.container.format === :fods ? pautos : "")
+    isempty(sx) || _append_splice!(splices, src, get(kids, "office:automatic-styles", nothing), "office:automatic-styles", sx, cx.body)
+end
+
+# The parts of a patched content.xml, in the order they add their splices (the order the save
+# had as one function). A feature that writes content outside the tables adds its function here.
+const _CONTENT_PARTS = (_ns_splices!, _face_and_named_style_splices!, _table_splices!, _rules_part_splices!,
+                        _persons_splices!, _wb_name_splices!, _db_splices!, _meta_splices!, _settings_splices!,
+                        _wbprot_splices!, _auto_style_splices!)
 
 """
     patched_styles(xf::ODSFile, xml) -> String

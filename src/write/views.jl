@@ -27,9 +27,10 @@ const _OOO_NS = "http://openoffice.org/2004/office"
 function _settings_now(xf::ODSFile)
     isnewfile(xf) && return nothing
     if xf.container.format === :fods
-        r = findfirst(r"<office:settings>.*?</office:settings>"s, xf.content)
-        r === nothing && return nothing
-        s = String(SubString(xf.content, first(r), last(r)))
+        _, _, kids = _top_elements(xf.content)
+        node = get(kids, "office:settings", nothing)
+        node === nothing && return nothing
+        s = String(XML.sourcetext(node))
     else
         s = read_xml(xf.container, :settings)
         s === nothing && return nothing
@@ -37,49 +38,45 @@ function _settings_now(xf::ODSFile)
     return _settings_ops(xf, s)
 end
 
-const _ITEM_RX = r"<config:config-item config:name=\"([^\"]*)\" config:type=\"([^\"]*)\">([^<]*)</config:config-item>"
+# The first view's entry: (its element, the Tables map's element or nothing), or nothing. The
+# settings are read as XML.jl trees (write/xmlparts.jl, D-101).
+function _view_entry(s::AbstractString, els = _xelements(s))
+    v = _xfirst(s, "config:config-item-map-indexed", "config:name", "Views"; elements = els)
+    (v === nothing || v.inner === nothing) && return nothing
+    entry = _xfirst(s, "config:config-item-map-entry"; depth = v.depth + 1, within = v.inner, elements = els)
+    entry === nothing && return nothing
+    tables = entry.inner === nothing ? nothing :
+             _xfirst(s, "config:config-item-map-named", "config:name", "Tables"; depth = entry.depth + 1, within = entry.inner, elements = els)
+    return entry, tables
+end
 
-# The text of the first view's entry: (its span, the Tables map's span), or nothing.
+# The first view's entry: (its span, the Tables map's span), or nothing.
 function _view_entry_span(s::AbstractString)
-    v = findfirst("<config:config-item-map-indexed config:name=\"Views\">", s)
-    v === nothing && return nothing
-    a = findnext("<config:config-item-map-entry>", s, last(v))
-    a === nothing && return nothing
-    # the entry's end: the matching </config:config-item-map-entry>, counting nested entries
-    depth = 0
-    i = first(a)
-    while true
-        o = findnext(r"<config:config-item-map-entry\b", s, i + 1)
-        c = findnext("</config:config-item-map-entry>", s, i + 1)
-        c === nothing && return nothing
-        if o !== nothing && first(o) < first(c)
-            depth += 1
-            i = first(o)
-        else
-            depth == 0 && return (first(a):last(c), _tables_span(s, first(a), last(c)))
-            depth -= 1
-            i = first(c)
-        end
+    r = _view_entry(s)
+    r === nothing && return nothing
+    entry, tables = r
+    return entry.span, tables === nothing ? nothing : tables.span
+end
+
+# The entry for sheet `name` in the Tables map, or nothing.
+function _sheet_entry(s::AbstractString, name::AbstractString)
+    r = _view_entry(s)
+    (r === nothing || r[2] === nothing || r[2].inner === nothing) && return nothing
+    t = r[2]
+    return _xfirst(s, "config:config-item-map-entry", "config:name", name; depth = t.depth + 1, within = t.inner)
+end
+
+# The items of a fragment of settings: name => (type, value unescaped), at any depth.
+function _items(text::AbstractString)
+    d = Dict{String,Tuple{String,String}}()
+    for e in _xfind(text, "config:config-item")
+        k = _xattr(e, "config:name")
+        k === nothing && continue
+        v = e.inner === nothing ? "" : XML.unescape(String(SubString(text, first(e.inner), last(e.inner))))
+        haskey(d, k) || (d[k] = (something(_xattr(e, "config:type"), "string"), v))
     end
+    return d
 end
-
-function _tables_span(s::AbstractString, a::Int, b::Int)
-    t = findnext("<config:config-item-map-named config:name=\"Tables\">", s, a)
-    (t === nothing || first(t) > b) && return nothing
-    e = findnext("</config:config-item-map-named>", s, last(t))
-    return first(t):last(e)
-end
-
-# The span of the entry for sheet `name` in the Tables map's span `tsp`, or nothing.
-function _sheet_entry_span(s::AbstractString, tsp::UnitRange{Int}, name::AbstractString)
-    r = findnext(_entry_open(name), s, first(tsp))
-    (r === nothing || first(r) > last(tsp)) && return nothing
-    e = findnext("</config:config-item-map-entry>", s, last(r))
-    return first(r):last(e)
-end
-
-_items(text::AbstractString) = Dict(String(m.captures[1]) => (String(m.captures[2]), XML.unescape(String(m.captures[3])))
-                                    for m in eachmatch(_ITEM_RX, text))
 
 # The file's items for a sheet (by its current name) and for the view.
 function _file_view_items(xf::ODSFile, name::AbstractString)
@@ -90,8 +87,8 @@ function _file_view_items(xf::ODSFile, name::AbstractString)
     sp === nothing && return sheet, view
     esp, tsp = sp
     if tsp !== nothing
-        e = _sheet_entry_span(s, tsp, name)
-        e === nothing || (sheet = _items(SubString(s, first(e), last(e))))
+        e = _sheet_entry(s, name)
+        e === nothing || (sheet = _items(SubString(s, first(e.span), last(e.span))))
         view = _items(SubString(s, first(esp), first(tsp) - 1) * SubString(s, last(tsp) + 1, last(esp)))
     else
         view = _items(SubString(s, first(esp), last(esp)))
@@ -407,20 +404,17 @@ _item_rank(k) = something(findfirst(==(k), _ITEM_ORDER), length(_ITEM_ORDER) + 1
 function _with_items(text::AbstractString, items)
     s = String(text)
     for (k, v) in sort!(collect(items); by = p -> _item_rank(p.first))
-        rx = Regex("<config:config-item config:name=\"" * k * "\" config:type=\"[^\"]*\">[^<]*</config:config-item>")
-        r = findfirst(rx, s)
-        if r === nothing
+        els = _xelements(s)
+        cur = _xfirst(s, "config:config-item", "config:name", k; depth = 1, elements = els)
+        if cur === nothing
             v === nothing && continue
-            at = nothing
-            for m in eachmatch(_ITEM_RX, s)
-                if _item_rank(m.captures[1]) > _item_rank(k)
-                    at = something(findfirst(m.match, s)) |> first
-                    break
-                end
-            end
+            # before the first item LibreOffice writes after it
+            later = findfirst(e -> e.tag == "config:config-item" && e.depth == 1 &&
+                                   _item_rank(something(_xattr(e, "config:name"), "")) > _item_rank(k), els)
+            at = later === nothing ? nothing : first(els[later].span)
             s = at === nothing ? s * _item_xml(k, v) : s[1:prevind(s, at)] * _item_xml(k, v) * s[at:end]
         else
-            s = s[1:prevind(s, first(r))] * (v === nothing ? "" : _item_xml(k, v)) * s[nextind(s, last(r)):end]
+            s = s[1:prevind(s, first(cur.span))] * (v === nothing ? "" : _item_xml(k, v)) * s[nextind(s, last(cur.span)):end]
         end
     end
     return s
@@ -430,6 +424,22 @@ const _EMPTY_VIEW_SETTINGS = "<config:config-item-set config:name=\"ooo:view-set
     "<config:config-item-map-entry><config:config-item config:name=\"ViewId\" config:type=\"string\">view1</config:config-item>" *
     "<config:config-item-map-named config:name=\"Tables\"></config:config-item-map-named></config:config-item-map-entry>" *
     "</config:config-item-map-indexed></config:config-item-set>"
+const _VIEWS_MAP = "<config:config-item-map-indexed config:name=\"Views\"><config:config-item-map-entry>" *
+    "<config:config-item config:name=\"ViewId\" config:type=\"string\">view1</config:config-item>" *
+    "<config:config-item-map-named config:name=\"Tables\"></config:config-item-map-named></config:config-item-map-entry>" *
+    "</config:config-item-map-indexed>"
+const _TABLES_MAP = "<config:config-item-map-named config:name=\"Tables\"></config:config-item-map-named>"
+
+# `s` with `text` added as the last content of element `e` (an empty one written `<…/>` is opened).
+function _append_in(s::String, e::_XElement, text::AbstractString)
+    if e.inner === nothing
+        t = SubString(s, first(e.span), last(e.span))
+        open = _set_attrs(t, Pair{String,Union{Nothing,String}}[]; open = true)
+        return s[1:prevind(s, first(e.span))] * open * text * "</" * e.tag * ">" * s[nextind(s, last(e.span)):end]
+    end
+    at = _xend(e)
+    return s[1:prevind(s, at)] * text * s[at:end]
+end
 
 """
     _settings_views(xf, s) -> String
@@ -440,59 +450,47 @@ items. Missing sets, maps and entries are made.
 """
 function _settings_views(xf::ODSFile, s::String)
     _views_edited(xf) || return s
-    sp = _view_entry_span(s)
-    if sp === nothing
-        if (v = findfirst("<config:config-item-set config:name=\"ooo:view-settings\">", s)) !== nothing
+    if _view_entry(s) === nothing
+        set = _xfirst(s, "config:config-item-set", "config:name", "ooo:view-settings")
+        if set !== nothing
             # the set's items are kept: the Views map goes after them
-            e = findnext("</config:config-item-set>", s, last(v))
-            s = s[1:prevind(s, first(e))] *
-                replace(replace(_EMPTY_VIEW_SETTINGS, "<config:config-item-set config:name=\"ooo:view-settings\">" => ""),
-                        "</config:config-item-set>" => "") * s[first(e):end]
+            s = _append_in(s, set, _VIEWS_MAP)
         else
-            o = findfirst(r"<office:settings\s*>", s)
+            o = _xfirst(s, "office:settings")
             o === nothing && throw(ODSError("The file's settings have no office:settings element."))
-            s = s[1:last(o)] * _EMPTY_VIEW_SETTINGS * s[nextind(s, last(o)):end]
+            s = _append_in(s, o, _EMPTY_VIEW_SETTINGS)
         end
-        sp = _view_entry_span(s)
     end
-    esp, tsp = sp
-    if tsp === nothing
-        a = first(esp) + ncodeunits("<config:config-item-map-entry>")
-        s = s[1:a-1] * "<config:config-item-map-named config:name=\"Tables\"></config:config-item-map-named>" * s[a:end]
-        esp, tsp = _view_entry_span(s)
+    entry, tables = _view_entry(s)
+    if tables === nothing
+        # first in the entry, as before: the view's items after it are read in order (F-053)
+        s = entry.inner === nothing ? _append_in(s, entry, _TABLES_MAP) :
+            s[1:prevind(s, first(entry.inner))] * _TABLES_MAP * s[first(entry.inner):end]
     end
-    # the sheets' entries (in reverse order of position, so the spans found stay right)
+    # the sheets' entries
     for ws in xf.sheets
         items = get(xf.views.sheets, ws, nothing)
         (items === nothing || isempty(items)) && continue
-        esp, tsp = _view_entry_span(s)
-        e = _sheet_entry_span(s, tsp, ws.name)
+        e = _sheet_entry(s, ws.name)
         if e === nothing
-            at = last(tsp) - ncodeunits("</config:config-item-map-named>") + 1
-            new = _entry_open(ws.name) * _with_items("", items) * "</config:config-item-map-entry>"
-            s = s[1:at-1] * new * s[at:end]
+            s = _append_in(s, _view_entry(s)[2], _entry_open(ws.name) * _with_items("", items) * "</config:config-item-map-entry>")
+        elseif e.inner === nothing
+            s = _append_in(s, e, _with_items("", items))
         else
-            open = ncodeunits(_entry_open(ws.name))
-            inner = SubString(s, first(e) + open, last(e) - ncodeunits("</config:config-item-map-entry>"))
-            s = s[1:first(e)+open-1] * _with_items(inner, items) * s[last(e)-ncodeunits("</config:config-item-map-entry>")+1:end]
+            s = s[1:prevind(s, first(e.inner))] * _with_items(SubString(s, first(e.inner), last(e.inner)), items) * s[nextind(s, last(e.inner)):end]
         end
     end
-    # the view's own items: after the Tables map
+    # the view's own items: an item before the Tables map is replaced there; new ones go after it
     if !isempty(xf.views.view)
-        esp, tsp = _view_entry_span(s)
-        endtag = last(esp) - ncodeunits("</config:config-item-map-entry>") + 1
-        before = SubString(s, first(esp), first(tsp) - 1)
-        after = SubString(s, last(tsp) + 1, endtag - 1)
-        # an item may be before the Tables map: it is replaced there; new ones go after it
-        b2 = String(before); a2 = String(after)
+        entry, tables = _view_entry(s)
+        before = String(SubString(s, first(entry.inner), first(tables.span) - 1))
+        after = String(SubString(s, last(tables.span) + 1, last(entry.inner)))
+        bitems = _items(before)
         for (k, v) in xf.views.view
-            if occursin("config:name=\"$k\"", b2)
-                b2 = _with_items(b2, [k => v])
-            else
-                a2 = _with_items(a2, [k => v])
-            end
+            haskey(bitems, k) ? (before = _with_items(before, [k => v])) : (after = _with_items(after, [k => v]))
         end
-        s = s[1:first(esp)-1] * b2 * SubString(s, first(tsp), last(tsp)) * a2 * s[endtag:end]
+        s = s[1:prevind(s, first(entry.inner))] * before * SubString(s, first(tables.span), last(tables.span)) * after *
+            s[nextind(s, last(entry.inner)):end]
     end
     return s
 end
