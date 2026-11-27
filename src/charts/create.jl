@@ -258,6 +258,18 @@ More options:
 - `data`, LibreOffice's chart wizard: a range whose series are made at once, in columns or rows
   (`seriesIn = :columns` or `:rows`), the first row and column holding names and categories
   (`firstRowLabels`, `firstColumnLabels`, both `true` by default).
+
+```julia
+using OpenDocumentSpreadsheets.Charts
+
+xf = openods("budget.ods"; mode = "rw")
+sh = xf["Costs"]
+c = addChart(sh, :column; anchor = "E2:L18", title = "Costs by month", ytitle = "Amount")
+addSeries(c, "B2:B13"; categories = "A2:A13", name_ref = "B1")
+
+addChart(xf["Income"], :line; anchor = "E2:L18", data = "A1:B13")   # its series from a range
+saveods(xf)
+```
 """
 function addChart(ws::Worksheet, kind::Symbol; anchor::Union{AbstractString,CellRange}, title = nothing, xtitle = nothing,
                   ytitle = nothing, subtitle = nothing, threeD::Bool = false, deep::Bool = false, dataTable::Bool = false,
@@ -446,6 +458,19 @@ Adds a series to a chart, in LibreOffice's form:
 - `color` (hex, a colour name, or a theme colour such as `:accent1`) is the series' colour (not on a pie
   or doughnut, whose points are coloured one by one).
 - `group` (`:column` or `:line`) is required on a `:combo` chart and refused elsewhere.
+
+```julia
+using OpenDocumentSpreadsheets.Charts
+
+xf = openods("budget.ods"; mode = "rw")
+sh = xf["Income"]
+sh["D1"] = "Target"
+for r in 2:13; sh[r, 4] = 1100.0; end
+c = addChart(sh, :lineMarkers; anchor = "F2:M18")
+addSeries(c, "B2:B13"; categories = "A2:A13", name_ref = "B1", color = "1F4E79")
+addSeries(c, "D2:D13"; name = "Target", markers = false)
+saveods(xf)
+```
 """
 function addSeries(c::Chart, values; categories = nothing, name = nothing, name_ref = nothing, bubble_sizes = nothing,
                    markers = nothing, smooth = nothing, line = nothing, color = nothing, group = nothing)

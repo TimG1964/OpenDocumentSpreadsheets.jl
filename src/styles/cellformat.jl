@@ -611,6 +611,11 @@ columns can also be integers, ranges, vectors or `:`. Only the attributes given 
 As in LibreOffice, empty cells are formatted too, and whole columns and rows are formatted
 as such, not only up to the used area. Returns the name of the cell's new style for a
 single cell, else -1.
+
+```julia
+setFont(sh, "A1:B1"; bold = true, color = "1F4E79")
+setFont(sh, "A:A"; name = "Liberation Serif", size = 12)   # all of column A
+```
 """
 setFont
 
@@ -625,6 +630,11 @@ filled. `pattern = "none"` removes the background.
 The names come from patterned fills, where `fgColor` is the pattern's colour and `bgColor` the
 colour behind it. OpenDocument cells have no patterns: another `pattern` blends `fgColor` into
 `bgColor` (white by default) into one colour.
+
+```julia
+setFill(sh, "A1:B1"; pattern = "solid", fgColor = "DDEEFF")   # a light blue background
+setFill(sh, "A1"; pattern = "none")                            # no background
+```
 """
 setFill
 
@@ -636,6 +646,12 @@ Set cell borders (address forms as [`setFont`](@ref)). Each side is a vector of 
 `"down"` or `"both"`. `allsides` sets the four sides. `outside` sets the border around a
 range as a whole, alone. Styles are `"thin"`, `"medium"`, `"thick"`, `"dashed"`, `"dotted"`, `"double"` and the others,
 written as LibreOffice writes them.
+
+```julia
+setBorder(sh, "A1:B4"; allsides = ["style" => "thin", "color" => "black"])   # every cell's four sides
+setBorder(sh, "A1:B4"; outside = ["style" => "medium", "color" => "1F4E79"]) # round the whole range
+setBorder(sh, "A1"; bottom = ["style" => "double"])
+```
 """
 setBorder
 
@@ -646,6 +662,11 @@ Set cell alignment (address forms as [`setFont`](@ref)): `horizontal` (`"left"`,
 `"right"`, `"fill"`, `"justify"`, `"centerContinuous"`, `"distributed"`), `vertical`
 (`"top"`, `"center"`, `"bottom"`, `"justify"`, `"distributed"`), `wrapText`, `shrink`,
 `indent` (levels of 0.286 cm) and `rotation` (−90 to 90 degrees).
+
+```julia
+setAlignment(sh, "A1:B1"; horizontal = "center", wrapText = true)
+setAlignment(sh, "C1"; rotation = 45)
+```
 """
 setAlignment
 

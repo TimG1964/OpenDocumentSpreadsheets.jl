@@ -18,11 +18,10 @@ One run of a [`RichTextString`](@ref): its text and none, one or several font at
 
 An attribute a run doesn't set is the cell's, as in LibreOffice.
 
-# Examples
 ```julia
-julia> rt = RichTextString(RichTextRun("Water is H"), RichTextRun("2", [:vertAlign => "subscript"]), RichTextRun("O!"));
-
-julia> sheet["A1"] = rt
+rt = RichTextString(RichTextRun("Water is H"), RichTextRun("2", [:vertAlign => "subscript"]),
+                    RichTextRun("O!", [:bold => true]))
+sh["A1"] = rt
 ```
 """
 struct RichTextRun

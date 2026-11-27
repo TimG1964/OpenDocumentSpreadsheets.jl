@@ -206,6 +206,11 @@ cursor to the first cell that scrolls. Calling it again replaces the panes.
 The panes are saved with the sheet's view settings, which LibreOffice keeps where they are when
 rows or columns are inserted or deleted.
 
+```julia
+freezePanes(sh)            # the first row stays in view
+freezePanes(sh, "B2")      # row 1 and column A
+```
+
 See also [`splitPanes`](@ref), [`removePanes`](@ref), [`setSheetView`](@ref).
 """
 freezePanes(ws::Worksheet; nrows::Integer = 1, ncols::Integer = 0) = _apply_panes!(ws, 2, Int(nrows), Int(ncols))

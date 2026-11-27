@@ -77,6 +77,11 @@ cell; the other cells are emptied, and become covered cells
 (`table:covered-table-cell`). Their formatting is kept. A list of ranges merges each range;
 whole columns or rows are taken to the used area. A range may not be a single cell, nor overlap
 a merged range, but it may reach past the used area.
+
+```julia
+sh["E1"] = "Summary"
+mergeCells(sh, "E1:G1")       # "Summary" across E1:G1
+```
 """
 function mergeCells(x::Union{Worksheet,ODSFile}, ref...)
     for (ws, rows, cols) in _merge_blocks(x, ref)

@@ -673,6 +673,11 @@ ranges, charts and anchored shapes. A range that the new rows fall inside, or wh
 The new rows take the cell formats of the row above, and its height when that height was set, and
 are not hidden. Inserting at row 1 gives unformatted rows. An insert that would push a cell
 with content or formatting off the sheet is an error, as it is in LibreOffice.
+
+```julia
+insertRows(sh, 2)                        # a new, empty row 2: =SUM(A1:B2,1) in C1 becomes =SUM(A1:B3,1)
+insertRows(xf, "Sheet1.5"; count = 3)    # three rows before row 5
+```
 """
 function insertRows(ws::Worksheet, at::Union{Integer,AbstractString}; count::Integer = 1)
     _insert_lines!(ws, 1, at isa Integer ? at : _one_line(1, at), count, "rows")

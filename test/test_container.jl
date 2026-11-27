@@ -3,7 +3,7 @@
 
 using OpenDocumentSpreadsheets: open_container, ODFContainer, PackagePart, write_package, package_bytes,
     write_flat, read_xml, read_bytes, partnames, haspart, odf_version, index_sheets,
-    parse_manifest, readentry_string, guess_mediatype, MEDIATYPE_ODS, MEDIATYPE_OTS
+    parse_manifest, readentry_string, guess_mediatype, MEDIATYPE_ODS, MEDIATYPE_OTS, NS_MANIFEST
 import ZipArchives
 import XML
 
@@ -218,6 +218,58 @@ end
                              stdout = devnull, stderr = devnull))
                 csv = joinpath(outdir, splitext(basename(p))[1] * ".csv")
                 @test isfile(csv) && strip(read(csv, String)) == "hello"
+            end
+        end
+    end
+end
+
+# A file another program wrote: ODF 1.2, content.xml and the manifest only (no styles, meta or
+# settings). An edit keeps its version, and the manifest says the same, since LibreOffice refuses
+# a package whose two versions differ (F-067). It said 1.4 before D-094.
+@testset "an edited ODF 1.2 file from another program (D-094)" begin
+    content = """<?xml version="1.0" encoding="UTF-8"?>
+    <office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:of="urn:oasis:names:tc:opendocument:xmlns:of:1.2" office:version="1.2"><office:body><office:spreadsheet><table:table table:name="Data"><table:table-row><table:table-cell office:value-type="string"><text:p>Name</text:p></table:table-cell><table:table-cell office:value-type="string"><text:p>Qty</text:p></table:table-cell></table:table-row><table:table-row><table:table-cell office:value-type="string"><text:p>apples</text:p></table:table-cell><table:table-cell table:formula="of:=1+2" office:value-type="float" office:value="3"><text:p>3</text:p></table:table-cell></table:table-row></table:table></office:spreadsheet></office:body></office:document-content>"""
+    manifest = """<?xml version="1.0" encoding="UTF-8"?>
+    <manifest:manifest xmlns:manifest="urn:oasis:names:tc:opendocument:xmlns:manifest:1.0" manifest:version="1.2"><manifest:file-entry manifest:full-path="/" manifest:media-type="application/vnd.oasis.opendocument.spreadsheet"/><manifest:file-entry manifest:full-path="content.xml" manifest:media-type="text/xml"/></manifest:manifest>"""
+    edits = ["value" => xf -> (xf["Data"]["A3"] = "pears"),
+             "font" => xf -> setFont(xf["Data"], "A1:B1"; bold = true),
+             "width" => xf -> setColumnWidth(xf["Data"], "A"; width = 15),
+             "sheet" => xf -> addsheet!(xf, "More")]
+    mktempdir() do dir
+        paths = String[]
+        for (name, edit) in edits
+            p = joinpath(dir, "other-$name.ods")
+            ZipArchives.ZipWriter(p) do w
+                ZipArchives.zip_writefile(w, "mimetype", codeunits(MEDIATYPE_ODS))
+                ZipArchives.zip_writefile(w, "META-INF/manifest.xml", codeunits(manifest))
+                ZipArchives.zip_writefile(w, "content.xml", codeunits(content))
+            end
+            @test readods(p)["Data"]["A1:B2"] == Any["Name" "Qty"; "apples" 3]
+            openods(edit, p; mode = "rw")
+            zr = ZipArchives.ZipReader(read(p))
+            @test odf_version(String(ZipArchives.zip_readentry(zr, "content.xml"))) == "1.2"
+            m = String(ZipArchives.zip_readentry(zr, "META-INF/manifest.xml"))
+            @test occursin("<manifest:manifest xmlns:manifest=\"$NS_MANIFEST\" manifest:version=\"1.2\"", m)
+            @test occursin("manifest:full-path=\"/\" manifest:version=\"1.2\"", m)
+            push!(paths, p)
+        end
+        if isempty(SOFFICE) || !isfile(SOFFICE)
+            @info "LibreOffice not found; skipping the edited ODF 1.2 oracle (set ODS_SOFFICE)"
+            @test_skip false
+        else
+            out = joinpath(dir, "lo")
+            run(pipeline(`$SOFFICE -env:UserInstallation=$(lo_profile_url(joinpath(dir, "lo-profile"))) --headless --norestore --convert-to fods --outdir $out $paths`;
+                         stdout = devnull, stderr = devnull))
+            for (p, (name, _)) in zip(paths, edits)
+                f = joinpath(out, splitext(basename(p))[1] * ".fods")
+                @test isfile(f)                                   # LibreOffice opened it
+                isfile(f) || continue
+                lo = readods(f)
+                @test lo["Data"]["A2"] == "apples"
+                name == "value" && @test lo["Data"]["A3"] == "pears"
+                name == "font" && @test haskey(OpenDocumentSpreadsheets.getFont(lo["Data"], "A1").font, "b")
+                name == "width" && @test OpenDocumentSpreadsheets.getColumnWidth(lo["Data"], "A1") ≈ 15 atol = 1
+                name == "sheet" && @test sheetnames(lo) == ["Data", "More"]
             end
         end
     end

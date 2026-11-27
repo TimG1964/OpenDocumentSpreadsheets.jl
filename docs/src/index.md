@@ -17,6 +17,10 @@ LibreOffice and no other program is needed.
 - **Tables go straight to and from Julia.** A sheet reads into a DataFrame, or any Tables.jl sink,
   and a table writes to a sheet.
 
+It is tested against LibreOffice Calc. Spreadsheets saved as OpenDocument by other programs, such
+as Apache OpenOffice, Microsoft Excel or Google Sheets, are read by the standard:
+[Files from other programs](@ref) says what that covers.
+
 ![A sheet written by OpenDocumentSpreadsheets, open in LibreOffice Calc: monthly costs in columns A to C, a small line chart of the year in A15, and a column chart titled Costs by month](images/tutorial_chart.png)
 
 ## Installation

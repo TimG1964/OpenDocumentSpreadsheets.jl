@@ -140,6 +140,14 @@ boolean cells (smaller files, faster writes; see [`writeods`](@ref)). `column_wi
 `as_table=true` makes each written range a table, as [`writetable!`](@ref) does (also streamed).
 A single table is named `table_name`, with its `totals`; with several sheets, each table is
 named after its sheet (made a valid name, with a warning, or the first free `TableN`).
+
+```julia
+sales = (Region = ["North", "South"], Total = [120, 95])
+writetable("sales.ods", sales; sheetname = "Sales", overwrite = true)
+
+writetable("report.ods", "Sales" => sales, "Costs" => (Item = ["Rent"], Amount = [800]);
+           overwrite = true)                       # one sheet per table
+```
 """
 function writetable(filename::Union{AbstractString,IO}, data, columnnames; overwrite::Bool = false,
                     sheetname::AbstractString = "", anchor_cell::Union{AbstractString,CellRef} = CellRef("A1"),

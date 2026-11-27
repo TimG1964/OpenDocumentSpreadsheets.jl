@@ -42,26 +42,26 @@ end
 const AxisRef = Union{ChartAxis,Symbol,Integer}
 
 """
-    getChartAxes(c::Chart) -> Vector{ChartAxis}
-    getChartAxes(c::Chart, role) -> Vector{ChartAxis}
+    getChartAxes(c::AbstractChart) -> Vector{ChartAxis}
+    getChartAxes(c::AbstractChart, role) -> Vector{ChartAxis}
 
 The chart's axes (hidden ones too), or those of a role: `:category`, `:value`, `:date`, `:series`.
 """
-getChartAxes(c::Chart) = _axes(_doc(c))
-function getChartAxes(c::Chart, role::Symbol)
+getChartAxes(c::AbstractChart) = _axes(_doc(c))
+function getChartAxes(c::AbstractChart, role::Symbol)
     k = role === :category ? :catAx : role === :value ? :valAx : role === :date ? :dateAx : role === :series ? :serAx :
         throw(ODSError("Unknown axis role `:$role`: use :category, :value, :date or :series."))
     return [a for a in getChartAxes(c) if a.kind === k]
 end
 
 """
-    getChartAxis(c::Chart, which::Symbol) -> ChartAxis
-    getChartAxis(c::Chart, axid::Integer) -> ChartAxis
+    getChartAxis(c::AbstractChart, which::Symbol) -> ChartAxis
+    getChartAxis(c::AbstractChart, axid::Integer) -> ChartAxis
 
 One axis: `:x`, `:y`, `:x2`, `:y2` or `:z` (as drawn: a bar chart's `:x` is its value axis, along the
 bottom), a role that names one axis, or its number.
 """
-function getChartAxis(c::Chart, which::Symbol)
+function getChartAxis(c::AbstractChart, which::Symbol)
     axes = getChartAxes(c)
     if which in (:x, :y, :x2, :y2, :z)
         which === :z && return _only_axis(filter(a -> a.axid == 5, axes), which)
@@ -71,24 +71,24 @@ function getChartAxis(c::Chart, which::Symbol)
     end
     return _only_axis(getChartAxes(c, which), which)
 end
-getChartAxis(c::Chart, axid::Integer) = _only_axis(filter(a -> a.axid == axid, getChartAxes(c)), axid)
-getChartAxis(::Chart, a::ChartAxis) = a
+getChartAxis(c::AbstractChart, axid::Integer) = _only_axis(filter(a -> a.axid == axid, getChartAxes(c)), axid)
+getChartAxis(::AbstractChart, a::ChartAxis) = a
 function _only_axis(v, which)
     isempty(v) && throw(ODSError("The chart has no axis `$which`."))
     length(v) > 1 && throw(ODSError("The chart has $(length(v)) axes `$which`; name one with :x, :y, :x2, :y2, :z or its number."))
     return v[1]
 end
 
-_axis(c::Chart, ax::AxisRef) = (doc = _doc(c); a = getChartAxis(c, ax); (doc, _axis_node(doc, a.axid), a))
-_axis_style(c::Chart, ax::AxisRef) = ((doc, n, _) = _axis(c, ax); _style(doc, n))
+_axis(c::AbstractChart, ax::AxisRef) = (doc = _doc(c); a = getChartAxis(c, ax); (doc, _axis_node(doc, a.axid), a))
+_axis_style(c::AbstractChart, ax::AxisRef) = ((doc, n, _) = _axis(c, ax); _style(doc, n))
 
 """
     getAxisShapeProps(c, ax) / getAxisTextProps(c, ax)
 
 An axis's line, and its labels' text properties.
 """
-getAxisShapeProps(c::Chart, ax::AxisRef) = _shape(_axis_style(c, ax))
-getAxisTextProps(c::Chart, ax::AxisRef) = ((doc, n, _) = _axis(c, ax); _txpr(doc, n))
+getAxisShapeProps(c::AbstractChart, ax::AxisRef) = _shape(_axis_style(c, ax))
+getAxisTextProps(c::AbstractChart, ax::AxisRef) = ((doc, n, _) = _axis(c, ax); _txpr(doc, n))
 
 _axis_title_node(n) = get(_children(n, "chart:title"), 1, nothing)
 
@@ -101,18 +101,18 @@ _axis_title_node(n) = get(_children(n, "chart:title"), 1, nothing)
 An axis's title: its text, as rich text, and its text properties. LibreOffice's titles can't follow a
 cell: the reference is always `nothing`.
 """
-getAxisTitle(c::Chart, ax::AxisRef) = ((_, n, _) = _axis(c, ax); _maybe(_text, _axis_title_node(n)))
-getAxisTitleText(c::Chart, ax::AxisRef) = ((doc, n, _) = _axis(c, ax); _drawing_text(doc, _axis_title_node(n)))
-getAxisTitleTextProps(c::Chart, ax::AxisRef) = ((doc, n, _) = _axis(c, ax); _txpr(doc, _axis_title_node(n)))
-getAxisTitleRef(c::Chart, ax::AxisRef) = (getChartAxis(c, ax); nothing)
-getAxisTitleRange(c::Chart, ax::AxisRef) = (getChartAxis(c, ax); nothing)
+getAxisTitle(c::AbstractChart, ax::AxisRef) = ((_, n, _) = _axis(c, ax); _maybe(_text, _axis_title_node(n)))
+getAxisTitleText(c::AbstractChart, ax::AxisRef) = ((doc, n, _) = _axis(c, ax); _drawing_text(doc, _axis_title_node(n)))
+getAxisTitleTextProps(c::AbstractChart, ax::AxisRef) = ((doc, n, _) = _axis(c, ax); _txpr(doc, _axis_title_node(n)))
+getAxisTitleRef(c::AbstractChart, ax::AxisRef) = (getChartAxis(c, ax); nothing)
+getAxisTitleRange(c::AbstractChart, ax::AxisRef) = (getChartAxis(c, ax); nothing)
 
 """
     getAxisGridlines(c, ax; minor = false) -> Union{Nothing,DrawingShapeProps}
 
 An axis's major (or minor) gridlines' line, or `nothing` when it has none.
 """
-function getAxisGridlines(c::Chart, ax::AxisRef; minor::Bool = false)
+function getAxisGridlines(c::AbstractChart, ax::AxisRef; minor::Bool = false)
     doc, n, _ = _axis(c, ax)
     for g in _children(n, "chart:grid")
         if something(_get(g, "chart:class"), "major") == (minor ? "minor" : "major")
@@ -127,7 +127,7 @@ end
 
 The axis an axis crosses.
 """
-getAxisPartner(c::Chart, ax::AxisRef) = (a = getChartAxis(c, ax); axes = getChartAxes(c); k = findfirst(b -> b.axid == a.crossax, axes); k === nothing ? nothing : axes[k])
+getAxisPartner(c::AbstractChart, ax::AxisRef) = (a = getChartAxis(c, ax); axes = getChartAxes(c); k = findfirst(b -> b.axid == a.crossax, axes); k === nothing ? nothing : axes[k])
 
 """
     getAxisNumberFormatCode(c, ax) -> Union{Nothing,String}
@@ -135,7 +135,7 @@ getAxisPartner(c::Chart, ax::AxisRef) = (a = getChartAxis(c, ax); axes = getChar
 
 An axis's number format, as a format code, and whether it follows its source cells'.
 """
-function getAxisNumberFormatCode(c::Chart, ax::AxisRef)
+function getAxisNumberFormatCode(c::AbstractChart, ax::AxisRef)
     doc, n, _ = _axis(c, ax)
     ds = get(_style(doc, n), "style:data-style-name", nothing)
     ds === nothing && return nothing
@@ -143,7 +143,7 @@ function getAxisNumberFormatCode(c::Chart, ax::AxisRef)
     m === nothing && return nothing
     return first(_style_code(m.match))
 end
-getAxisNumberFormatLinked(c::Chart, ax::AxisRef) = _bool(get(_axis_style(c, ax), "chart:link-data-style-to-source", nothing))
+getAxisNumberFormatLinked(c::AbstractChart, ax::AxisRef) = _bool(get(_axis_style(c, ax), "chart:link-data-style-to-source", nothing))
 
 function _ticks(d::Dict{String,String}, which::String)
     i = get(d, "chart:tick-marks-$which-inner", nothing); o = get(d, "chart:tick-marks-$which-outer", nothing)
@@ -158,15 +158,15 @@ end
 
 `:cross`, `:in`, `:out` or `:none`.
 """
-getAxisMajorTickMark(c::Chart, ax::AxisRef) = _ticks(_axis_style(c, ax), "major")
-getAxisMinorTickMark(c::Chart, ax::AxisRef) = _ticks(_axis_style(c, ax), "minor")
+getAxisMajorTickMark(c::AbstractChart, ax::AxisRef) = _ticks(_axis_style(c, ax), "major")
+getAxisMinorTickMark(c::AbstractChart, ax::AxisRef) = _ticks(_axis_style(c, ax), "minor")
 
 """
     getAxisTickLabelPos(c, ax) -> Union{Nothing,Symbol}
 
 `:nextTo`, `:low` (outside start), `:high` (outside end) or `:none` (no labels).
 """
-function getAxisTickLabelPos(c::Chart, ax::AxisRef)
+function getAxisTickLabelPos(c::AbstractChart, ax::AxisRef)
     d = _axis_style(c, ax)
     get(d, "chart:display-label", "true") == "false" && return :none
     p = get(d, "chart:axis-label-position", nothing)
@@ -179,10 +179,10 @@ end
 `:minMax` or `:maxMin` (reversed); the fixed minimum and maximum (`nothing`: automatic); 10 for a
 logarithmic axis (LibreOffice's are base 10), else `nothing`.
 """
-getAxisOrientation(c::Chart, ax::AxisRef) = get(_axis_style(c, ax), "chart:reverse-direction", "false") == "true" ? :maxMin : :minMax
-getAxisMin(c::Chart, ax::AxisRef) = _num(get(_axis_style(c, ax), "chart:minimum", nothing))
-getAxisMax(c::Chart, ax::AxisRef) = _num(get(_axis_style(c, ax), "chart:maximum", nothing))
-getAxisLogBase(c::Chart, ax::AxisRef) = get(_axis_style(c, ax), "chart:logarithmic", "false") == "true" ? 10.0 : nothing
+getAxisOrientation(c::AbstractChart, ax::AxisRef) = get(_axis_style(c, ax), "chart:reverse-direction", "false") == "true" ? :maxMin : :minMax
+getAxisMin(c::AbstractChart, ax::AxisRef) = _num(get(_axis_style(c, ax), "chart:minimum", nothing))
+getAxisMax(c::AbstractChart, ax::AxisRef) = _num(get(_axis_style(c, ax), "chart:maximum", nothing))
+getAxisLogBase(c::AbstractChart, ax::AxisRef) = get(_axis_style(c, ax), "chart:logarithmic", "false") == "true" ? 10.0 : nothing
 
 """
     getAxisCrosses(c, ax) -> Union{Nothing,Symbol}
@@ -191,11 +191,11 @@ getAxisLogBase(c::Chart, ax::AxisRef) = get(_axis_style(c, ax), "chart:logarithm
 Where an axis crosses the axis it meets (`chart:axis-position`): `:min` (its start), `:max` (its end),
 `:autoZero` (at 0), or at a value.
 """
-function getAxisCrosses(c::Chart, ax::AxisRef)
+function getAxisCrosses(c::AbstractChart, ax::AxisRef)
     p = get(_axis_style(c, ax), "chart:axis-position", nothing)
     return p === nothing ? nothing : p == "start" ? :min : p == "end" ? :max : p == "0" ? :autoZero : nothing
 end
-function getAxisCrossesAt(c::Chart, ax::AxisRef)
+function getAxisCrossesAt(c::AbstractChart, ax::AxisRef)
     p = get(_axis_style(c, ax), "chart:axis-position", nothing)
     (p === nothing || p in ("start", "end", "0")) && return nothing
     return _num(p)
@@ -207,8 +207,8 @@ end
 The interval between major ticks, and between minor ones (LibreOffice stores the number of minor
 intervals in a major one).
 """
-getAxisMajorUnit(c::Chart, ax::AxisRef) = _num(get(_axis_style(c, ax), "chart:interval-major", nothing))
-function getAxisMinorUnit(c::Chart, ax::AxisRef)
+getAxisMajorUnit(c::AbstractChart, ax::AxisRef) = _num(get(_axis_style(c, ax), "chart:interval-major", nothing))
+function getAxisMinorUnit(c::AbstractChart, ax::AxisRef)
     d = _axis_style(c, ax)
     m = _num(get(d, "chart:interval-major", nothing)); k = _num(get(d, "chart:interval-minor-divisor", nothing))
     return m === nothing || k === nothing || k == 0 ? nothing : m / k
@@ -219,7 +219,7 @@ end
 
 `nothing`: ODF has no label alignment, offset, multi-level switch or crossing rule for an axis.
 """
-getAxisLabelAlign(c::Chart, ax::AxisRef) = (getChartAxis(c, ax); nothing)
-getAxisLabelOffset(c::Chart, ax::AxisRef) = (getChartAxis(c, ax); nothing)
-getAxisMultiLevelLabels(c::Chart, ax::AxisRef) = (getChartAxis(c, ax); nothing)
-getAxisCrossBetween(c::Chart, ax::AxisRef) = (getChartAxis(c, ax); nothing)
+getAxisLabelAlign(c::AbstractChart, ax::AxisRef) = (getChartAxis(c, ax); nothing)
+getAxisLabelOffset(c::AbstractChart, ax::AxisRef) = (getChartAxis(c, ax); nothing)
+getAxisMultiLevelLabels(c::AbstractChart, ax::AxisRef) = (getChartAxis(c, ax); nothing)
+getAxisCrossBetween(c::AbstractChart, ax::AxisRef) = (getChartAxis(c, ax); nothing)

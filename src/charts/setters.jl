@@ -337,7 +337,7 @@ end
 _own_stroke(o, st) = _style_attr(o, st, "draw:stroke")
 
 """
-    setSeriesFill(c::Chart, i, color; transparency = nothing, gradient = nothing, gradientStyle = :linear,
+    setSeriesFill(c::AbstractChart, i, color; transparency = nothing, gradient = nothing, gradientStyle = :linear,
 gradientAngle = 0, hatch = nothing, hatchAngle = 0) -> Chart
 
 Series `i`'s fill: a colour (hex, a colour name, a theme colour such as `:accent1` or a
@@ -348,7 +348,7 @@ Series `i`'s fill: a colour (hex, a colour name, a theme colour such as `:accent
 degrees. A line, XY or radar series has one colour, its line's and its symbols' (LibreOffice's): its fill
 is its line colour, and `:none`, transparency, gradients and hatches are errors.
 """
-function setSeriesFill(c::Chart, i::Integer, color::Union{SchemeColorLike,Colors.Colorant}; transparency::Union{Nothing,Integer} = nothing,
+function setSeriesFill(c::AbstractChart, i::Integer, color::Union{SchemeColorLike,Colors.Colorant}; transparency::Union{Nothing,Integer} = nothing,
 gradient = nothing, gradientStyle::Symbol = :linear, gradientAngle::Integer = 0, hatch = nothing,
 hatchAngle::Integer = 0)
     transparency === nothing || 0 <= transparency <= 100 || throw(ODSError("`transparency` is 0 to 100 percent."))
@@ -373,8 +373,8 @@ function _line_like(o, i)
 end
 
 """
-    setSeriesLine(c::Chart, i; color, width, dash, cap, compound, join, miterLimit) -> Chart
-    setSeriesLine(c::Chart, i, :none | :inherit) -> Chart
+    setSeriesLine(c::AbstractChart, i; color, width, dash, cap, compound, join, miterLimit) -> Chart
+    setSeriesLine(c::AbstractChart, i, :none | :inherit) -> Chart
     setSeriesLineColor / setSeriesLineWidth / setSeriesLineDash / setSeriesLineCap(c, i, value) -> Chart
     setSeriesLineCompound / setSeriesLineJoin / setSeriesLineMiterLimit(c, i, value) -> error
 
@@ -383,22 +383,22 @@ Series `i`'s line: a colour, a width in points, a dash (`:solid`, `:dot`, `:dash
 the `sys` ones are denser), a cap (`:rnd` round, `:sq` square, `:flat`). LibreOffice's chart lines have no
 compound lines, joins or miter limits: those are errors.
 """
-function setSeriesLine(c::Chart, i::Integer; color = nothing, width = nothing, dash = nothing, cap = nothing,
+function setSeriesLine(c::AbstractChart, i::Integer; color = nothing, width = nothing, dash = nothing, cap = nothing,
                        compound = nothing, join = nothing, miterLimit = nothing)
     o = _editable(c)
     _style_line!(o, c.package, _series_style!(o, i); color, width, dash, cap, compound, join, miterLimit, linked = _line_like(o, i))
     return c
 end
-setSeriesLine(c::Chart, i::Integer, v::Symbol) =
+setSeriesLine(c::AbstractChart, i::Integer, v::Symbol) =
     v === :none ? setSeriesLine(c, i; color = :none) : v === :inherit ? setSeriesLine(c, i; color = :inherit, width = :inherit, dash = :inherit, cap = :inherit) :
     throw(ODSError("Use :none or :inherit, or the keywords."))
-setSeriesLineColor(c::Chart, i::Integer, v) = setSeriesLine(c, i; color = v)
-setSeriesLineWidth(c::Chart, i::Integer, v) = setSeriesLine(c, i; width = v)
-setSeriesLineDash(c::Chart, i::Integer, v) = setSeriesLine(c, i; dash = v)
-setSeriesLineCap(c::Chart, i::Integer, v) = setSeriesLine(c, i; cap = v)
-setSeriesLineCompound(c::Chart, i::Integer, v) = setSeriesLine(c, i; compound = v)
-setSeriesLineJoin(c::Chart, i::Integer, v) = setSeriesLine(c, i; join = v)
-setSeriesLineMiterLimit(c::Chart, i::Integer, v) = setSeriesLine(c, i; miterLimit = v)
+setSeriesLineColor(c::AbstractChart, i::Integer, v) = setSeriesLine(c, i; color = v)
+setSeriesLineWidth(c::AbstractChart, i::Integer, v) = setSeriesLine(c, i; width = v)
+setSeriesLineDash(c::AbstractChart, i::Integer, v) = setSeriesLine(c, i; dash = v)
+setSeriesLineCap(c::AbstractChart, i::Integer, v) = setSeriesLine(c, i; cap = v)
+setSeriesLineCompound(c::AbstractChart, i::Integer, v) = setSeriesLine(c, i; compound = v)
+setSeriesLineJoin(c::AbstractChart, i::Integer, v) = setSeriesLine(c, i; join = v)
+setSeriesLineMiterLimit(c::AbstractChart, i::Integer, v) = setSeriesLine(c, i; miterLimit = v)
 
 #
 # Markers
@@ -513,7 +513,7 @@ function _check_marker_series(o, i)
 end
 
 """
-    setMarker(c::Chart, i; point = nothing, symbol = nothing, size = nothing, fill = nothing, lineColor = nothing,
+    setMarker(c::AbstractChart, i; point = nothing, symbol = nothing, size = nothing, fill = nothing, lineColor = nothing,
               lineWidth = nothing) -> Chart
     setMarkerSymbol(c, i, symbol; point = nothing) / setMarkerSize(c, i, size; point = nothing) -> Chart
     setMarkerFill / setMarkerLineColor / setMarkerLineWidth(c, i, value; point = nothing) -> error
@@ -522,7 +522,7 @@ A line, XY or radar series' (or point's, from 1) symbol and size (2 to 72 points
 `:circle`, `:square`, `:diamond`, `:triangle`, `:x`, `:plus`, `:star`, `:dash`, `:dot`,
 `:none`, `:auto`, `:arrowDown`, `:arrowLeft`, `:bowTie`, `:hourglass`, `:loStar` and `:vBar`. LibreOffice draws a symbol in its series' colours: a fill or border of its own is an error.
 """
-function setMarker(c::Chart, i::Integer; point = nothing, symbol = nothing, size = nothing, fill = nothing,
+function setMarker(c::AbstractChart, i::Integer; point = nothing, symbol = nothing, size = nothing, fill = nothing,
                    lineColor = nothing, lineWidth = nothing)
     (fill === nothing && lineColor === nothing && lineWidth === nothing) ||
         throw(ODSError("LibreOffice draws a marker in its series' colours: it has no fill or border of its own (D-086). Set the series' with `setSeriesFill`."))
@@ -532,11 +532,11 @@ function setMarker(c::Chart, i::Integer; point = nothing, symbol = nothing, size
     _set_marker!(o, st, symbol, size)
     return c
 end
-setMarkerSymbol(c::Chart, i::Integer, v::Symbol; point = nothing) = setMarker(c, i; point, symbol = v)
-setMarkerSize(c::Chart, i::Integer, v; point = nothing) = setMarker(c, i; point, size = v)
-setMarkerFill(c::Chart, i::Integer, v; point = nothing) = setMarker(c, i; point, fill = v)
-setMarkerLineColor(c::Chart, i::Integer, v; point = nothing) = setMarker(c, i; point, lineColor = v)
-setMarkerLineWidth(c::Chart, i::Integer, v; point = nothing) = setMarker(c, i; point, lineWidth = v)
+setMarkerSymbol(c::AbstractChart, i::Integer, v::Symbol; point = nothing) = setMarker(c, i; point, symbol = v)
+setMarkerSize(c::AbstractChart, i::Integer, v; point = nothing) = setMarker(c, i; point, size = v)
+setMarkerFill(c::AbstractChart, i::Integer, v; point = nothing) = setMarker(c, i; point, fill = v)
+setMarkerLineColor(c::AbstractChart, i::Integer, v; point = nothing) = setMarker(c, i; point, lineColor = v)
+setMarkerLineWidth(c::AbstractChart, i::Integer, v; point = nothing) = setMarker(c, i; point, lineWidth = v)
 
 #
 # Text properties (the field table every text setter shares)
@@ -633,9 +633,9 @@ LibreOffice's chart text has no capitals setting, kerning size or coloured outli
 and `:line` are errors. The chart space's text (`setChartSpaceTextProp`) is set on its series'
 labels.
 """
-setChartTitleTextProp(c::Chart, field::Symbol, v) = (o = _editable(c); _style_text!(o, c.package, _own_style!(o, _title_tag(o)), field, v); c)
-setLegendTextProp(c::Chart, field::Symbol, v) = (o = _editable(c); _style_text!(o, c.package, _own_style!(o, _legend_tag(o)), field, v); c)
-function setAxisTitleTextProp(c::Chart, ax, field::Symbol, v)
+setChartTitleTextProp(c::AbstractChart, field::Symbol, v) = (o = _editable(c); _style_text!(o, c.package, _own_style!(o, _title_tag(o)), field, v); c)
+setLegendTextProp(c::AbstractChart, field::Symbol, v) = (o = _editable(c); _style_text!(o, c.package, _own_style!(o, _legend_tag(o)), field, v); c)
+function setAxisTitleTextProp(c::AbstractChart, ax, field::Symbol, v)
     o = _editable(c)
     m = _axis_tag(o, c, ax)
     t = endswith(m.match, "/>") ? nothing : _find(r"^<chart:title\b[^>]*>", o.text[m.at+ncodeunits(m.match):end])
@@ -643,18 +643,18 @@ function setAxisTitleTextProp(c::Chart, ax, field::Symbol, v)
     _style_text!(o, c.package, _own_style!(o, _Hit(m.at + ncodeunits(m.match), t.match)), field, v)
     return c
 end
-setAxisTextProp(c::Chart, ax, field::Symbol, v) = (o = _editable(c); _style_text!(o, c.package, _own_style!(o, _axis_tag(o, c, ax)), field, v); c)
-setLabelTextProp(c::Chart, i::Integer, field::Symbol, v) = (o = _editable(c); _style_text!(o, c.package, _series_style!(o, i), field, v); c)
-setLabelTextProp(c::Chart, i::Integer, point::Integer, field::Symbol, v) =
+setAxisTextProp(c::AbstractChart, ax, field::Symbol, v) = (o = _editable(c); _style_text!(o, c.package, _own_style!(o, _axis_tag(o, c, ax)), field, v); c)
+setLabelTextProp(c::AbstractChart, i::Integer, field::Symbol, v) = (o = _editable(c); _style_text!(o, c.package, _series_style!(o, i), field, v); c)
+setLabelTextProp(c::AbstractChart, i::Integer, point::Integer, field::Symbol, v) =
     (o = _editable(c); _style_text!(o, c.package, _point_style!(o, i, point), field, v); c)
-function setGroupLabelTextProp(c::Chart, g::ChartGroup, field::Symbol, v)
+function setGroupLabelTextProp(c::AbstractChart, g::ChartGroup, field::Symbol, v)
     doc = _doc(c)
     for (i, s) in enumerate(_series_nodes(doc))
         ChartGroup(_series_tag(doc, s), _series_axids(s), nothing) == g && setLabelTextProp(c, i, field, v)
     end
     return c
 end
-setChartSpaceTextProp(c::Chart, field::Symbol, v) = (foreach(i -> setLabelTextProp(c, i, field, v), 1:length(_series_nodes(_doc(c)))); c)
+setChartSpaceTextProp(c::AbstractChart, field::Symbol, v) = (foreach(i -> setLabelTextProp(c, i, field, v), 1:length(_series_nodes(_doc(c)))); c)
 
 # An axis' start tag: the axes are the plot area's `chart:axis` children, in order.
 function _axis_tag(o, c, ax)
@@ -677,7 +677,7 @@ _axis_style!(o, c, ax) = _own_style!(o, _axis_tag(o, c, ax))
 The chart's (or an axis') title: a string (a line break starts a paragraph) or a `DrawingText`.
 LibreOffice's titles can't follow a cell: a `CellRef` is an error.
 """
-function setChartTitleText(c::Chart, text)
+function setChartTitleText(c::AbstractChart, text)
     o = _editable(c)
     paras = _title_xml(text, o, c.package)
     m = _find(r"<chart:title\b[^>]*>.*?</chart:title>"s, o.text)
@@ -692,7 +692,7 @@ function setChartTitleText(c::Chart, text)
     end
     return c
 end
-function setAxisTitleText(c::Chart, ax, text)
+function setAxisTitleText(c::AbstractChart, ax, text)
     o = _editable(c)
     paras = _title_xml(text, o, c.package)
     m = _axis_tag(o, c, ax)
@@ -824,7 +824,7 @@ corner is a custom position in that corner of the chart.
 plot area, and the series whose entries are hidden. The first two make a legend if the chart has none.
 `expansion` shapes the legend: `:wide`, `:high` or `:balanced` (not for a corner).
 """
-function setLegendPos(c::Chart, pos::Symbol; overlay = nothing, expansion = nothing)
+function setLegendPos(c::AbstractChart, pos::Symbol; overlay = nothing, expansion = nothing)
     corner = get(_LEGEND_CORNERS, pos, nothing)
     pos === :inherit || haskey(_LEGEND_ODF, pos) || corner !== nothing ||
         throw(ODSError("Unknown legend position `:$pos`: use :b, :t, :l, :r, :tr, :tl, :bl, :br or :inherit."))
@@ -857,7 +857,7 @@ function setLegendPos(c::Chart, pos::Symbol; overlay = nothing, expansion = noth
 end
 _style_attr_legend(o) = (m = _find(r"<chart:legend\b[^>]*>", o.text);
     m === nothing ? nothing : (a = match(r"style:legend-expansion=\"([^\"]*)\"", m.match); a === nothing ? nothing : a.captures[1]))
-setLegendOverlay(c::Chart, overlay::Union{Bool,Symbol}) =
+setLegendOverlay(c::AbstractChart, overlay::Union{Bool,Symbol}) =
     (o = _editable(c); _set_tag_attrs!(o, _legend_or_new!(o), ["loext:overlay" => overlay === :inherit ? nothing : string(Bool(overlay))]); c)
 # The legend's start tag, a legend made (on the right, as LibreOffice's) when there is none.
 function _legend_or_new!(o)
@@ -867,7 +867,7 @@ function _legend_or_new!(o)
     _insert_before!(o, "<chart:plot-area", "<chart:legend chart:legend-position=\"end\" svg:x=\"0cm\" svg:y=\"0cm\" chart:style-name=\"$st\"/>")
     return _find(r"<chart:legend\b[^>]*>", o.text)
 end
-function setLegendEntryDeleted(c::Chart, positions, deleted::Union{Bool,Symbol})
+function setLegendEntryDeleted(c::AbstractChart, positions, deleted::Union{Bool,Symbol})
     o = _editable(c)
     _legend_tag(o)
     for i in positions
@@ -882,14 +882,14 @@ end
 
 The plot area's border: LibreOffice's wall.
 """
-function setPlotAreaLine(c::Chart; kw...)
+function setPlotAreaLine(c::AbstractChart; kw...)
     o = _editable(c)
     m = _find(r"<chart:wall\b[^>]*>", o.text)
     m === nothing && throw(ODSError("The chart has no wall (a pie or doughnut)."))
     _style_line!(o, c.package, _own_style!(o, m); kw...)
     return c
 end
-setPlotAreaLine(c::Chart, v::Symbol) = v === :none ? setPlotAreaLine(c; color = :none) :
+setPlotAreaLine(c::AbstractChart, v::Symbol) = v === :none ? setPlotAreaLine(c; color = :none) :
     v === :inherit ? setPlotAreaLine(c; color = :inherit, width = :inherit, dash = :inherit) : throw(ODSError("Use :none or :inherit."))
 
 #
@@ -902,7 +902,7 @@ setPlotAreaLine(c::Chart, v::Symbol) = v === :none ? setPlotAreaLine(c; color = 
 Whether series `i`'s labels show `flag`: `:value`, `:percent`, `:categoryName`, `:seriesName`,
 `:legendKey`. LibreOffice has no bubble-size labels: `:bubbleSize` is an error.
 """
-function setLabelFlag(c::Chart, i::Integer, flag::Symbol, on::Bool)
+function setLabelFlag(c::AbstractChart, i::Integer, flag::Symbol, on::Bool)
     flag === :bubbleSize && throw(ODSError("LibreOffice's labels can't show bubble sizes (D-086)."))
     flag in (:value, :percent, :categoryName, :seriesName, :legendKey) ||
         throw(ODSError("Unknown label flag `:$flag`: use :value, :percent, :categoryName, :seriesName or :legendKey."))
@@ -929,7 +929,7 @@ end
 
 A point's label: custom text (LibreOffice's custom label fields), or none.
 """
-function setLabelText(c::Chart, i::Integer, point::Integer, text::AbstractString)
+function setLabelText(c::AbstractChart, i::Integer, point::Integer, text::AbstractString)
     o = _editable(c)
     _point_style!(o, i, point)
     lbl = "<chart:data-label><text:p><text:span>" * _esct(text) * "</text:span></text:p></chart:data-label>"
@@ -946,7 +946,7 @@ function setLabelText(c::Chart, i::Integer, point::Integer, text::AbstractString
     end
     return c
 end
-function setLabelDeleted(c::Chart, i::Integer, point::Integer, deleted::Bool)
+function setLabelDeleted(c::AbstractChart, i::Integer, point::Integer, deleted::Bool)
     o = _editable(c)
     st = _point_style!(o, i, point)
     deleted ? _set_style_attrs!(o, st, ["chart:data-label-number" => "none", "chart:data-label-text" => "false",
@@ -1000,7 +1000,7 @@ end
 An axis' scale and look, in LibreOffice's form. LibreOffice stores a minor unit as the number of
 minor intervals in a major one: it needs a major unit it divides.
 """
-function setAxisScaling(c::Chart, ax; orientation = nothing, min = nothing, max = nothing)
+function setAxisScaling(c::AbstractChart, ax; orientation = nothing, min = nothing, max = nothing)
     attrs = Pair{String,Union{Nothing,String}}[]
     min === nothing || push!(attrs, "chart:minimum" => _axis_value(min, "`min`"))
     max === nothing || push!(attrs, "chart:maximum" => _axis_value(max, "`max`"))
@@ -1012,17 +1012,17 @@ function setAxisScaling(c::Chart, ax; orientation = nothing, min = nothing, max 
     lo !== nothing && hi !== nothing && lo >= hi && throw(ODSError("An axis' minimum must be less than its maximum."))
     return _axis_set!(c, ax, attrs)
 end
-setAxisMin(c::Chart, ax, v) = setAxisScaling(c, ax; min = v)
-setAxisMax(c::Chart, ax, v) = setAxisScaling(c, ax; max = v)
-setAxisOrientation(c::Chart, ax, v::Symbol) = setAxisScaling(c, ax; orientation = v)
-function setAxisCrosses(c::Chart, ax, rule::Symbol)
+setAxisMin(c::AbstractChart, ax, v) = setAxisScaling(c, ax; min = v)
+setAxisMax(c::AbstractChart, ax, v) = setAxisScaling(c, ax; max = v)
+setAxisOrientation(c::AbstractChart, ax, v::Symbol) = setAxisScaling(c, ax; orientation = v)
+function setAxisCrosses(c::AbstractChart, ax, rule::Symbol)
     rule in (:autoZero, :min, :max, :inherit) || throw(ODSError("`rule` is :autoZero, :min, :max or :inherit."))
     return _axis_set!(c, ax, ["chart:axis-position" => rule === :min ? "start" : rule === :max ? "end" : rule === :autoZero ? "0" : nothing])
 end
-setAxisCrossesAt(c::Chart, ax, v) = _axis_set!(c, ax, ["chart:axis-position" => _axis_value(v, "The crossing")])
-setAxisMajorUnit(c::Chart, ax, v) = (_check_value_axis(c, ax); v === :inherit ? _axis_set!(c, ax, ["chart:interval-major" => nothing, "chart:interval-minor-divisor" => nothing]) :
+setAxisCrossesAt(c::AbstractChart, ax, v) = _axis_set!(c, ax, ["chart:axis-position" => _axis_value(v, "The crossing")])
+setAxisMajorUnit(c::AbstractChart, ax, v) = (_check_value_axis(c, ax); v === :inherit ? _axis_set!(c, ax, ["chart:interval-major" => nothing, "chart:interval-minor-divisor" => nothing]) :
     (v isa Real && v > 0 || throw(ODSError("A unit is a positive number."))) && _axis_set!(c, ax, ["chart:interval-major" => _num_text(v)]))
-function setAxisMinorUnit(c::Chart, ax, v)
+function setAxisMinorUnit(c::AbstractChart, ax, v)
     _check_value_axis(c, ax)
     v === :inherit && return _axis_set!(c, ax, ["chart:interval-minor-divisor" => nothing])
     v isa Real && v > 0 || throw(ODSError("A unit is a positive number."))
@@ -1034,7 +1034,7 @@ function setAxisMinorUnit(c::Chart, ax, v)
     return _axis_set!(c, ax, ["chart:interval-minor-divisor" => string(round(Int, k))])
 end
 _check_value_axis(c, ax) = getChartAxis(c, ax).kind in (:valAx, :dateAx) || throw(ODSError("Units are for value and date axes."))
-function setAxisTickLabelPos(c::Chart, ax, pos::Symbol)
+function setAxisTickLabelPos(c::AbstractChart, ax, pos::Symbol)
     pos in (:high, :low, :nextTo, :none, :inherit) || throw(ODSError("`pos` is :high, :low, :nextTo, :none or :inherit."))
     return _axis_set!(c, ax, ["chart:display-label" => pos === :none ? "false" : "true",
         "chart:axis-label-position" => pos === :high ? "outside-end" : pos === :low ? "outside-start" : nothing])
@@ -1045,9 +1045,9 @@ function _tick_attrs(m::Symbol, which)
     m === :inherit && return ["chart:tick-marks-$which-inner" => nothing, "chart:tick-marks-$which-outer" => nothing]
     return ["chart:tick-marks-$which-inner" => string(m in (:cross, :in)), "chart:tick-marks-$which-outer" => string(m in (:cross, :out))]
 end
-setAxisMajorTickMark(c::Chart, ax, m::Symbol) = _axis_set!(c, ax, _tick_attrs(m, "major"))
-setAxisMinorTickMark(c::Chart, ax, m::Symbol) = _axis_set!(c, ax, _tick_attrs(m, "minor"))
-function setAxisGridlines(c::Chart, ax; major = nothing, minor = nothing)
+setAxisMajorTickMark(c::AbstractChart, ax, m::Symbol) = _axis_set!(c, ax, _tick_attrs(m, "major"))
+setAxisMinorTickMark(c::AbstractChart, ax, m::Symbol) = _axis_set!(c, ax, _tick_attrs(m, "minor"))
+function setAxisGridlines(c::AbstractChart, ax; major = nothing, minor = nothing)
     o = _editable(c)
     for (on, class, col) in ((major, "major", "#b3b3b3"), (minor, "minor", "#dddddd"))
         on === nothing && continue
@@ -1074,10 +1074,10 @@ function setAxisGridlines(c::Chart, ax; major = nothing, minor = nothing)
     end
     return c
 end
-setAxisLine(c::Chart, ax; kw...) = (o = _editable(c); _style_line!(o, c.package, _axis_style!(o, c, ax); kw...); c)
-setAxisLine(c::Chart, ax, v::Symbol) = v === :none ? setAxisLine(c, ax; color = :none) :
+setAxisLine(c::AbstractChart, ax; kw...) = (o = _editable(c); _style_line!(o, c.package, _axis_style!(o, c, ax); kw...); c)
+setAxisLine(c::AbstractChart, ax, v::Symbol) = v === :none ? setAxisLine(c, ax; color = :none) :
     v === :inherit ? setAxisLine(c, ax; color = :inherit, width = :inherit, dash = :inherit) : throw(ODSError("Use :none or :inherit."))
-function setAxisNumberFormatCode(c::Chart, ax, code)
+function setAxisNumberFormatCode(c::AbstractChart, ax, code)
     o = _editable(c)
     st = _axis_style!(o, c, ax)
     if code === :inherit
@@ -1103,18 +1103,18 @@ function setAxisNumberFormatCode(c::Chart, ax, code)
     _set_style_attrs!(o, st, ["chart:link-data-style-to-source" => "false"])
     return c
 end
-setAxisNumberFormatLinked(c::Chart, ax, linked::Bool) = _axis_set!(c, ax, ["chart:link-data-style-to-source" => string(linked)])
+setAxisNumberFormatLinked(c::AbstractChart, ax, linked::Bool) = _axis_set!(c, ax, ["chart:link-data-style-to-source" => string(linked)])
 
 """
     setGroupGapWidth(c, g, pct) / setGroupOverlap(c, g, pct) -> Chart
 
 A bar group's gap width (0 to 500 percent) and overlap (−100 to 100), on its y axis' style.
 """
-function setGroupGapWidth(c::Chart, g::ChartGroup, pct)
+function setGroupGapWidth(c::AbstractChart, g::ChartGroup, pct)
     pct === :inherit || (pct isa Integer && 0 <= pct <= 500) || throw(ODSError("A gap width is 0 to 500 percent."))
     return _axis_set!(c, 3 in g.axids ? 4 : 2, ["chart:gap-width" => pct === :inherit ? nothing : string(pct)])
 end
-function setGroupOverlap(c::Chart, g::ChartGroup, pct)
+function setGroupOverlap(c::AbstractChart, g::ChartGroup, pct)
     pct === :inherit || (pct isa Integer && -100 <= pct <= 100) || throw(ODSError("An overlap is −100 to 100 percent."))
     return _axis_set!(c, 3 in g.axids ? 4 : 2, ["chart:overlap" => pct === :inherit ? nothing : string(pct)])
 end
@@ -1135,7 +1135,7 @@ A trendline on series `i`, LibreOffice's Insert ▸ Trend Line: `kind` `:linear`
 `:exp`, `:power`, `:poly` (with `order`, 2 to 6) or `:movingAvg` (with `period`); its `name`;
 extrapolation `forward` and `backward`; a forced `intercept`; the equation and R² shown.
 """
-function addTrendline(c::Chart, i::Integer, kind::Symbol = :linear; order = nothing, period = nothing, name = nothing,
+function addTrendline(c::AbstractChart, i::Integer, kind::Symbol = :linear; order = nothing, period = nothing, name = nothing,
                       forward = nothing, backward = nothing, intercept = nothing, displayEquation::Bool = false,
                       displayRSquared::Bool = false)
     haskey(_TREND_ODF, kind) || throw(ODSError("Unknown trendline `:$kind`: use :linear, :log, :exp, :power, :poly or :movingAvg."))
@@ -1155,7 +1155,7 @@ function addTrendline(c::Chart, i::Integer, kind::Symbol = :linear; order = noth
                        before = ("<chart:error-indicator", "<chart:data-point", "<chart:data-label"))
     return c
 end
-deleteTrendlines(c::Chart, i::Integer) = (o = _editable(c); _remove_in_series!(o, i, r"<chart:regression-curve\b.*?</chart:regression-curve>|<chart:regression-curve\b[^>]*/>"s); c)
+deleteTrendlines(c::AbstractChart, i::Integer) = (o = _editable(c); _remove_in_series!(o, i, r"<chart:regression-curve\b.*?</chart:regression-curve>|<chart:regression-curve\b[^>]*/>"s); c)
 
 const _ERR_ODF = Dict(:fixed => "constant", :percent => "percentage", :stdDev => "standard-deviation", :stdErr => "standard-error",
                       :range => "cell-range")
@@ -1168,7 +1168,7 @@ Error bars on series `i`, LibreOffice's Insert ▸ Y Error Bars: `type` `:fixed`
 `:percent` or `:stdDev` (with `value`), `:stdErr`, or `:range` (with the cells `plus` and `minus`);
 `bars` `:both`, `:plus` or `:minus`; `direction` `:y` or `:x` (XY charts).
 """
-function setErrorBars(c::Chart, i::Integer; type::Symbol, value = nothing, plus = nothing, minus = nothing,
+function setErrorBars(c::AbstractChart, i::Integer; type::Symbol, value = nothing, plus = nothing, minus = nothing,
                       bars::Symbol = :both, direction::Symbol = :y)
     haskey(_ERR_ODF, type) || throw(ODSError("Unknown error bar type `:$type`: use :fixed, :percent, :stdDev, :stdErr or :range."))
     bars in (:both, :plus, :minus) || throw(ODSError("`bars` is :both, :plus or :minus."))
@@ -1190,7 +1190,7 @@ function setErrorBars(c::Chart, i::Integer; type::Symbol, value = nothing, plus 
                        before = ("<chart:data-point", "<chart:data-label"))
     return c
 end
-deleteErrorBars(c::Chart, i::Integer) = (o = _editable(c); _remove_in_series!(o, i, r"<chart:error-indicator\b[^>]*/>"); c)
+deleteErrorBars(c::AbstractChart, i::Integer) = (o = _editable(c); _remove_in_series!(o, i, r"<chart:error-indicator\b[^>]*/>"); c)
 
 # Inserts a child of series `i` before the first of the children `before` (ODF's order), else last.
 function _insert_in_series!(o, i, xml; before = ())
@@ -1221,7 +1221,7 @@ end
 LibreOffice's label options of an axis: `stagger` (`:odd`, `:even`, `:none`), whether labels may
 `overlap`, and whether they may break into lines.
 """
-function setAxisLabelArrangement(c::Chart, ax; stagger = nothing, overlap = nothing, breakText = nothing)
+function setAxisLabelArrangement(c::AbstractChart, ax; stagger = nothing, overlap = nothing, breakText = nothing)
     attrs = Pair{String,Union{Nothing,String}}[]
     stagger === nothing || push!(attrs, "chart:label-arrangement" => stagger === :odd ? "stagger-odd" : stagger === :even ? "stagger-even" :
                                  stagger === :none ? "side-by-side" : throw(ODSError("`stagger` is :odd, :even or :none.")))
@@ -1236,7 +1236,7 @@ end
 How far a pie or doughnut series (or one point) is pulled out, in percent of the radius (LibreOffice's
 `chart:pie-offset`).
 """
-function setSeriesExplosion(c::Chart, i::Integer, pct::Integer; point = nothing)
+function setSeriesExplosion(c::AbstractChart, i::Integer, pct::Integer; point = nothing)
     0 <= pct <= 100 || throw(ODSError("An explosion is 0 to 100 percent."))
     o = _editable(c)
     _chart_class(o) in ("chart:circle", "chart:ring") || throw(ODSError("Explosion is for pie and doughnut charts."))

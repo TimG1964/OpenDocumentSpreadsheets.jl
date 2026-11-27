@@ -412,6 +412,13 @@ LibreOffice has no tooltips: `tooltip` is an error.
 
 Returns the link of the first cell, as [`getHyperlink`](@ref) reads it. The file must be
 writable.
+
+```julia
+sh["D1"] = "Julia"
+addHyperlink(sh, "D1"; url = "https://julialang.org")              # the text becomes the link
+addHyperlink(sh, "D2"; location = "Data.A1", display = "To the data")
+addHyperlink(sh, "A1"; url = "report.pdf")                          # a number: the cell links
+```
 """
 function addHyperlink(ws::Worksheet, ref::Union{AbstractString,CellRef,CellRange};
                       url::Union{Nothing,AbstractString} = nothing, location::Union{Nothing,AbstractString} = nothing,

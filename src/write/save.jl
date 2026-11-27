@@ -278,6 +278,14 @@ Write `xf` to `dest`, a file path or an `IO`.
 
 A path becomes the file's new `source` (for [`saveods`](@ref)). Returns the absolute path,
 or `nothing` for an `IO`.
+
+```julia
+xf = openods("budget.ods"; mode = "rw")
+xf["Income"]["D1"] = "Checked"
+writeods("budget-checked.ods", xf)       # a copy: budget.ods is unchanged
+
+writeods("template.ots", newods("Sheet1"); overwrite = true)   # a template
+```
 """
 function writeods(dest::Union{AbstractString,IO}, xf::ODSFile; overwrite::Bool = false,
                   version::AbstractString = DEFAULT_ODF_VERSION, display_text::Bool = true)
@@ -312,8 +320,10 @@ function writeods(dest::Union{AbstractString,IO}, xf::ODSFile; overwrite::Bool =
         if fmt === :fods
             write_flat(dest, io -> _write_flat_patched(io, xf; display))
         else
-            v = xf.version in WRITABLE_ODF_VERSIONS ? xf.version : DEFAULT_ODF_VERSION
-            write_package(dest, _patched_parts(xf; display); mediatype = mt, version = v)
+            # the manifest gives content.xml's version, which the file keeps: LibreOffice refuses a
+            # package whose two differ (F-067, D-094). A file without one (ODF 1.0/1.1) gets 1.4.
+            v = something(xf.version, DEFAULT_ODF_VERSION)
+            write_package(dest, _patched_parts(xf; display); mediatype = mt, version = v, check_version = false)
         end
     end
     if dest isa AbstractString

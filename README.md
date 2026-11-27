@@ -24,7 +24,11 @@ other Tables.jl source.
 - **Charts and sparklines:** create, read and format LibreOffice's charts (22 kinds, stock charts,
   histograms and chart sheets) and sparklines.
 
-Everything is stored as LibreOffice stores it, and behaves as it does in LibreOffice Calc.
+Everything is stored as LibreOffice stores it, and behaves as it does in LibreOffice Calc. The
+package is tested against LibreOffice. OpenDocument files from other programs are read by the
+standard; the documentation's
+[Supported features](https://TimG1964.github.io/OpenDocumentSpreadsheets.jl/dev/features/#Files-from-other-programs)
+page says what that covers.
 
 ## Installation
 

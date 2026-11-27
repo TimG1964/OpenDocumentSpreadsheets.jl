@@ -35,3 +35,19 @@ CurrentModule = OpenDocumentSpreadsheets
 - **Charts and sparklines:** making, reading and formatting LibreOffice's charts (22 kinds, stock
   charts, histograms and chart sheets), and sparkline groups ([Charts](charts/overview.md)).
 - **Speed:** large sheets are read and written quickly, and can be streamed in bounded memory.
+
+## Files from other programs
+
+OpenDocumentSpreadsheets is tested against LibreOffice Calc: its test files were made in
+LibreOffice, and the files it writes are checked by opening them in LibreOffice.
+
+Other programs that save OpenDocument spreadsheets, such as Apache OpenOffice, Microsoft Excel and
+Google Sheets, write the same format, and their files are read as the standard describes them:
+
+- The file can be ODF 1.2, 1.3 or 1.4. An edited file keeps its version.
+- A file can hold only its sheets, without the styles, settings or properties that LibreOffice adds.
+  It can still be edited and saved, and LibreOffice opens the result.
+- The XML can use any namespace prefixes, not just LibreOffice's.
+
+Files saved by those programs themselves aren't part of the tests, and nor is opening the files
+written here in them. New files are written in ODF 1.4, or 1.3 with `version = "1.3"`.

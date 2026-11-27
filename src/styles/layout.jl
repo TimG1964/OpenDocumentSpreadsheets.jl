@@ -83,6 +83,11 @@ and columns as integers, ranges, vectors or `:`; only the columns are used).
 
 `width` is in characters by default, stored as LibreOffice stores a width given in characters by
 other spreadsheet programs: 0.2152 cm × (width + 0.7109375). With `unit = :cm`, `:mm`, `:in` or `:pt`, `width` is a length. A width may be 0.
+
+```julia
+setColumnWidth(sh, "A:B"; width = 15)              # 15 characters wide
+setColumnWidth(sh, 3; width = 2.5, unit = :cm)     # column C
+```
 """
 function setColumnWidth(x::Union{Worksheet,ODSFile}, ref...; width::Union{Nothing,Real} = nothing, unit::Symbol = :chars)
     width === nothing && return 0

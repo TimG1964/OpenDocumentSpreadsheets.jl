@@ -17,6 +17,14 @@ _require_writable(ws::Worksheet, what::AbstractString) = _require_writable(get_o
 
 A new, empty spreadsheet with one sheet (`Sheet1`, or `sheetname`), open for writing.
 Write it with [`writeods`](@ref).
+
+```julia
+xf = newods("Results")
+sh = xf["Results"]
+sh["A1:B1"] = ["Item" "Total"]
+sh["A2"] = "Paper"; sh["B2"] = 12.5
+writeods("results.ods", xf; overwrite = true)
+```
 """
 function newods(sheetname::AbstractString = "")
     xf = ODSFile("blank.ods", nothing, "", DEFAULT_ODF_VERSION, StyleIndex(), Worksheet[], NameDef[],
@@ -44,6 +52,13 @@ end
     addsheet!(xf::ODSFile, name="") -> Worksheet
 
 Add an empty sheet at the end. Without a name, it is called `SheetN` (the first free N).
+
+```julia
+xf = newods("Income")
+costs = addsheet!(xf, "Costs")
+costs["A1"] = "Month"
+sheetnames(xf)            # ["Income", "Costs"]
+```
 """
 function addsheet!(xf::ODSFile, name::AbstractString = "")
     _require_writable(xf, "add a sheet")
@@ -270,6 +285,11 @@ With `raw=true`, `val` is stored as given, and must be a stored formula such as
 `"of:=[.A1]*2"`.
 
 The cell's value is left empty: LibreOffice computes it when it opens the file.
+
+```julia
+setFormula(sh, "D1"; val = "=SUM(A1:A4)")
+setFormula(sh, "D2:D4"; val = "=A2*2")     # the same formula in each cell
+```
 """
 function setFormula(ws::Worksheet, ref::CellRef; val::AbstractString, raw::Bool = false)
     _require_writable(ws, "write a formula")

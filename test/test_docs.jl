@@ -16,6 +16,54 @@ include("docs_env.jl")
     @test nblocks > 50
 end
 
+# The ```julia examples in the docstrings of public names, which the API pages show: each runs in a
+# module of its own, after the prelude the guide's pages get (`xf`, `sh`), next to the Tutorial's
+# `budget.ods`, made again for each example.
+function _docstring_examples(m::Module, n::Symbol)
+    b = Base.Docs.Binding(m, n)
+    out = String[]
+    for mod in Base.Docs.modules
+        meta = Base.Docs.meta(mod)
+        haskey(meta, b) || continue
+        for (_, d) in meta[b].docs
+            text = join(string.(d.text))
+            append!(out, String(x.captures[1]) for x in eachmatch(r"```julia\r?\n(.*?)```"s, text))
+        end
+    end
+    return out
+end
+
+@testset "the docstrings' examples run" begin
+    dir = docs_dir()
+    nblocks = 0
+    for m in (OpenDocumentSpreadsheets, OpenDocumentSpreadsheets.Charts), n in names(m)
+        for (k, b) in enumerate(_docstring_examples(m, n))
+            occursin("using DataFrames", b) && continue
+            for f in readdir(dir)
+                f in ("logo.png", "chart.jpg") || rm(joinpath(dir, f); recursive = true)
+            end
+            cd(_docs_budget, dir)
+            mod = Module(Symbol("example_of_", n))     # not `n`: a module's name is bound inside it
+            err = nothing
+            try
+                redirect_stdout(devnull) do
+                    cd(dir) do
+                        Core.eval(mod, :(using OpenDocumentSpreadsheets, OpenDocumentSpreadsheets.Charts))
+                        Base.include_string(mod, _DOCS_PRELUDE, "prelude")
+                        Base.include_string(mod, b, "$n example $k")
+                    end
+                end
+            catch e
+                err = (e, catch_backtrace())
+            end
+            err === nothing || @error "a docstring example fails" name = n example = k exception = err
+            @test (n, k, err === nothing) == (n, k, true)
+            nblocks += 1
+        end
+    end
+    @test nblocks >= 20
+end
+
 # Words that belong only in records/, never in the docs: decision, finding and question ids, phases.
 const _RECORD_IDS = r"\b[DFQ]-\d{3}\b|\b[Pp]hase \d"
 

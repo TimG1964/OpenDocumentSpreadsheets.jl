@@ -705,6 +705,14 @@ Two more options: `caseSensitive`
 Returns the validation, as [`getDataValidation`](@ref) reads it. An `:any` validation without a
 prompt or error message restricts nothing, and LibreOffice stores none: it removes the validation of
 its cells, and `nothing` is returned. The file must be writable.
+
+```julia
+addDataValidation(sh, "D2:D20"; values = ["Open", "Paid", "Late"])       # a drop-down list
+addDataValidation(sh, "E2:E20"; type = :whole, operator = :between, formula1 = 1, formula2 = 10,
+                  errorTitle = "Quantity", error = "Enter a whole number from 1 to 10.")
+addDataValidation(sh, "F2:F20"; type = :date, operator = :greaterThanOrEqual,
+                  formula1 = Date(2026, 1, 1), prompt = "A date in 2026 or later")
+```
 """
 function addDataValidation(ws::Worksheet, rng; type::Union{Nothing,Symbol} = nothing, operator::Union{Nothing,Symbol} = nothing,
                            formula1 = nothing, formula2 = nothing, values::Union{Nothing,AbstractVector} = nothing,

@@ -114,11 +114,17 @@ setSeriesBinning(h, 1; binCount = 8)
 Bins are set by their width (`binSize`) or count (`binCount`). LibreOffice draws the bins stored with
 the chart, but labels the bars with the ranges of its own automatic bins.
 
-In the file a histogram is an ordinary chart. Here its handle is a [`ChartEx`](@ref): the chart getters
-read it as any other chart (its title, legend, series and data), and its bins have functions of their
-own (`setSeriesBinning`, `getSeriesBinning`). The formatting setters take other charts only. A
-histogram takes the titles (`title`, `subtitle`, `xtitle`, `ytitle`) and one series, with no
-categories.
+In the file a histogram is an ordinary chart, and it is formatted and read as a column chart is: its
+colours, titles, legend, labels and axes (see [Formatting charts](formatting.md)). Its bins have
+functions of their own (`setSeriesBinning`, `getSeriesBinning`), and its handle is a
+[`ChartEx`](@ref). A histogram takes the titles (`title`, `subtitle`, `xtitle`, `ytitle`) and one
+series, with no categories.
+
+```julia
+setSeriesFill(h, 1, "70AD47")                # green bars
+setAxisTitleText(h, :x, "Height (cm)")
+setLegendPos(h, :b)
+```
 
 ## Chart sheets
 

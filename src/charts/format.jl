@@ -241,7 +241,7 @@ getLegendTextProps(c::AbstractChart) = (doc = _doc(c); _txpr(doc, _legend_node(d
 
 Whether series `i`'s legend entry is hidden (LibreOffice's `loext:hide-legend`).
 """
-getLegendEntryDeleted(c::Chart, i::Integer) = (doc = _doc(c); _bool(_get(_series_node(doc, i), "loext:hide-legend")))
+getLegendEntryDeleted(c::AbstractChart, i::Integer) = (doc = _doc(c); _bool(_get(_series_node(doc, i), "loext:hide-legend")))
 
 """
     getPlotAreaShapeProps(c) -> Union{Nothing,DrawingShapeProps}
@@ -250,9 +250,9 @@ getLegendEntryDeleted(c::Chart, i::Integer) = (doc = _doc(c); _bool(_get(_series
 
 The plot area's fill and border (LibreOffice's wall), and the chart's background and text defaults.
 """
-getPlotAreaShapeProps(c::Chart) = (doc = _doc(c); _maybe(n -> _shape(_style(doc, n)), _wall_node(doc)))
-getChartSpaceShapeProps(c::Chart) = (doc = _doc(c); _shape(_style(doc, doc.chart)))
-getChartSpaceTextProps(c::Chart) = (doc = _doc(c); _txpr(doc, doc.chart))
+getPlotAreaShapeProps(c::AbstractChart) = (doc = _doc(c); _maybe(n -> _shape(_style(doc, n)), _wall_node(doc)))
+getChartSpaceShapeProps(c::AbstractChart) = (doc = _doc(c); _shape(_style(doc, doc.chart)))
+getChartSpaceTextProps(c::AbstractChart) = (doc = _doc(c); _txpr(doc, doc.chart))
 
 #
 # Series, points, markers and labels
@@ -270,8 +270,8 @@ end
 
 Series `i`'s fill and line, and its data labels' text properties.
 """
-getSeriesShapeProps(c::Chart, i::Integer) = (doc = _doc(c); _shape(_style(doc, _series_node(doc, i))))
-getSeriesLabelTextProps(c::Chart, i::Integer) = (doc = _doc(c); _txpr(doc, _series_node(doc, i)))
+getSeriesShapeProps(c::AbstractChart, i::Integer) = (doc = _doc(c); _shape(_style(doc, _series_node(doc, i))))
+getSeriesLabelTextProps(c::AbstractChart, i::Integer) = (doc = _doc(c); _txpr(doc, _series_node(doc, i)))
 
 const _SYMBOLS = Dict("square" => :square, "diamond" => :diamond, "circle" => :circle, "x" => :x, "plus" => :plus,
     "asterisk" => :star, "arrow-up" => :triangle, "horizontal-bar" => :dash, "arrow-right" => :dot,
@@ -292,7 +292,7 @@ end
 
 Series `i`'s symbol, or `nothing` when its style sets none (LibreOffice's default for the chart type).
 """
-getSeriesMarker(c::Chart, i::Integer) = (doc = _doc(c); _marker(doc, _series_node(doc, i), i - 1, nothing))
+getSeriesMarker(c::AbstractChart, i::Integer) = (doc = _doc(c); _marker(doc, _series_node(doc, i), i - 1, nothing))
 
 """
     getSeriesGroup(c, i) -> ChartGroup
@@ -301,13 +301,13 @@ getSeriesMarker(c::Chart, i::Integer) = (doc = _doc(c); _marker(doc, _series_nod
 
 The group series `i` is in, and the axes of a group or a series (none for a pie or doughnut).
 """
-getSeriesGroup(c::Chart, i::Integer) = (doc = _doc(c); s = _series_node(doc, i); ChartGroup(_series_tag(doc, s), _series_axids(s), nothing))
-function getGroupAxes(c::Chart, g::ChartGroup)
+getSeriesGroup(c::AbstractChart, i::Integer) = (doc = _doc(c); s = _series_node(doc, i); ChartGroup(_series_tag(doc, s), _series_axids(s), nothing))
+function getGroupAxes(c::AbstractChart, g::ChartGroup)
     g.kind in (:pieChart, :pie3DChart, :doughnutChart, :ofPieChart) && return ChartAxis[]
     axes = _axes(_doc(c))
     return [a for a in axes if a.axid in g.axids || (a.axid == 1 && 3 in g.axids && !any(b -> b.axid == 3, axes)) || a.axid == 5]
 end
-getSeriesAxes(c::Chart, i::Integer) = getGroupAxes(c, getSeriesGroup(c, i))
+getSeriesAxes(c::AbstractChart, i::Integer) = getGroupAxes(c, getSeriesGroup(c, i))
 
 # A series' points with their own styles: (index from 0, the element), `chart:repeated` expanded.
 function _points(doc::_ChartDoc, s)
@@ -331,8 +331,8 @@ end
 
 The points of series `i` that have their own style (`point` counts from 1; `idx` from 0).
 """
-getSeriesDataPoints(c::Chart, i::Integer) = (doc = _doc(c); [ChartDataPoint(i - 1, k, nothing, nothing, p) for (k, p) in _points(doc, _series_node(doc, i))])
-function getSeriesDataPoint(c::Chart, i::Integer, point::Integer)
+getSeriesDataPoints(c::AbstractChart, i::Integer) = (doc = _doc(c); [ChartDataPoint(i - 1, k, nothing, nothing, p) for (k, p) in _points(doc, _series_node(doc, i))])
+function getSeriesDataPoint(c::AbstractChart, i::Integer, point::Integer)
     doc = _doc(c)
     for (k, p) in _points(doc, _series_node(doc, i))
         k == point - 1 && return ChartDataPoint(i - 1, k, nothing, nothing, p)
@@ -344,8 +344,8 @@ end
     getDataPointShapeProps(c, d::ChartDataPoint) -> Union{Nothing,DrawingShapeProps}
     getDataPointMarker(c, d::ChartDataPoint) -> Union{Nothing,ChartMarker}
 """
-getDataPointShapeProps(c::Chart, d::ChartDataPoint) = (doc = _doc(c); _shape(_style(doc, d.raw)))
-getDataPointMarker(c::Chart, d::ChartDataPoint) = (doc = _doc(c); _marker(doc, d.raw, d.series_idx, d.idx))
+getDataPointShapeProps(c::AbstractChart, d::ChartDataPoint) = (doc = _doc(c); _shape(_style(doc, d.raw)))
+getDataPointMarker(c::AbstractChart, d::ChartDataPoint) = (doc = _doc(c); _marker(doc, d.raw, d.series_idx, d.idx))
 
 const _LABEL_POS = Dict("avoid-overlap" => :bestFit, "center" => :ctr, "top" => :t, "bottom" => :b, "left" => :l,
     "right" => :r, "inside" => :inEnd, "outside" => :outEnd, "near-origin" => :inBase)
@@ -357,7 +357,7 @@ const _LABEL_POS = Dict("avoid-overlap" => :bestFit, "center" => :ctr, "top" => 
 The points of series `i` whose labels differ from the series': those with custom text (a
 `chart:data-label`), and those whose style turns every label part off (`delete`).
 """
-function getSeriesDataLabels(c::Chart, i::Integer)
+function getSeriesDataLabels(c::AbstractChart, i::Integer)
     doc = _doc(c)
     out = ChartDataLabel[]
     for (k, p) in _points(doc, _series_node(doc, i))
@@ -369,7 +369,7 @@ function getSeriesDataLabels(c::Chart, i::Integer)
     end
     return out
 end
-getSeriesDataLabel(c::Chart, i::Integer, point::Integer) =
+getSeriesDataLabel(c::AbstractChart, i::Integer, point::Integer) =
     (ls = getSeriesDataLabels(c, i); k = findfirst(l -> l.idx == point - 1, ls); k === nothing ? nothing : ls[k])
 
 """
@@ -380,14 +380,14 @@ A point's label: its text properties, fill and border, custom text (custom label
 (`:bestFit`, `:ctr`, `:t`, `:b`, `:l`, `:r`, `:inEnd`, `:outEnd`, `:inBase`) and offset (`nothing`: ODF
 has no offsets).
 """
-getDataLabelTextProps(c::Chart, d::ChartDataLabel) = (doc = _doc(c); _txpr(doc, d.raw))
-getDataLabelShapeProps(c::Chart, d::ChartDataLabel) =
+getDataLabelTextProps(c::AbstractChart, d::ChartDataLabel) = (doc = _doc(c); _txpr(doc, d.raw))
+getDataLabelShapeProps(c::AbstractChart, d::ChartDataLabel) =
     (doc = _doc(c); l = get(_children(d.raw, "chart:data-label"), 1, nothing); _maybe(n -> _shape(_style(doc, n)), l))
-getDataLabelText(c::Chart, d::ChartDataLabel) =
+getDataLabelText(c::AbstractChart, d::ChartDataLabel) =
     (doc = _doc(c); l = get(_children(d.raw, "chart:data-label"), 1, nothing); _drawing_text(doc, l))
-getDataLabelPosition(c::Chart, d::ChartDataLabel) =
+getDataLabelPosition(c::AbstractChart, d::ChartDataLabel) =
     (doc = _doc(c); p = get(_style(doc, d.raw), "chart:label-position", nothing); p === nothing ? nothing : get(_LABEL_POS, p, nothing))
-getDataLabelOffset(::Chart, ::ChartDataLabel) = nothing
+getDataLabelOffset(::AbstractChart, ::ChartDataLabel) = nothing
 
 """
     getLabelFlag(c, i, flag) -> Union{Nothing,Bool}
@@ -396,7 +396,7 @@ Whether series `i`'s labels show `flag`: `:value`, `:percent`, `:categoryName`, 
 `:legendKey`; `nothing` when its style doesn't say. LibreOffice has no bubble-size labels:
 `:bubbleSize` is always `nothing`.
 """
-function getLabelFlag(c::Chart, i::Integer, flag::Symbol)
+function getLabelFlag(c::AbstractChart, i::Integer, flag::Symbol)
     doc = _doc(c)
     d = _style(doc, _series_node(doc, i))
     if flag in (:value, :percent)
@@ -415,7 +415,7 @@ end
 # The cascade
 #
 
-function _cascade(f, doc::_ChartDoc, c::Chart, i::Integer, point, kind::Symbol)
+function _cascade(f, doc::_ChartDoc, c::AbstractChart, i::Integer, point, kind::Symbol)
     s = _series_node(doc, i)
     chain = FormatSite[]
     if point !== nothing
@@ -441,15 +441,15 @@ The fill or line series `i` (or one of its points) is drawn with, found through 
 the point's style, then the series'. LibreOffice draws a symbol in its series' colours, so a marker's
 fill is the series' fill.
 """
-function getSeriesFill(c::Chart, i::Integer; point = nothing)
+function getSeriesFill(c::AbstractChart, i::Integer; point = nothing)
     v, site, chain = _cascade(_fill, _doc(c), c, i, point, :shape)
     return Effective{DrawingFill}(v, site, chain)
 end
-function getSeriesLine(c::Chart, i::Integer; point = nothing)
+function getSeriesLine(c::AbstractChart, i::Integer; point = nothing)
     v, site, chain = _cascade(_line, _doc(c), c, i, point, :shape)
     return Effective{DrawingLine}(v, site, chain)
 end
-getMarkerFill(c::Chart, i::Integer, point::Integer) = getSeriesFill(c, i; point)
+getMarkerFill(c::AbstractChart, i::Integer, point::Integer) = getSeriesFill(c, i; point)
 
 """
     getLabelTextProp(c, i, field) -> Effective
@@ -457,7 +457,7 @@ getMarkerFill(c::Chart, i::Integer, point::Integer) = getSeriesFill(c, i; point)
 One text property of series `i`'s labels (a field of [`DrawingRunProps`](@ref): `:size`, `:bold`,
 `:italic`, `:fill`…), from the series' style, else the chart's.
 """
-function getLabelTextProp(c::Chart, i::Integer, field::Symbol)
+function getLabelTextProp(c::AbstractChart, i::Integer, field::Symbol)
     field in fieldnames(DrawingRunProps) || throw(ODSError("`$field` is not a text property; use one of $(join(fieldnames(DrawingRunProps)[1:end-1], ", "))."))
     doc = _doc(c)
     chain = [FormatSite(:series, :text, nothing, _style(doc, _series_node(doc, i))), FormatSite(:chartspace, :text, nothing, _style(doc, doc.chart))]
@@ -484,7 +484,7 @@ const _REG = Dict("linear" => :linear, "logarithmic" => :log, "exponential" => :
 Series `i`'s trendlines (`chart:regression-curve`), their line, and their equation's text and
 formatting.
 """
-function getSeriesTrendlines(c::Chart, i::Integer)
+function getSeriesTrendlines(c::AbstractChart, i::Integer)
     doc = _doc(c)
     out = ChartTrendline[]
     for (k, r) in enumerate(_children(_series_node(doc, i), "chart:regression-curve"))
@@ -502,11 +502,11 @@ function getSeriesTrendlines(c::Chart, i::Integer)
     end
     return out
 end
-getTrendlineShapeProps(c::Chart, t::ChartTrendline) = (doc = _doc(c); _shape(_style(doc, t.raw)))
+getTrendlineShapeProps(c::AbstractChart, t::ChartTrendline) = (doc = _doc(c); _shape(_style(doc, t.raw)))
 _equation(t::ChartTrendline) = get(_children(t.raw, "chart:equation"), 1, nothing)
-getTrendlineLabelText(c::Chart, t::ChartTrendline) = (doc = _doc(c); _maybe(n -> isempty(_children(n, "text:p")) ? nothing : _drawing_text(doc, n), _equation(t)))
-getTrendlineLabelTextProps(c::Chart, t::ChartTrendline) = (doc = _doc(c); _txpr(doc, _equation(t)))
-getTrendlineLabelShapeProps(c::Chart, t::ChartTrendline) = (doc = _doc(c); _maybe(n -> _shape(_style(doc, n)), _equation(t)))
+getTrendlineLabelText(c::AbstractChart, t::ChartTrendline) = (doc = _doc(c); _maybe(n -> isempty(_children(n, "text:p")) ? nothing : _drawing_text(doc, n), _equation(t)))
+getTrendlineLabelTextProps(c::AbstractChart, t::ChartTrendline) = (doc = _doc(c); _txpr(doc, _equation(t)))
+getTrendlineLabelShapeProps(c::AbstractChart, t::ChartTrendline) = (doc = _doc(c); _maybe(n -> _shape(_style(doc, n)), _equation(t)))
 
 const _ERRCAT = Dict("constant" => "fixedVal", "percentage" => "percentage", "standard-deviation" => "stdDev",
                      "standard-error" => "stdErr", "cell-range" => "cust", "variance" => "stdDev")
@@ -519,7 +519,7 @@ const _ERRCAT = Dict("constant" => "fixedVal", "percentage" => "percentage", "st
 Series `i`'s error bars (`chart:error-indicator`), their line, and the cells of error bars from
 cell ranges (as [`ChartRef`](@ref)s).
 """
-function getSeriesErrorBars(c::Chart, i::Integer)
+function getSeriesErrorBars(c::AbstractChart, i::Integer)
     doc = _doc(c)
     out = ChartErrorBars[]
     for (k, e) in enumerate(_children(_series_node(doc, i), "chart:error-indicator"))
@@ -534,8 +534,8 @@ function getSeriesErrorBars(c::Chart, i::Integer)
     end
     return out
 end
-getErrorBarsShapeProps(c::Chart, e::ChartErrorBars) = (doc = _doc(c); _shape(_style(doc, e.raw)))
-function getErrorBarsCustomRefs(c::Chart, e::ChartErrorBars)
+getErrorBarsShapeProps(c::AbstractChart, e::ChartErrorBars) = (doc = _doc(c); _shape(_style(doc, e.raw)))
+function getErrorBarsCustomRefs(c::AbstractChart, e::ChartErrorBars)
     doc = _doc(c)
     d = _style(doc, e.raw)
     return (plus = _chart_ref(c.package, get(d, "chart:error-upper-range", nothing)),
@@ -552,9 +552,9 @@ end
 Always `nothing`: LibreOffice has no drop lines or series lines, and a stock chart's high-low lines are
 its series'.
 """
-getGroupDropLines(::Chart, ::ChartGroup) = nothing
-getGroupHiLowLines(::Chart, ::ChartGroup) = nothing
-getGroupSeriesLines(::Chart, ::ChartGroup) = nothing
+getGroupDropLines(::AbstractChart, ::ChartGroup) = nothing
+getGroupHiLowLines(::AbstractChart, ::ChartGroup) = nothing
+getGroupSeriesLines(::AbstractChart, ::ChartGroup) = nothing
 
 """
     getGroupUpDownBars(c, g) -> Union{Nothing,ChartUpDownBars}
@@ -563,16 +563,16 @@ getGroupSeriesLines(::Chart, ::ChartGroup) = nothing
 A stock group's candle bodies (LibreOffice's Japanese candlesticks), and the fill and line of rising and
 falling ones (`chart:stock-gain-marker`, `chart:stock-loss-marker`).
 """
-function getGroupUpDownBars(c::Chart, g::ChartGroup)
+function getGroupUpDownBars(c::AbstractChart, g::ChartGroup)
     g.kind === :stockChart || return nothing
     doc = _doc(c)
     pa = _plot_area(doc)
     get(_style(doc, pa), "chart:japanese-candle-stick", "false") == "true" || return nothing
     return ChartUpDownBars(g, nothing, nothing)
 end
-_stock_marker(c::Chart, tag::String) = (doc = _doc(c); pa = _plot_area(doc); n = get(_children(pa, tag), 1, nothing); _maybe(x -> _shape(_style(doc, x)), n))
-getUpBarShapeProps(c::Chart, ::ChartUpDownBars) = _stock_marker(c, "chart:stock-gain-marker")
-getDownBarShapeProps(c::Chart, ::ChartUpDownBars) = _stock_marker(c, "chart:stock-loss-marker")
+_stock_marker(c::AbstractChart, tag::String) = (doc = _doc(c); pa = _plot_area(doc); n = get(_children(pa, tag), 1, nothing); _maybe(x -> _shape(_style(doc, x)), n))
+getUpBarShapeProps(c::AbstractChart, ::ChartUpDownBars) = _stock_marker(c, "chart:stock-gain-marker")
+getDownBarShapeProps(c::AbstractChart, ::ChartUpDownBars) = _stock_marker(c, "chart:stock-loss-marker")
 
 # A group's gap width and overlap are kept on its y axis's style (F-082).
 _group_axis_style(doc::_ChartDoc, g::ChartGroup) =
@@ -584,15 +584,15 @@ _group_axis_style(doc::_ChartDoc, g::ChartGroup) =
 
 A bar group's gap width and overlap, in percent.
 """
-getGroupGapWidth(c::Chart, g::ChartGroup) = _maybe(x -> tryparse(Int, x), get(_group_axis_style(_doc(c), g), "chart:gap-width", nothing))
-getGroupOverlap(c::Chart, g::ChartGroup) = _maybe(x -> tryparse(Int, x), get(_group_axis_style(_doc(c), g), "chart:overlap", nothing))
+getGroupGapWidth(c::AbstractChart, g::ChartGroup) = _maybe(x -> tryparse(Int, x), get(_group_axis_style(_doc(c), g), "chart:gap-width", nothing))
+getGroupOverlap(c::AbstractChart, g::ChartGroup) = _maybe(x -> tryparse(Int, x), get(_group_axis_style(_doc(c), g), "chart:overlap", nothing))
 
 """
     getGroupLabelTextProps(c, g) -> Union{Nothing,DrawingText}
 
 LibreOffice has no group level: the text properties of the group's first series' labels.
 """
-function getGroupLabelTextProps(c::Chart, g::ChartGroup)
+function getGroupLabelTextProps(c::AbstractChart, g::ChartGroup)
     doc = _doc(c)
     for s in _series_nodes(doc)
         ChartGroup(_series_tag(doc, s), _series_axids(s), nothing) == g && return _txpr(doc, s)

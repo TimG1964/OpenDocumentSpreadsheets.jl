@@ -263,6 +263,8 @@ function setSeriesBinning(c::ChartEx, i::Integer; intervalClosed = nothing, unde
     end
     return c
 end
+makeCombo(::ChartEx) = throw(ODSError("A histogram has one series and can't be a combo chart."))
+
 for (f, kind) in ((:setSeriesSubtotals, "waterfall"), (:setSeriesQuartileMethod, "box-and-whisker"),
                   (:setSeriesParentLabelLayout, "treemap"))
     @eval $f(::ChartEx, ::Integer, ::Any) = throw(ODSError(string("LibreOffice has no ", $kind, " chart (D-086).")))

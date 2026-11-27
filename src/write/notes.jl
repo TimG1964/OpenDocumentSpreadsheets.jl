@@ -469,6 +469,11 @@ A cell with a threaded comment is refused.
 LibreOffice shows with the note's author.
 
 Returns `(sheet, ref, author, text, date)`. The file must be writable.
+
+```julia
+addComment(sh, "B2", "Checked against the bank statement"; author = "Sam")
+addComment(sh, "A1", "Always shown\\non two lines"; visible = true)
+```
 """
 function addComment(ws::Worksheet, ref::Union{AbstractString,CellRef}, text::AbstractString;
                     author::AbstractString = "", width::Integer = 144, height::Integer = 79, visible::Bool = false,

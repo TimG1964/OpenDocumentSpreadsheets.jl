@@ -87,6 +87,68 @@ end
     end
 end
 
+@testset "the chart setters and getters on a histogram, as on a column chart" begin
+    E = OpenDocumentSpreadsheets.ODSError
+    g1(c) = OC.getChartGroups(c)[1]
+    # (setter, getter): each run on a histogram and on a one-series column chart of the same data
+    cases = [
+        (c -> OC.setSeriesFill(c, 1, "FF0000"; transparency = 40), c -> OC.getSeriesFill(c, 1)),
+        (c -> OC.setSeriesLine(c, 1; color = "0000FF", width = 2, dash = :dash), c -> OC.getSeriesLine(c, 1)),
+        (c -> OC.setChartTitleTextProp(c, :bold, true), c -> OC.getChartTitleTextProps(c)),
+        (c -> OC.setAxisTitleText(c, :x, "Bins"), c -> OC.getAxisTitle(c, :x)),
+        (c -> OC.setAxisTextProp(c, :y, :size, 14), c -> OC.getAxisTextProps(c, :y)),
+        (c -> OC.setLegendPos(c, :b), c -> OC.getLegendPos(c)),
+        (c -> OC.setPlotAreaLine(c; color = "FF0000", width = 1), c -> OC.getPlotAreaShapeProps(c)),
+        (c -> OC.setLabelFlag(c, 1, :value, true), c -> OC.getLabelFlag(c, 1, :value)),
+        (c -> (OC.setAxisMin(c, :y, 0); OC.setAxisMax(c, :y, 12)), c -> (OC.getAxisMin(c, :y), OC.getAxisMax(c, :y))),
+        (c -> (OC.setAxisMajorUnit(c, :y, 4); OC.setAxisMinorUnit(c, :y, 1)), c -> (OC.getAxisMajorUnit(c, :y), OC.getAxisMinorUnit(c, :y))),
+        (c -> OC.setAxisGridlines(c, :y; minor = true), c -> OC.getAxisGridlines(c, :y; minor = true)),
+        (c -> OC.setAxisNumberFormatCode(c, :y, "0.0"), c -> OC.getAxisNumberFormatCode(c, :y)),
+        (c -> OC.setGroupGapWidth(c, g1(c), 50), c -> OC.getGroupGapWidth(c, g1(c))),
+        (c -> OC.addTrendline(c, 1, :linear), c -> OC.getSeriesTrendlines(c, 1)),
+        (c -> OC.setErrorBars(c, 1; type = :percent, value = 10), c -> OC.getSeriesErrorBars(c, 1)),
+    ]
+    # a getter's whole result, as text (a dump, without the memory addresses it shows)
+    seen(x) = replace(sprint(io -> dump(io, x; maxdepth = 12)), r"Ptr\{Nothing\}\(0x[0-9a-f]+\)" => "", r"\s+" => " ")
+    function make(kind)
+        xf, ws = _chart_data_sheet()
+        c = kind === :histogram ? OC.addChart(ws, :histogram; anchor = "H2:O18", title = "T", xtitle = "X", ytitle = "Y") :
+                                  OC.addChart(ws, :column; anchor = "H2:O18", title = "T", xtitle = "X", ytitle = "Y")
+        OC.addSeries(c, "B2:B7"; name_ref = "B1")
+        return xf, c
+    end
+    mktempdir() do dir
+        paths = Dict{Tuple{Int,Symbol},String}()
+        for (k, (set!, get)) in enumerate(cases), kind in (:column, :histogram)
+            xf, c = make(kind)
+            before = seen(get(c))
+            set!(c)
+            @test seen(get(c)) != before                                  # the setter changed it
+            kind === :histogram && @test c isa OC.ChartEx
+            paths[(k, kind)] = p = joinpath(dir, "c$(k)_$kind.ods")
+            OpenDocumentSpreadsheets.writeods(p, xf)
+        end
+        # as on a column chart: markers and explosion are errors; a histogram is no combo
+        xf, h = make(:histogram)
+        @test_throws E OC.setMarker(h, 1; symbol = :square)
+        @test_throws E OC.setSeriesExplosion(h, 1, 10)
+        @test_throws E OC.makeCombo(h)
+        if isfile(SOFFICE) && lo_version(SOFFICE) >= LO_FIXTURE_VERSION
+            out = joinpath(dir, "lo")
+            run(pipeline(`$SOFFICE -env:UserInstallation=$(lo_profile_url(joinpath(dir, "profile"))) --headless --norestore --convert-to ods --outdir $out $(collect(values(paths)))`;
+                         stdout = devnull, stderr = devnull))
+            back(k, kind) = only(getCharts(readods(joinpath(out, basename(paths[(k, kind)])))))
+            for (k, (_, get)) in enumerate(cases)
+                h, col = back(k, :histogram), back(k, :column)
+                @test h isa OC.ChartEx && OC.getChartTypes(h) == [:histogram]    # still a histogram
+                @test seen(get(h)) == seen(get(col))                          # kept as LibreOffice keeps a column chart's
+            end
+        else
+            @test_skip false
+        end
+    end
+end
+
 @testset "chart sheets" begin
     xf, ws = _chart_data_sheet()
     c = OC.addChart(xf, :line; title = "On its own sheet", xtitle = "Month")

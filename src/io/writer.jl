@@ -153,8 +153,8 @@ The text of `META-INF/manifest.xml` for the given parts.
 function manifest_xml(parts, mediatype::AbstractString, version::AbstractString)
     io = IOBuffer()
     print(io, """<?xml version="1.0" encoding="UTF-8"?>\n""",
-          """<manifest:manifest xmlns:manifest="$NS_MANIFEST" manifest:version="$version">\n""",
-          """ <manifest:file-entry manifest:full-path="/" manifest:version="$version" manifest:media-type="$mediatype"/>\n""")
+          """<manifest:manifest xmlns:manifest="$NS_MANIFEST" manifest:version="$(_xml_attr_escape(version))">\n""",
+          """ <manifest:file-entry manifest:full-path="/" manifest:version="$(_xml_attr_escape(version))" manifest:media-type="$mediatype"/>\n""")
     for p in parts
         # a directory entry is listed only when it has a media type (LibreOffice lists its
         # Configurations2/ folder so)
@@ -226,14 +226,17 @@ Write a zipped ODF package to `dest`, which is a file path or an `IO`.
 - `parts` (a collection of [`PackagePart`](@ref)s) follow in the given order.
 - `META-INF/manifest.xml` is written last, listing every part, with `manifest:version`
   set to `version` (`"1.4"` by default, `"1.3"` on request).
+- `check_version = false` allows any `version`: a patched file's manifest gives its
+  `content.xml`'s version, whatever it is, since LibreOffice refuses a package whose two
+  versions differ (F-067, D-094).
 
 When writing to an `IO`, the package is built in memory and then copied, because the zip
 writer needs a readable, seekable target that starts empty. The memory cost is
 about the compressed size. The `IO` is left open.
 """
 function write_package(path::AbstractString, parts; mediatype::AbstractString = MEDIATYPE_ODS,
-                       version::AbstractString = DEFAULT_ODF_VERSION)
-    _check_version(version)
+                       version::AbstractString = DEFAULT_ODF_VERSION, check_version::Bool = true)
+    check_version && _check_version(version)
     _check_parts(parts)
     mediatype in SPREADSHEET_MEDIATYPES || throw(ArgumentError("unsupported media type $(repr(mediatype))"))
     manifest = written -> manifest_xml(written, mediatype, version)
@@ -243,8 +246,8 @@ function write_package(path::AbstractString, parts; mediatype::AbstractString = 
 end
 
 function write_package(io::IO, parts; mediatype::AbstractString = MEDIATYPE_ODS,
-                       version::AbstractString = DEFAULT_ODF_VERSION)
-    write(io, package_bytes(parts; mediatype, version))
+                       version::AbstractString = DEFAULT_ODF_VERSION, check_version::Bool = true)
+    write(io, package_bytes(parts; mediatype, version, check_version))
     io
 end
 
@@ -254,8 +257,8 @@ end
 The zipped package as bytes (see [`write_package`](@ref)).
 """
 function package_bytes(parts; mediatype::AbstractString = MEDIATYPE_ODS,
-                       version::AbstractString = DEFAULT_ODF_VERSION)
-    _check_version(version)
+                       version::AbstractString = DEFAULT_ODF_VERSION, check_version::Bool = true)
+    check_version && _check_version(version)
     _check_parts(parts)
     mediatype in SPREADSHEET_MEDIATYPES || throw(ArgumentError("unsupported media type $(repr(mediatype))"))
     manifest = written -> manifest_xml(written, mediatype, version)

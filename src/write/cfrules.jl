@@ -634,6 +634,16 @@ LibreOffice doesn't support are errors: `stopIfTrue`, the standard deviations of
 `:aboveAverage`, data bar borders (`borders`, `border_col`, `neg_border_col`, `sameNegBorders`),
 `direction="rightToLeft"`, custom icon sets (`iconset = "Custom"`, `icon_list`) and
 `reverse = "true"`. Returns 0. The file must be writable.
+
+```julia
+# values over 3 in green; then, in the same range, values under 2 in bold red
+setConditionalFormat(sh, "A1:A4", :cellIs; operator = "greaterThan", value = "3",
+                     dxStyle = "greenfilltext")
+setConditionalFormat(sh, "A1:A4", :cellIs; operator = "lessThan", value = "2",
+                     font = ["color" => "red", "bold" => "true"])
+setConditionalFormat(sh, "B1:B2", :dataBar; databar = "green")
+setConditionalFormat(sh, "A1:B2", :expression; formula = "A1>B1", style = "Good")
+```
 """
 function setConditionalFormat end
 setConditionalFormat(ws::Worksheet, rng, type::Symbol; kw...) = _cf_set!(ws, rng, type, kw)

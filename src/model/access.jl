@@ -400,6 +400,11 @@ _map_cells(f, v::AbstractVector) = [_map_cells(f, x) for x in v]
 Open `source` (a path or an `IO`) without the cache, and return [`getdata`](@ref) of `ref`
 on `sheet` (a name or a number), or of a sheet-qualified reference such as
 `"Sheet1.A1:B3"` (`"Sheet1!A1:B3"` also works).
+
+```julia
+readdata("budget.ods", "Costs", "B2:B4")   # a 3×1 matrix: 50.0, 100.0, 150.0
+readdata("budget.ods", "Costs.B2")         # 50.0
+```
 """
 function readdata(source::Union{AbstractString,IO}, sheet::Union{AbstractString,Integer}, ref)
     # a workbook name is stored after all the sheets: then the whole file is read

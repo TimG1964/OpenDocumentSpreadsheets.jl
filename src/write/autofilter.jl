@@ -586,14 +586,17 @@ are and moves only the values, notes, links and pictures (which allows merged ce
 
 The file must be writable.
 
-# Examples
 ```julia
-julia> setAutoFilter(sheet, "A1:F200")
+st = addsheet!(xf, "Stock")
+st["A1:B1"] = ["Colour" "Amount"]
+for (i, (colour, amount)) in enumerate([("Red", 120), ("Green", 80), ("Blue", 150), ("Red", 60)])
+    st[i+1, 1] = colour; st[i+1, 2] = amount
+end
+setAutoFilter(st, :)          # drop-down buttons on the header, over the used area
 
-julia> setAutoFilter(sheet, :)
-
-julia> setAutoFilter(sheet, "A1:D50"; filters = ["Colour" => ["Red", "Blue"], "Amount" => (">" => 100)],
-                     sort = "Amount" => :descending)
+# only the red and blue rows over 100 show, largest first
+setAutoFilter(st, "A1:B5"; filters = ["Colour" => ["Red", "Blue"], "Amount" => (">" => 100)],
+              sort = "Amount" => :descending)
 ```
 
 See also [`getAutoFilter`](@ref) and [`removeAutoFilter`](@ref).

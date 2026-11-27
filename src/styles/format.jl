@@ -78,6 +78,11 @@ code of several sections becomes one style per section, chosen by `style:map` co
 A value whose type doesn't fit the format is not converted: a date cell given `"0.00"`
 stays a date cell, which LibreOffice shows as a number and retypes when it saves.
 Returns the name of the cell's new style for a single cell, else -1.
+
+```julia
+setFormat(sh, "B1:B2"; format = "#,##0.00")      # 4.50
+setFormat(sh, "A1:A4"; format = "Percentage")    # 100%
+```
 """
 setFormat(x::Union{Worksheet,ODSFile}, ref...; kw...) =
     apply_format!(_format_transform(_styles_of(x), :setFormat; kw...), format_targets(x, ref...))

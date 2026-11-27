@@ -261,6 +261,11 @@ As in LibreOffice, a cell's direct formatting stays, except for what the style s
 style with a font size replaces the cell's own size, and a cell's number format stays
 unless the style has one (so dates stay dates). Returns the name of the cell's new style
 for a single cell (`name`'s style name when no direct formatting is left), else -1.
+
+```julia
+setCellStyle(sh, "A1:B1", "Heading 1")
+setCellStyle(sh, "C2", "Bad")
+```
 """
 function setCellStyle(x::Union{Worksheet,ODSFile}, args...)
     length(args) >= 2 && args[end] isa AbstractString ||

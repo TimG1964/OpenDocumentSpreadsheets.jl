@@ -100,9 +100,11 @@ end
     ChartEx
 
 A handle to a histogram, made with `addChart(…, :histogram)` or [`addChartEx`](@ref), or found in a
-file. Fields as [`Chart`](@ref)'s. In the file a histogram is an ordinary chart: the chart getters
-(its title, legend, series, data and ranges) read it as any other, and its bins have functions of
-their own (`setSeriesBinning`, `getSeriesBinning`). The formatting setters take other charts only.
+file. Fields as [`Chart`](@ref)'s. In the file a histogram is an ordinary chart (a column chart whose
+values are counted in bins), so the chart setters and getters work on it as on a column chart: its
+fill and lines, titles, legend, labels, axes, gap width, trendlines and error bars. Its bins have
+functions of their own (`setSeriesBinning`, `getSeriesBinning`). As on a column chart, markers and
+explosion are errors, and a histogram can't be made a combo chart.
 """
 struct ChartEx <: AbstractChart
     package::ODSFile

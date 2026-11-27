@@ -499,6 +499,16 @@ Modes:
 Writing modes need `enable_cache=true`. With the do-block form, a file opened for writing
 is saved to `source` after `f` returns (not if `f` throws).
 
+```julia
+openods("budget.ods"; mode = "rw") do xf    # saved when the block ends
+    xf["Costs"]["C2"] = "Paid"
+end
+
+xf = openods("budget.ods"; mode = "rw")     # or saved by hand
+xf["Costs"]["C3"] = "Paid"
+saveods(xf)
+```
+
 See also [`readods`](@ref), [`newods`](@ref).
 """
 function openods(f::Function, source::Union{AbstractString,IO}; mode::AbstractString = "r", enable_cache::Bool = true)
@@ -537,6 +547,14 @@ end
 
 Read an OpenDocument spreadsheet from a file path or an `IO`: [`openods`](@ref) with the
 cache enabled. Each sheet is parsed the first time it is used.
+
+```julia
+xf = readods("budget.ods")
+sheetnames(xf)            # ["Income", "Costs"]
+sh = xf["Costs"]          # or xf[2]
+sh["B3"]                  # 100.0
+sh["A1:C3"]               # a 3×3 matrix
+```
 """
 readods(source::Union{AbstractString,IO}) = openods(source; mode = "r", enable_cache = true)
 
