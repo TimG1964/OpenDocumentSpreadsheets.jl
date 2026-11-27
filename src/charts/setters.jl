@@ -195,7 +195,6 @@ const _DASHES = Dict(:dot => (1, "1%", 0, "", "399%"), :dash => (1, "301%", 0, "
     :dashDot => (1, "301%", 1, "1%", "399%"), :lgDashDot => (1, "701%", 1, "1%", "399%"), :lgDashDotDot => (1, "701%", 2, "1%", "399%"),
     :sysDash => (1, "201%", 0, "", "199%"), :sysDot => (1, "1%", 0, "", "199%"), :sysDashDot => (1, "201%", 1, "1%", "199%"),
     :sysDashDotDot => (1, "201%", 2, "1%", "199%"))
-const _CAPS_ODF = Dict(:rnd => "round", :round => "round", :sq => "square", :square => "square", :flat => "butt")
 
 # The object's styles.xml text (made empty, with the dash), holding a dash definition named `name`.
 function _ensure_dash!(o, d::Symbol)
@@ -280,7 +279,7 @@ function _style_line!(o, xf, st; color = nothing, width = nothing, dash = nothin
     if cap !== nothing
         _del_style_attrs!(o, st, ["svg:stroke-linecap"]; element = G)
         if cap !== :inherit
-            k = Symbol(cap)
+            k = Symbol(cap); k = get(_CAP_ALIASES, k, k)
             haskey(_CAPS_ODF, k) || throw(ODSError("Unknown cap `$cap`: use :rnd, :sq or :flat."))
             _set_style_attrs!(o, st, ["svg:stroke-linecap" => _CAPS_ODF[k]]; element = G)
         end
@@ -511,9 +510,8 @@ function _text_attrs(xf, field::Symbol, v)
     field === :caps && throw(ODSError("LibreOffice's chart text has no capitals setting (D-086)."))
     field === :kern && throw(ODSError("LibreOffice's chart text has no kerning size (D-086)."))
     field === :line && throw(ODSError("LibreOffice's chart text outline has no colour or width (D-086)."))
-    ks = field === :size ? ["fo:font-size", "style:font-size-asian", "style:font-size-complex"] :
-           field === :bold ? ["fo:font-weight", "style:font-weight-asian", "style:font-weight-complex"] :
-           field === :italic ? ["fo:font-style", "style:font-style-asian", "style:font-style-complex"] :
+    ks = field === :size ? _font_keys("fo:font-size") : field === :bold ? _font_keys("fo:font-weight") :
+           field === :italic ? _font_keys("fo:font-style") :
            field === :under ? ["style:text-underline-style", "style:text-underline-type", "style:text-underline-width", "style:text-underline-color"] :
            field === :strike ? ["style:text-line-through-style", "style:text-line-through-type"] :
            field === :baseline ? ["style:text-position"] : field === :spacing ? ["fo:letter-spacing"] :
@@ -678,8 +676,8 @@ function _chart_run_props(run::RichTextRun)
     a = run.atts
     a === nothing && return ""
     p = Pair{String,String}[]
-    get(a, :bold, false) in (true, 1) && append!(p, ["fo:font-weight" => "bold", "style:font-weight-asian" => "bold", "style:font-weight-complex" => "bold"])
-    get(a, :italic, false) in (true, 1) && append!(p, ["fo:font-style" => "italic", "style:font-style-asian" => "italic", "style:font-style-complex" => "italic"])
+    get(a, :bold, false) in (true, 1) && append!(p, [k => "bold" for k in _font_keys("fo:font-weight")])
+    get(a, :italic, false) in (true, 1) && append!(p, [k => "italic" for k in _font_keys("fo:font-style")])
     get(a, :under, false) in (true, 1) && append!(p, ["style:text-underline-style" => "solid", "style:text-underline-width" => "auto",
                                                        "style:text-underline-color" => "font-color"])
     get(a, :strike, false) in (true, 1) && append!(p, ["style:text-line-through-style" => "solid", "style:text-line-through-type" => "single"])
@@ -693,7 +691,7 @@ function _chart_run_props(run::RichTextRun)
         # a Rational was written as `21//2pt`
         s isa Real && isfinite(s) && s > 0 || throw(ODSError("A text size is a positive number of points, not `$s`."))
         sz = _num_text(s) * "pt"
-        append!(p, ["fo:font-size" => sz, "style:font-size-asian" => sz, "style:font-size-complex" => sz])
+        append!(p, [k => sz for k in _font_keys("fo:font-size")])
     end
     n = get(a, :name, nothing)
     n === nothing || push!(p, "fo:font-family" => (occursin(' ', n) ? "'$n'" : String(n)))
@@ -1073,8 +1071,6 @@ end
 # LibreOffice's own (D-076, D-086): trendlines, error bars, label arrangement, explosion
 #
 
-const _TREND_ODF = Dict(:linear => "linear", :log => "logarithmic", :exp => "exponential", :power => "power",
-                        :poly => "polynomial", :movingAvg => "moving-average")
 
 """
     addTrendline(c, i, kind = :linear; order, period, name, forward, backward, intercept,

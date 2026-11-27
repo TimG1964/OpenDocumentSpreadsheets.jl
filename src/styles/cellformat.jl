@@ -154,6 +154,9 @@ const _FONT_TWINS = Dict("fo:font-weight" => ("style:font-weight-asian", "style:
 const _UNDER_KEYS = ("style:text-underline-style", "style:text-underline-width", "style:text-underline-color", "style:text-underline-type")
 const _STRIKE_KEYS = ("style:text-line-through-style", "style:text-line-through-type")
 
+# A font property's key and its Asian and complex-script twins' (cells and charts write all three).
+_font_keys(k::AbstractString) = String[k, get(_FONT_TWINS, k, ())...]
+
 # Sets a font property and, as LibreOffice does, its Asian and complex-script twins.
 function _font_prop!(ch::_Changes, k::String, v::Union{Nothing,String})
     push!(ch, k => v)

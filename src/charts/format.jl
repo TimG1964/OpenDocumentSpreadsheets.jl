@@ -43,7 +43,11 @@ function _fill(d::Dict{String,String})
     return DrawingFill(:solid; fgcolor = c)
 end
 
-const _CAPS = Dict("butt" => "flat", "round" => "rnd", "square" => "sq")
+# Line caps as XLSX.jl names them and as ODF writes them (the setter also takes `:round` and `:square`),
+# and back: the getters' table is the setters' turned round, not kept apart (code review, Phase 3).
+const _CAPS_ODF = Dict(:rnd => "round", :sq => "square", :flat => "butt")
+const _CAP_ALIASES = Dict(:round => :rnd, :square => :sq)
+const _CAPS = Dict(v => string(k) for (k, v) in _CAPS_ODF)
 function _line(d::Dict{String,String})
     s = get(d, "draw:stroke", nothing)
     c = _color(d, "svg:stroke-color", "@loext:stroke-complex-color")
@@ -474,8 +478,12 @@ end
 # Trendlines and error bars
 #
 
-const _REG = Dict("linear" => :linear, "logarithmic" => :log, "exponential" => :exp, "power" => :power,
-                  "polynomial" => :poly, "moving-average" => :movingAvg)
+# Trendline kinds as `addTrendline` takes them and as ODF writes them, and back (derived, as `_CAPS`).
+const _TREND_ODF = Dict(:linear => "linear", :log => "logarithmic", :exp => "exponential", :power => "power",
+                        :poly => "polynomial", :movingAvg => "moving-average")
+const _REG = Dict(v => k for (k, v) in _TREND_ODF)
+# (`_UNDER`, `_LEGEND_POS` and `_ERRCAT` are not the setters' tables turned round: the getters read the
+# underline's style only, corners the setter writes as custom positions, and XLSX.jl's error bar names.)
 
 """
     getSeriesTrendlines(c, i) -> Vector{ChartTrendline}
