@@ -3,10 +3,16 @@
 The pictures in `docs/src/images/` are LibreOffice Calc windows, captured by script on Windows. A page
 asks for one with a marker after the example that makes it:
 
-```markdown
+````markdown
+```@raw html
 <!-- shot: chart_first cells=12x19 -->
-![A description of the picture, for readers who can't see it](../images/chart_first.png)
 ```
+![A description of the picture, for readers who can't see it](../images/chart_first.png)
+````
+
+The marker is an HTML comment in a raw HTML block. Julia's Markdown, which Documenter uses, has no HTML
+comments: a bare one shows on the page as text, and joins the picture's paragraph, where an `_` in the
+marker and one in the picture's path become emphasis and break the picture (issue #6).
 
 ## Making them
 
@@ -44,7 +50,7 @@ alike from one run to the next. The same run gives the same pictures byte for by
 | `cursor=A1`, `cursor=keep` | the cursor (default A1), or the one the example set |
 | `size=WxH` | the window's size in pixels (default 2400x1300) |
 
-`test/test_docs.jl` checks that every marker is followed by its picture, that every picture has a
+`test/test_docs.jl` checks that every marker is in its raw HTML block, followed by its picture, that every picture has a
 description and is used, and that the pictures stay under 3 MB in all.
 
 How the capture works, and what was found on the way, is in the workspace's

@@ -21,7 +21,9 @@ getHyperlink(sh, "A2")      # (sheet, ref, url, location, display, tooltip)
 getHyperlinks(sh)           # every link on the sheet
 ```
 
+```@raw html
 <!-- shot: hyperlinks cells=3x5 -->
+```
 ![A sheet with two links shown as underlined text, Our site and See the data, the number 1234 below them, and in B5 a link shown as its address](../images/hyperlinks.png)
 
 ```julia

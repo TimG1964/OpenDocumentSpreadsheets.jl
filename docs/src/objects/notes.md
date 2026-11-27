@@ -19,7 +19,9 @@ addComment(sh, "B3", "Checked against the invoice"; author = "Ann", visible = tr
 getComment(sh, "B3").text           # "Checked against the invoice"
 ```
 
+```@raw html
 <!-- shot: notes cells=5x7 -->
+```
 ![Three invoices with their amounts; the cell B3 has a note marker in its corner, and its note, Checked against the invoice, shown beside it](../images/notes.png)
 
 ```julia

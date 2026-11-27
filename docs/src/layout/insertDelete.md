@@ -22,7 +22,9 @@ sh["A4:B5"] = ["Internet" 30; "Insurance" 55]
 getFormula(sh, "B8")             # "=SUM(B2:B7)"
 ```
 
+```@raw html
 <!-- shot: insert_rows cells=3x9 -->
+```
 ![The costs list with Internet and Insurance inserted as rows 4 and 5 between Power and Water, and the total, now in row 8, summing all six costs](../images/insert_rows.png)
 
 ```julia

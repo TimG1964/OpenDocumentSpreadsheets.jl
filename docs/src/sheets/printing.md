@@ -24,7 +24,9 @@ setPrintTitles(sh; rows = 1)                     # repeated on every page
 setHeaderFooter(sh; header = (center = "&A",), footer = (right = "Page &P of &N",))
 ```
 
+```@raw html
 <!-- shot: printing preview -->
+```
 ![LibreOffice's print preview of a landscape A4 page: the sheet's name, Budget, centred at the top, the first rows of the budget printed with gridlines and centred across the page, and Page 1 of 2 at the bottom right](../images/printing.png)
 
 ## Headers and footers

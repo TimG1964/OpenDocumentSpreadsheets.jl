@@ -26,7 +26,9 @@ getFormula(sh, "C5")                # "=SUM(C2:C4)"
 getFormula(sh, "C5"; raw = true)    # "of:=SUM([.C2:.C4])"
 ```
 
+```@raw html
 <!-- shot: formulas cells=5x6 cursor=C5 bar -->
+```
 ![LibreOffice with the cursor on C5: the formula bar shows =SUM(C2:C4), and the sheet lists three items with their prices, a With VAT column of formulas, their sum in C5 and a third of it in D5](../images/formulas.png)
 
 ## The notation

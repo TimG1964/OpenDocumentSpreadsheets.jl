@@ -29,7 +29,9 @@ getDataValidation(sh, "B5")
 
 LibreOffice shows a list rule's values as a drop-down on the cell:
 
+```@raw html
 <!-- shot: validity cells=4x6 cursor=A2 dropdown -->
+```
 ![The Orders sheet in LibreOffice with the cursor on A2, which holds Green, and its drop-down open listing Red, Green and Blue](../images/validity.png)
 
 A cell has one rule: a new rule replaces the rule of the cells it covers, and

@@ -37,7 +37,9 @@ groupRows(sh, 5:7; collapsed = true)     # the second, its rows hidden
 OpenDocumentSpreadsheets.getRowOutlineLevel(sh, 3)  # 2
 ```
 
+```@raw html
 <!-- shot: groups cells=3x14 -->
+```
 ![The months of the year with outline brackets to the left of the row numbers: one round all twelve months and two inside it, the first open on January to March and the second collapsed with April to June hidden](../images/groups.png)
 
 ```julia

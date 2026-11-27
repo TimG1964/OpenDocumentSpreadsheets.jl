@@ -25,7 +25,9 @@ addSeries(c, "C2:C7"; categories = "A2:A7", name_ref = "C1")
 writeods("sales.ods", xf)
 ```
 
+```@raw html
 <!-- shot: chart_first cells=12x19 -->
+```
 ![Six months of sales for North and South in columns A to C, and beside them a column chart titled Sales with blue columns for North, orange for South, the months along the x axis titled Month, and a y axis titled £k](../images/chart_first.png)
 
 The frame sits in the anchor's first cell and resizes with its cells up to the last. A series takes
@@ -69,7 +71,9 @@ for (n, (kind, anchor)) in enumerate([(:column, "E1:J14"), (:stackedBar, "K1:P14
 end
 ```
 
+```@raw html
 <!-- shot: chart_kinds cells=22x30 zoom=60 -->
+```
 ![Six charts of the same data in a grid, each titled with its kind: column, stackedBar, lineMarkers, pie, scatter and area](../images/chart_kinds.png)
 
 ## Combo charts
@@ -88,7 +92,9 @@ addSeries(c, "C2:C5"; categories = "A2:A5", name_ref = "C1")
 makeCombo(c)
 ```
 
+```@raw html
 <!-- shot: chart_combo cells=12x19 -->
+```
 ![A combo chart titled Units and margin: units as blue columns against the left axis, and margin as an orange line against a second axis on the right](../images/chart_combo.png)
 
 ## Histograms
@@ -108,7 +114,9 @@ addSeries(h, "A2:A201"; name_ref = "A1")
 setSeriesBinning(h, 1; binCount = 8)
 ```
 
+```@raw html
 <!-- shot: histogram cells=11x19 -->
+```
 ![A column of 200 heights, and beside it a histogram of them in eight bins, the bars touching, tallest in the middle](../images/histogram.png)
 
 Bins are set by their width (`binSize`) or count (`binCount`). LibreOffice draws the bins stored with

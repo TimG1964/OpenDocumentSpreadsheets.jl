@@ -29,7 +29,9 @@ setChartTitleTextProp(c, :bold, true)
 setLabelFlag(c, 1, :value, true)
 ```
 
+```@raw html
 <!-- shot: chart_format cells=12x19 -->
+```
 ![The sales chart with a bold title, North's columns in dark red with their values above them, South's columns outlined with a dark grey dashed line, a y axis from 0 to 70 in steps of 10, and the legend below the plot](../images/chart_format.png)
 
 ## Trendlines and error bars
@@ -49,7 +51,9 @@ addTrendline(c, 1, :linear; displayEquation = true)
 setErrorBars(c, 1; type = :percent, value = 10)
 ```
 
+```@raw html
 <!-- shot: chart_trend cells=11x19 -->
+```
 ![An XY chart of seven measurements with a straight trend line through them, its equation shown beside it, and an error bar of 10% above and below each point](../images/chart_trend.png)
 
 ## LibreOffice's model

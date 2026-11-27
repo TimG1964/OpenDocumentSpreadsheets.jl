@@ -27,7 +27,9 @@ OpenDocumentSpreadsheets.getColumnWidth(sh, "C1"; unit = :cm)  # 3.0
 OpenDocumentSpreadsheets.getRowHeight(sh, "A2")                # 30.2109375: 30, plus the padding
 ```
 
+```@raw html
 <!-- shot: widths cells=5x4 -->
+```
 ![Four columns of different widths: A narrow, B twenty characters wide, C three centimetres, and D just wide enough for its long heading; row 2 is taller than the others](../images/widths.png)
 
 The getters include the padding that LibreOffice adds to a width or height: 0.7109375 characters

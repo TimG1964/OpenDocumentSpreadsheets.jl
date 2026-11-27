@@ -26,7 +26,9 @@ setAutoFilter(sh, "A1:C7"; filters = ["Region" => ["North", "South"], "Revenue" 
 getAutoFilter(sh)           # CellRange("A1:C7")
 ```
 
+```@raw html
 <!-- shot: autofilter cells=4x8 -->
+```
 ![The sales range with filter buttons on its header, showing only North and South rows over 900, in descending order of revenue: 1200, 1020, 950; rows 2, 6 and 7 are hidden](../images/autofilter.png)
 
 ```julia

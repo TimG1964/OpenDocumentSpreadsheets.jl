@@ -16,7 +16,9 @@ addImage(sh, "D2:G12", "chart.jpg"; alt = "Sales by month")  # stretched to fill
 getImages(sh)             # (sheet, media_name, from, to, alt, description) for each
 ```
 
+```@raw html
 <!-- shot: pictures cells=8x13 -->
+```
 ![A sheet with a small red-to-yellow picture anchored at B2, and a photograph stretched over the cells D2 to G12](../images/pictures.png)
 
 ```julia

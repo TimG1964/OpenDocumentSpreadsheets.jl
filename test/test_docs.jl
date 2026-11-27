@@ -107,12 +107,14 @@ end
             @test (rel, src, isfile(f)) == (rel, src, true)
             push!(used, basename(f))
         end
-        # every screenshot marker is followed by its picture
-        for m in eachmatch(r"<!--\s*shot:\s*(\S+)[^>]*-->\s*\n!\[[^\]]*\]\(([^)]*)\)", text)
+        # every screenshot marker is alone in a raw HTML block, followed by its picture. Julia's
+        # Markdown has no HTML comments: a bare marker shows as text, and joins the picture's
+        # paragraph, where an `_` in its name pairs with the picture's as emphasis (issue #6).
+        fenced = r"```@raw html\r?\n<!--\s*shot:\s*(\S+)[^>]*-->\r?\n```\r?\n!\[[^\]]*\]\(([^)]*)\)"
+        for m in eachmatch(fenced, text)
             @test (rel, basename(m.captures[2])) == (rel, m.captures[1] * ".png")
         end
-        @test (rel, count("<!-- shot:", text)) ==
-              (rel, length(collect(eachmatch(r"<!--\s*shot:\s*(\S+)[^>]*-->\s*\n!\[", text))))
+        @test (rel, count("<!-- shot:", text)) == (rel, length(collect(eachmatch(fenced, text))))
     end
     @test setdiff(pngs, used) == Set{String}()            # no picture left unused
     @test sum(f -> filesize(joinpath(imgdir, f)), pngs; init = 0) <= 3 * 2^20

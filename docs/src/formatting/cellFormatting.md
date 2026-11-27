@@ -34,7 +34,9 @@ setAlignment(sh, "B3:D3"; horizontal = "center")
 setFont(sh, "A4:A6"; italic = true)
 ```
 
+```@raw html
 <!-- shot: cellformat_basic cells=5x7 -->
+```
 ![A report with a large dark blue title, a header row of white bold text on blue with centred quarter names, a medium blue outline round the table, thin grey lines between the rows, and italic region names](../images/cellformat_basic.png)
 
 A cell's background (Format ▸ Cells ▸ Background) is set with `pattern = "solid"` and the colour as
@@ -98,7 +100,9 @@ setColumnWidth(sh, "F:G"; width = 12)
 OpenDocumentSpreadsheets.getText(sh, "G4")     # "1,234.50"
 ```
 
+```@raw html
 <!-- shot: cellformat_numbers cells=7x9 -->
+```
 ![The report with, in columns F and G, five format codes beside a value shown with each: 1,234.50, 25.6%, 2025-12-09, 42:00 and 1.23E-04](../images/cellformat_numbers.png)
 
 Number formats are stored as OpenDocument data styles, in the form LibreOffice writes for the same
@@ -128,7 +132,9 @@ setColumnWidth(styled, "A"; width = 14)
 OpenDocumentSpreadsheets.getCellStyle(styled, "A1")  # "Heading 1"
 ```
 
+```@raw html
 <!-- shot: cellformat_styles cells=3x6 -->
+```
 ![Five cells in LibreOffice's styles: Heading 1 large and bold, Good on light green, Bad on light red, Accent 1 white on black, and a Total row in bold above a double line with 4,321.50](../images/cellformat_styles.png)
 
 - **Direct formatting stays on top**, as in LibreOffice. Applying a style removes the cell's own

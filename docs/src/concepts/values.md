@@ -41,7 +41,9 @@ types["B8"] = Hour(36)
 setColumnWidth(types, "A:B"; width = 18)
 ```
 
+```@raw html
 <!-- shot: values_types cells=3x9 -->
+```
 ![A sheet listing a value of each type: 42, 3.14159, Hello, TRUE, 2026-11-18, 2026-11-18 13:45:00, 09:30:00 and 36:00:00](../images/values_types.png)
 
 Dates, times and booleans need a number format, or LibreOffice treats them as plain numbers the next
@@ -91,7 +93,9 @@ getRichTextString(types, "A10") == rt        # true
 types["A10"]                                 # "Water is H2O, and bold", its text
 ```
 
+```@raw html
 <!-- shot: values_richtext cells=3x10 -->
+```
 ![The same sheet with a cell in row 10 reading Water is H2O, and bold, with the 2 as a subscript and the word bold in bold red](../images/values_richtext.png)
 
 A run's attributes are `:bold`, `:italic`, `:under`, `:strike`, `:vertAlign` (`"superscript"` or

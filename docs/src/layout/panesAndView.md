@@ -23,7 +23,9 @@ freezePanes(sh; nrows = 1, ncols = 1)      # or freezePanes(sh, "B2")
 setSheetView(sh; topLeftCell = "E20")      # scrolled down and right
 ```
 
+```@raw html
 <!-- shot: frozen cells=8x10 top=keep cursor=keep -->
+```
 ![The sheet scrolled to row 20 and column E, with row 1's headings and column A's row labels still showing, frozen above and to the left of thin lines](../images/frozen.png)
 
 ```julia
@@ -59,7 +61,9 @@ setTabColor(xf["Plan"], "4472C4")
 setSheetVisibility(xf["Notes"], :hidden)
 ```
 
+```@raw html
 <!-- shot: tabs tabs -->
+```
 ![LibreOffice's sheet tabs: Grid, the open sheet, underlined in orange, and Plan on blue; the hidden Notes sheet has no tab](../images/tabs.png)
 
 ```julia

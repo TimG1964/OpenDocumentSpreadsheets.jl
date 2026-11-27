@@ -21,7 +21,9 @@ setRowHeight(sh, 6; height = 30)
 getSparklines(sh)
 ```
 
+```@raw html
 <!-- shot: sparklines cells=7x7 -->
+```
 ![Four regions' quarterly figures with a line sparkline in column F of each row, its highest point marked red, and a small column chart in each cell of row 6 for each quarter](../images/sparklines.png)
 
 ```julia

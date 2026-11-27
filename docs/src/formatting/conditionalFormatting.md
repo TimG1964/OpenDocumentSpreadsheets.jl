@@ -25,7 +25,9 @@ setConditionalFormat(sh, "A1:A10", :cellIs; operator = "lessThan", value = "0",
 setConditionalFormat(sh, "B1:B10", :containsText; value = "north", style = "Good")
 ```
 
+```@raw html
 <!-- shot: condfmt_conditions cells=3x11 -->
+```
 ![Values from -4 to 23 in column A: those over 10 in green text on a green fill, those below 0 in bold red; in column B, each cell reading north in LibreOffice's Good style, on light green](../images/condfmt_conditions.png)
 
 The conditions are:
@@ -82,7 +84,9 @@ setConditionalFormat(scales, "C1:C10", :iconSet; iconset = "3Arrows")
 setColumnWidth(scales, "A:C"; width = 14)
 ```
 
+```@raw html
 <!-- shot: condfmt_scales cells=4x11 -->
+```
 ![The squares 1 to 100 three times: in column A with green data bars growing with the value, in column B shaded from green at 1 through white to red at 100, and in column C with red down, yellow sideways and green up arrows](../images/condfmt_scales.png)
 
 Each comes with presets: the data bar colours, two- and three-colour scales, and LibreOffice's icon

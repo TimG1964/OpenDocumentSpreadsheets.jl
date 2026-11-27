@@ -22,7 +22,9 @@ memo["A1"] = "Estimates agreed on 18 November."
 writeods("plan.ods", xf; overwrite = true)
 ```
 
+```@raw html
 <!-- shot: creating_new cells=4x6 -->
+```
 ![A sheet named Plan with Task and Days in row 1, three tasks with their days below, and their total, 21, in B5](../images/creating_new.png)
 
 A sheet is addressed by name or by position (`xf["Plan"]`, `xf[1]`), and [`sheetnames`](@ref)

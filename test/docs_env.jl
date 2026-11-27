@@ -10,7 +10,8 @@
 # thousand. Outputs in comments aren't checked: the point is that what the docs show works.
 #
 # A screenshot marker after a block, `<!-- shot: NAME key=value … flag … -->`, names the image of what the
-# block made (see `docs/screenshots/README.md`).
+# block made (see `docs/screenshots/README.md`). It sits in a "```@raw html" block, which the pattern
+# for julia blocks doesn't match.
 
 using OpenDocumentSpreadsheets
 import Dates

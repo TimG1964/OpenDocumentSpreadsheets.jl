@@ -17,7 +17,9 @@ setAlignment(sh, "A1"; horizontal = "center")
 setFont(sh, "A1"; bold = true)
 ```
 
+```@raw html
 <!-- shot: merged cells=4x6 cursor=A1 -->
+```
 ![A title, Project plan, in bold, centred across the merged cells A1 to C1 above a three-column plan](../images/merged.png)
 
 ```julia

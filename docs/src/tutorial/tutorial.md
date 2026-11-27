@@ -116,7 +116,9 @@ writeods("results.ods", xf; overwrite = true)
 Opened in LibreOffice, the file shows the values, the dates in ISO form, and the formula's result,
 which LibreOffice calculates when it loads the file:
 
+```@raw html
 <!-- shot: tutorial_write cells=6x6 -->
+```
 ![A LibreOffice sheet with Name, Score and Date in row 1, Ann 9.5 and Bob 7 below with their dates, and 16.5 in B4](../images/tutorial_write.png)
 
 Or write a whole table at once, from any Tables.jl source, such as the DataFrame read above or a
@@ -144,7 +146,9 @@ setConditionalFormat(sh, "B2:B3", :dataBar)
 writeods("results.ods", xf; overwrite = true)                 # save the formatting
 ```
 
+```@raw html
 <!-- shot: tutorial_format cells=5x6 -->
+```
 ![The same sheet with a bold header on a pale blue fill above a thick line, scores shown to one decimal place with blue data bars, and the empty cell A4 filled black by the Accent 1 style](../images/tutorial_format.png)
 
 [Cell formats](../formatting/cellFormatting.md) and
@@ -178,7 +182,9 @@ openods("budget.ods"; mode = "rw") do xf
 end
 ```
 
+```@raw html
 <!-- shot: tutorial_chart file=budget.ods sheet=Costs cells=13x19 -->
+```
 ![The Costs sheet: months, amounts and statuses in columns A to C, with June marked Paid, a small line chart of the twelve amounts in A15, and a column chart titled Costs by month with its legend below](../images/tutorial_chart.png)
 
 [Charts](../charts/overview.md) covers charts, histograms, chart sheets and sparklines.
@@ -197,7 +203,9 @@ openods("budget.ods"; mode = "rw") do xf
 end
 ```
 
+```@raw html
 <!-- shot: tutorial_links file=budget.ods sheet=Costs cells=6x14 -->
+```
 ![The Costs sheet with a link reading Budget notes in E1, and the note Agreed with finance shown beside B7, the cell's note marker in its corner](../images/tutorial_links.png)
 
 The Status cells now offer Open and Paid, and refuse anything else.
@@ -217,7 +225,9 @@ openods("budget.ods"; mode = "rw") do xf
 end
 ```
 
+```@raw html
 <!-- shot: tutorial_table file=budget.ods sheet=Costs cells=4x15 -->
+```
 ![The Costs sheet as a database range: filter buttons on the Month, Amount and Status headers, and a totals row reading Total and 3900 under the twelve months; the note is still shown beside B7](../images/tutorial_table.png)
 
 The total is a formula (`SUBTOTAL(109,…)`), which LibreOffice calculates when it opens the file. See
@@ -235,7 +245,9 @@ openods("budget.ods"; mode = "rw") do xf
 end
 ```
 
+```@raw html
 <!-- shot: tutorial_filter file=budget.ods sheet=Income cells=4x14 -->
+```
 ![The Income sheet with filter buttons on its header, showing only the six Sales rows, in descending order of amount; the Grants rows are hidden](../images/tutorial_filter.png)
 
 [AutoFilter and sorting](../data/autoFilter.md) covers the criteria and the sort's options.
@@ -256,7 +268,9 @@ openods("budget.ods"; mode = "rw") do xf
 end
 ```
 
+```@raw html
 <!-- shot: tutorial_sheets file=budget.ods sheet=Costs_2027 cells=4x18 top=keep cursor=keep -->
+```
 ![The sheet, now named Costs 2027, with three empty rows inserted after March, the months continuing from April in row 8, the note moved with June to B10, and the totals row moved to row 17, still totalling 3900, under a frozen header row](../images/tutorial_sheets.png)
 
 The database range, the chart, the note and the totals formula moved with their rows. See

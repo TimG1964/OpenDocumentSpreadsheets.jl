@@ -33,7 +33,9 @@ settotals!(t, "Region" => "Total", "Revenue" => :sum)     # a totals row under t
 writeods("sales.ods", xf)
 ```
 
+```@raw html
 <!-- shot: tables cells=4x9 -->
+```
 ![A database range of six sales rows with filter buttons on its Region, Product and Revenue headers, and a totals row reading Total and 6090](../images/tables.png)
 
 ## Working with a range
