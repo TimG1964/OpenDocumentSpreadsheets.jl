@@ -78,7 +78,7 @@ function _rewrite_spark_refs!(xf::ODSFile, op)
     for ws in _sheets(xf)
         st = ws.sparks
         (st === nothing || isempty(st.list)) && continue
-        st.list = _spark_split(_cf_rewritten(join(st.list), Any[op], ws.name))
+        st.list = _spark_split(_cf_rewritten(join(st.list), RefOp[op], ws.name))
     end
     return
 end
@@ -87,6 +87,6 @@ end
 # cells on the copy, their data where it was, as LibreOffice's copies keep it, F-084).
 function _copy_sparks!(new::Worksheet, ws::Worksheet, op)
     (ws.sparks === nothing || isempty(ws.sparks.list)) && return
-    new.sparks = SparkState(_spark_split(_cf_rewritten(join(ws.sparks.list), Any[op], ws.name; withcopy = true)), true, 0:-1, 0)
+    new.sparks = SparkState(_spark_split(_cf_rewritten(join(ws.sparks.list), RefOp[op], ws.name; withcopy = true)), true, 0:-1, 0)
     return
 end

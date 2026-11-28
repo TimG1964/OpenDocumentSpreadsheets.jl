@@ -15,8 +15,6 @@
 # file's at save, leaving every other item as it was. LibreOffice reads none of it unless the root
 # element declares the `ooo` namespace.
 
-const _CONFIG_NS = "urn:oasis:names:tc:opendocument:xmlns:config:1.0"
-const _OOO_NS = "http://openoffice.org/2004/office"
 
 #
 # Reading the file's settings
@@ -496,6 +494,6 @@ function _settings_views(xf::ODSFile, s::String)
 end
 
 # A new settings.xml, for a file that has none.
-_new_settings_xml(version) = string(_XMLDECL, "<office:document-settings xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\"",
-                                    " xmlns:config=\"", _CONFIG_NS, "\" xmlns:ooo=\"", _OOO_NS, "\" office:version=\"", version,
+_new_settings_xml(version) = string(_XMLDECL, "<office:document-settings", _xmlns(("office", "config", "ooo")),
+                                    " office:version=\"", version,
                                     "\"><office:settings></office:settings></office:document-settings>")

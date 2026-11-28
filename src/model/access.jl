@@ -136,24 +136,18 @@ function ref_chooser(f::Function, ws::Worksheet, ref::AbstractString)
     if _is_list(ref)
         return f(ws, _nc_on_sheet(ws, ref))
     end
-    typed = try
-        parse_sheet_ref(ref)
-    catch e
-        e isa ODSError || rethrow()
-        throw(ODSError("`$ref` is not a valid cell or range reference."))
-    end
+    typed = _tryparse_sheet_ref(ref)
+    typed === nothing && throw(ODSError("`$ref` is not a valid cell or range reference."))
     return f(ws, typed)
 end
+
+# A sheet-qualified reference (`parse_sheet_ref`), or `nothing` when `s` doesn't read as one.
+_tryparse_sheet_ref(s::AbstractString) = try parse_sheet_ref(s) catch e; e isa ODSError || rethrow(); nothing end
 
 function ref_chooser(f::Function, xf::ODSFile, ref::AbstractString)
     ref = String(ref)
     # a sheet-qualified reference first (a name can't read as one), then a name
-    typed = try
-        parse_sheet_ref(ref)
-    catch e
-        e isa ODSError || rethrow()
-        nothing
-    end
+    typed = _tryparse_sheet_ref(ref)
     typed === nothing || return f(xf, typed)
     if is_workbook_defined_name(xf, ref)
         v = get_defined_name_value(xf, ref)
@@ -415,7 +409,7 @@ function readdata(source::Union{AbstractString,IO}, sheet::Union{AbstractString,
 end
 
 function readdata(source::Union{AbstractString,IO}, sheetref::AbstractString)
-    ref = try parse_sheet_ref(sheetref) catch e; e isa ODSError || rethrow(); nothing end
+    ref = _tryparse_sheet_ref(sheetref)
     ref === nothing && return getdata(openods(source; enable_cache = false), sheetref)   # a name
     return getdata(_open_through(source, ref.sheet), ref)
 end

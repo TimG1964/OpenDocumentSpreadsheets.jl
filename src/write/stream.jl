@@ -141,7 +141,7 @@ function streamods(f::Function, dest::Union{AbstractString,IO}; overwrite::Bool 
         named = String(take!(sw.named))
         sh = styles.sheet[1]
         sh === nothing || (named = join(sh.datastyles[n] for n in sh.added_data) * named)
-        ns = _needs_loext(styles) ? " xmlns:loext=\"$_LOEXT_NS\"" : ""
+        ns = _xmlns(_styles_ns(styles, ""))
         others = [PackagePart("styles.xml", new_styles_xml(version, named, ns)), PackagePart("meta.xml", new_meta_xml(version))]
         _append_parts!(w, others, manifest_xml(vcat([PackagePart("content.xml", "")], others), mt, version))
     end
@@ -194,11 +194,7 @@ function addsheet!(s::StreamWriter, name::AbstractString = ""; columns = nothing
         while any(x -> _same_sheetname(x, "Sheet$n"), s.names); n += 1; end
         name = "Sheet$n"
     end
-    for c in _BAD_SHEETNAME_CHARS
-        occursin(c, name) && throw(ODSError("The sheet name `$name` holds `$c`, which LibreOffice does not allow in sheet names."))
-    end
-    _check_xml_text(name)
-    any(x -> _same_sheetname(x, name), s.names) && throw(ODSError("There is already a sheet named `$name`."))
+    _check_sheetname(name, s.names, "There is already a sheet named `$name`.")
     push!(s.names, String(name))
     foreach(p -> _declare_width!(s, p.second), widths)       # the first sheet's can still be declared
     _start_content!(s)
@@ -305,18 +301,7 @@ function writerows!(sh::StreamSheet, table)
 end
 
 # A streamed table's name, checked as `addtable!` checks one, against the stream's tables.
-function _stream_table_name(s::StreamWriter, name::AbstractString)
-    used = Set(uppercase(t[1]) for t in s.tables)
-    if isempty(name)
-        i = 1
-        while uppercase("Table$i") in used; i += 1; end
-        return "Table$i"
-    end
-    startswith(name, _ANON_DB) && throw(ODSError("Table names starting with `$_ANON_DB` are LibreOffice's, for sheets' autofilters."))
-    _check_defined_name(name)
-    uppercase(name) in used && throw(ODSError("Table name `$name` is already in use (LibreOffice ignores case in them)."))
-    return String(name)
-end
+_stream_table_name(s::StreamWriter, name::AbstractString) = _table_name(Set{String}(uppercase(t[1]) for t in s.tables), name)
 
 # The streamed tables, each over its sheet's rows, as `addtable!` writes them.
 _stream_tables_xml(s::StreamWriter) =

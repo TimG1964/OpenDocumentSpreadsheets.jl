@@ -217,7 +217,7 @@ end
 end
 
 @testset "LibreOffice keeps what the setters write" begin
-    if isfile(SOFFICE) && lo_major(SOFFICE) >= LO_FIXTURE_MAJOR
+    if lo_ok(LO_FIXTURE_MAJOR)
         xf, c = _setters_chart()
         # LibreOffice's options too, on a second sheet's charts
         ws = xf["Data"]
@@ -234,8 +234,7 @@ end
             p = joinpath(dir, "s.ods"); f = joinpath(dir, "sf.fods")
             OpenDocumentSpreadsheets.writeods(p, xf); OpenDocumentSpreadsheets.writeods(f, xf)
             out = joinpath(dir, "lo")
-            run(pipeline(`$SOFFICE -env:UserInstallation=$(lo_profile_url(joinpath(dir, "profile"))) --headless --norestore --convert-to ods --outdir $out $p $f`;
-                         stdout = devnull, stderr = devnull))
+            lo_convert([p, f], "ods"; outdir = out, profile = lo_profile_url(joinpath(dir, "profile")))
             for path in (joinpath(out, "s.ods"), joinpath(out, "sf.ods"))
                 back = getCharts(readods(path))
                 @test length(back) == 4
@@ -254,8 +253,6 @@ end
                 @test [OC.getSeriesFill(back[4], i).value.kind for i in 1:2] == [:gradient, :pattern]
             end
         end
-    else
-        @test_skip false
     end
 end
 
@@ -280,15 +277,12 @@ end
         t = read(p, String)
         # the flat document itself, and its one chart left
         @test count("<office:document ", t) == n && occursin("draw:name=\"odsfDashDash\"", t)
-        if isfile(SOFFICE) && lo_major(SOFFICE) >= LO_FIXTURE_MAJOR
+        if lo_ok(LO_FIXTURE_MAJOR)
             out = joinpath(dir, "lo")
-            run(pipeline(`$SOFFICE -env:UserInstallation=$(lo_profile_url(joinpath(dir, "profile"))) --headless --norestore --convert-to ods --outdir $out $p`;
-                         stdout = devnull, stderr = devnull))
+            lo_convert(p, "ods"; outdir = out, profile = lo_profile_url(joinpath(dir, "profile")))
             lo = getCharts(readods(joinpath(out, "f.ods")))
             @test length(lo) == n - 1
             @test OC.getChartTitle(lo[1]) == "Edited flat" && OC.getSeriesLine(lo[1], 1).value.dash == "odsfDashDash"
-        else
-            @test_skip false
         end
     end
 end
@@ -360,14 +354,52 @@ end
     back = getCharts(readods(p)); check(back[1], back[2])
     OC.setAxisLogBase(ln, :y, :inherit); @test OC.getAxisLogBase(ln, :y) === nothing
     # LibreOffice keeps them: its own save, read back
-    if isfile(SOFFICE) && lo_major(SOFFICE) >= LO_FIXTURE_MAJOR
+    if lo_ok(LO_FIXTURE_MAJOR)
         out = joinpath(dir, "lo")
-        run(pipeline(`$SOFFICE -env:UserInstallation=$(lo_profile_url(joinpath(dir, "profile"))) --headless --norestore --convert-to ods --outdir $out $p`;
-                     stdout = devnull, stderr = devnull))
+        lo_convert(p, "ods"; outdir = out, profile = lo_profile_url(joinpath(dir, "profile")))
         lo = getCharts(readods(joinpath(out, "halves.ods")))
         @test length(lo) == 2
         check(lo[1], lo[2])
-    else
-        @test_skip false
+    end
+end
+
+@testset "the setters no other test calls (code review Phase 6)" begin
+    xf, ws = _chart_data_sheet()
+    b = OC.addChart(ws, :column; anchor = "H2:O18", title = "T")
+    OC.addSeries(b, "B2:B7"; categories = "A2:A7", name_ref = "B1"); OC.addSeries(b, "C2:C7"; name_ref = "C1")
+    g = OC.getChartGroups(b)[1]
+    @test OC.getGroupOverlap(b, g) === nothing && OC.getLegendOverlay(b) === false && OC.getAxisCrossesAt(b, :x) === nothing
+    @test OC.getAxisNumberFormatLinked(b, :y) === true
+    OC.setGroupOverlap(b, g, 40)
+    OC.setGroupLabelTextProp(b, g, :bold, true)
+    OC.setLegendOverlay(b, true)
+    OC.setLegendTextProp(b, :italic, true)
+    OC.setChartSpaceTextProp(b, :size, 12)          # set on the series' labels, as documented
+    OC.setAxisCrossesAt(b, :x, 5)
+    OC.setAxisNumberFormatLinked(b, :y, false)
+    l = OC.addChart(ws, :line; anchor = "H20:O36")
+    OC.addSeries(l, "B2:B7"; categories = "A2:A7")
+    OC.setSeriesLineColor(l, 1, "FF0000"); OC.setSeriesLineWidth(l, 1, 3); OC.setSeriesLineCap(l, 1, :sq)
+    defprops(t) = t.paragraphs[1].props.defprops
+    function check(b, l)
+        g = OC.getChartGroups(b)[1]
+        @test OC.getGroupOverlap(b, g) == 40
+        @test defprops(OC.getGroupLabelTextProps(b, g)).bold === true
+        @test OC.getLegendOverlay(b) === true
+        @test defprops(OC.getLegendTextProps(b)).italic === true
+        @test [OC.getLabelTextProp(b, i, :size).value for i in 1:2] == [12, 12]
+        @test OC.getAxisCrossesAt(b, :x) == 5
+        @test OC.getAxisNumberFormatLinked(b, :y) === false
+        v = OC.getSeriesLine(l, 1).value
+        @test (v.fill.fgcolor.rgb, v.width, v.cap) == ("FF0000", 3.0, "sq")
+    end
+    check(b, l)
+    dir = mktempdir(); p = writeods(joinpath(dir, "more.ods"), xf)
+    back = getCharts(readods(p)); check(back[1], back[2])
+    if lo_ok(LO_FIXTURE_MAJOR; what = "the chart setters oracle")
+        lo_convert(p, "ods"; outdir = joinpath(dir, "lo"), profile = lo_profile_url(joinpath(dir, "profile")))
+        lo = getCharts(readods(joinpath(dir, "lo", "more.ods")))
+        @test length(lo) == 2
+        check(lo[1], lo[2])
     end
 end

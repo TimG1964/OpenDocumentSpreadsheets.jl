@@ -208,7 +208,7 @@ end
 function _put_def!(o, name::AbstractString, def::AbstractString)
     occursin("draw:name=\"$name\"", o.styles) && return name
     if isempty(o.styles)
-        o.styles = """<?xml version="1.0" encoding="UTF-8"?><office:document-styles xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0" xmlns:loext="urn:org:documentfoundation:names:experimental:office:xmlns:loext:1.0" office:version="1.4"><office:styles>$def</office:styles></office:document-styles>"""
+        o.styles = """<?xml version="1.0" encoding="UTF-8"?><office:document-styles$(_xmlns(("office", "draw", "style", "svg", "loext"))) office:version="1.4"><office:styles>$def</office:styles></office:document-styles>"""
     elseif occursin("</office:styles>", o.styles)
         o.styles = replace(o.styles, "</office:styles>" => def * "</office:styles>"; count = 1)
     elseif occursin("<office:styles/>", o.styles)
@@ -371,7 +371,7 @@ function _point_style!(o, i::Integer, point::Integer)
     others = Any[]
     for c in XML.children(series)
         if _isel(c) && XML.tag(c) == "chart:data-point"
-            rep = something(tryparse(Int, something(_tattr(c, "chart:repeated"), "1")), 1)
+            rep = _repeated(_tattr(c, "chart:repeated"))
             attrs = filter(p -> p.first != "chart:repeated", _tpairs(c))
             kids = collect(XML.children(c))
             for r in 1:max(rep, 1)                   # each its own nodes (they are changed in place)
@@ -906,7 +906,7 @@ end
 function _nth_point(o, i, point)
     k = 0
     for p in _tkids(o, _series_start(o, i), "chart:data-point")
-        rep = something(tryparse(Int, something(_tget(o, p, "chart:repeated"), "1")), 1)
+        rep = _repeated(_tget(o, p, "chart:repeated"))
         k + rep >= point && return p
         k += rep
     end
@@ -926,9 +926,8 @@ function _axis_set!(c, ax, attrs; element = "style:chart-properties")
     isempty(set) || _set_style_attrs!(o, st, set; element)
     return c
 end
-# A number as attribute text: a whole number as Int64 digits while it is exact (an `Int` threw
-# past 2^31 on a 32-bit build, and past 2^63 anywhere), else as a Float64.
-_num_text(v::Real) = isinteger(v) && abs(v) < 2.0^53 ? string(Int64(v)) : string(Float64(v))
+# A number as attribute text: the shortest decimal that reads back the same (no exponent).
+_num_text(v::Real) = _decimal_text(v)
 function _axis_value(v, what)
     v === :inherit && return nothing
     v isa Real && isfinite(v) || throw(ODSError("$what is a number, or :inherit."))
@@ -981,6 +980,7 @@ setAxisCrossesAt(c::AbstractChart, ax, v) = _axis_set!(c, ax, ["chart:axis-posit
 setAxisMajorUnit(c::AbstractChart, ax, v) = (_check_value_axis(c, ax); v === :inherit ? _axis_set!(c, ax, ["chart:interval-major" => nothing, "chart:interval-minor-divisor" => nothing]) :
     (v isa Real && v > 0 || throw(ODSError("A unit is a positive number."))) && _axis_set!(c, ax, ["chart:interval-major" => _num_text(v)]))
 function setAxisMinorUnit(c::AbstractChart, ax, v)
+    _require_writable(c.package, "change a chart")      # first, as the other setters (it reads before it sets)
     _check_value_axis(c, ax)
     v === :inherit && return _axis_set!(c, ax, ["chart:interval-minor-divisor" => nothing])
     v isa Real && v > 0 || throw(ODSError("A unit is a positive number."))

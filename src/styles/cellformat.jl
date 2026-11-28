@@ -114,21 +114,18 @@ function _result(targets::FormatTargets)
     return style_name(get_odsfile(ws).styles, effective_style(ws, r, c))
 end
 
-# Numbers as LibreOffice writes them in lengths: no trailing zeros.
-function _fmt_num(x::Real)
-    isinteger(x) && return string(Int(x))
-    s = string(round(Float64(x); digits = 4))
-    return occursin('.', s) ? rstrip(rstrip(s, '0'), '.') : s
-end
+# Numbers as LibreOffice writes them in lengths: to 4 places, no trailing zeros.
+_fmt_num(x::Real) = _decimal_text(x; digits = 4)
 
-# A length in points (`"0.74pt"`, `"0.026cm"`, `"1mm"`, `"0.01in"`), or `nothing`.
+# A length in points (`"0.74pt"`, `"0.026cm"`, `"1mm"`, `"0.01in"`, `"1pc"`, `"2px"`; no unit:
+# points), or `nothing`. The one length reader: cells, pages and charts.
 function _length_pt(s::AbstractString)
-    m = match(r"^\s*(-?[0-9.]+)\s*(pt|cm|mm|in|px)?\s*$", s)
+    m = match(r"^\s*(-?[0-9.]+)\s*(pt|cm|mm|in|pc|px)?\s*$", s)
     m === nothing && return nothing
     x = tryparse(Float64, m.captures[1])
     x === nothing && return nothing
     u = something(m.captures[2], "pt")
-    return u == "pt" ? x : u == "cm" ? x * 72 / 2.54 : u == "mm" ? x * 72 / 25.4 : u == "in" ? x * 72 : x * 0.75
+    return u == "pt" ? x : u == "cm" ? x * 72 / 2.54 : u == "mm" ? x * 72 / 25.4 : u == "in" ? x * 72 : u == "pc" ? x * 12 : x * 0.75
 end
 
 _check_choice(what, v, valid) = v === nothing || v in valid ||

@@ -23,7 +23,7 @@ const _THEME_TOKENS = Dict(:accent1 => "accent1", :accent2 => "accent2", :accent
     :tx2 => "dark2", :dk2 => "dark2", :bg2 => "light2", :lt2 => "light2", :hlink => "hyperlink", :folHlink => "followed-hyperlink")
 
 const _CHART_ROOT = """<?xml version="1.0" encoding="UTF-8"?>
-<office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:ooo="http://openoffice.org/2004/office" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0" xmlns:dr3d="urn:oasis:names:tc:opendocument:xmlns:dr3d:1.0" xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0" xmlns:chart="urn:oasis:names:tc:opendocument:xmlns:chart:1.0" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:number="urn:oasis:names:tc:opendocument:xmlns:datastyle:1.0" xmlns:of="urn:oasis:names:tc:opendocument:xmlns:of:1.2" xmlns:loext="urn:org:documentfoundation:names:experimental:office:xmlns:loext:1.0" xmlns:chartooo="http://openoffice.org/2010/chart" office:version="VERSION">"""
+<office:document-content$(_xmlns(("office", "ooo", "fo", "xlink", "dc", "meta", "style", "text", "draw", "dr3d", "svg", "chart", "table", "number", "of", "loext", "chartooo"))) office:version="VERSION">"""
 
 const _TEXT10 = """<style:text-properties fo:font-size="10pt" style:font-size-asian="10pt" style:font-size-complex="10pt"/>"""
 _text_pt(pt) = """<style:text-properties fo:font-size="$(pt)pt" style:font-size-asian="$(pt)pt" style:font-size-complex="$(pt)pt"/>"""
@@ -156,13 +156,6 @@ function _next_style_name(o::ChartObj)
             v = tryparse(Int, SubString(n, 3))
             v === nothing || (k = max(k, v))
         end
-    end
-    return "ch$(k + 1)"
-end
-function _next_style_name(t::AbstractString)
-    k = 0
-    for m in eachmatch(r"style:name=\"ch(\d+)\"", t)
-        k = max(k, parse(Int, m.captures[1]))
     end
     return "ch$(k + 1)"
 end

@@ -304,10 +304,7 @@ end
 end
 
 @testset "LibreOffice reads the tables" begin
-    if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the tables oracle (set ODS_SOFFICE)"
-        @test_skip false
-    else
+    if lo_ok(; what = "the tables oracle")
         dir = mktempdir()
         profile = lo_profile_url(joinpath(dir, "lo-profile"))
         xf, ws = _tsheet()
@@ -323,8 +320,7 @@ end
         O_T.addtable!(p["Plain"], "A1:D13"; name = "Mine")
         c = writeods(joinpath(dir, "own.fods"), p)
         d = writetable(joinpath(dir, "stream.ods"), "S" => (x = [1, 2], y = [3, 4]); as_table = true, streaming = true)
-        run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to fods --outdir $(joinpath(dir, "lo")) $a $b $c $d`;
-                     stdout = devnull, stderr = devnull))
+        lo_convert([a, b, c, d], "fods"; outdir = joinpath(dir, "lo"), profile = profile)
         # LibreOffice writes its ranges sorted by name
         seen(x) = sort!([(t.name, t.sheet.name, t.ref, t.has_header_row, t.has_totals_row, t.filterButtons) for t in tables(x)])
         for (f, orig) in (("new.fods", xf), ("newflat.fods", xf), ("own.fods", p))

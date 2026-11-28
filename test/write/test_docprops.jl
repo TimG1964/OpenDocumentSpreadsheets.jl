@@ -166,16 +166,12 @@ end
 end
 
 @testset "LibreOffice reads the properties" begin
-    if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the document properties oracle (set ODS_SOFFICE)"
-        @test_skip false
-    else
+    if lo_ok(; what = "the document properties oracle")
         dir = mktempdir()
         profile = lo_profile_url(joinpath(dir, "lo-profile"))
         files = [writeods(joinpath(dir, "new.ods"), _all_props!(newods())),
                  writeods(joinpath(dir, "patched.fods"), _all_props!(openods(DOCP_OWN; mode = "rw")))]
-        run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to fods --outdir $(joinpath(dir, "lo")) $files`;
-                     stdout = devnull, stderr = devnull))
+        lo_convert(files, "fods"; outdir = joinpath(dir, "lo"), profile = profile)
         for n in ("new", "patched")
             lo = readods(joinpath(dir, "lo", n * ".fods"))
             p = getDocumentProperties(lo)

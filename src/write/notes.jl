@@ -213,8 +213,6 @@ end
 #
 
 const _PERSON_RX = r"<loext:person\b[^>]*?/>"
-_attr_in(tag::AbstractString, name::AbstractString) =
-    (m = match(Regex("\\b" * name * "=\"([^\"]*)\""), tag); m === nothing ? nothing : XML.unescape(m.captures[1]))
 
 # The file's people, by id (read once).
 function _file_persons(xf::ODSFile)
@@ -226,8 +224,8 @@ function _file_persons(xf::ODSFile)
         if i !== nothing
             j = something(findnext("</loext:persons>", xf.content, last(i)), last(i):last(i))
             for m in eachmatch(_PERSON_RX, SubString(xf.content, first(i), last(j)))
-                id = _attr_in(m.match, "loext:person-id")
-                id === nothing || (d[id] = something(_attr_in(m.match, "loext:display-name"), ""))
+                id = _tag_attr(m.match, "loext:person-id")
+                id === nothing || (d[id] = something(_tag_attr(m.match, "loext:display-name"), ""))
             end
         end
     end

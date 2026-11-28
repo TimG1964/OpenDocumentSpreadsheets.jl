@@ -8,6 +8,10 @@
     stylesheet(styles::StyleIndex) -> StyleSheet
 
 The full cell styles of the document, built on first use.
+
+One task at a time: the style sheet is built without a lock, and reading formats fills its caches
+(`resolved`, `numfmt_ids`), so a file's formatting is read, as it is edited, by one task at a time.
+(Several tasks may read one file's cell values at once: each sheet loads under its own lock.)
 """
 function stylesheet(styles::StyleIndex)
     sh = styles.sheet[1]
@@ -45,10 +49,8 @@ function _build_stylesheet(styles::StyleIndex)
     datainfo = Dict{String,DataStyleInfo}(name => _resolve_data_style(raw, name, 0) for name in keys(raw))
     typed = Dict{Int32,Symbol}(id => kind for (kind, id) in styles.added)
     n = length(styles.names)
-    sh = StyleSheet(Vector{CellStyle}(undef, n), fill(false, n), datas, datainfo, Dict{CellStyle,Int32}(),
-                    Int32[], String[], Dict{Tuple{Int32,Symbol},Int32}(), Dict{String,String}(), lines,
-                    defaults[1], faces, String[], Dict{String,String}(), Dict{String,Int}(), false,
-                    display, Int32[], Dict{Tuple{Int32,Bool},NTuple{3,Dict{String,String}}}())
+    sh = StyleSheet(; cells = Vector{CellStyle}(undef, n), automatic = fill(false, n), datastyles = datas, datainfo, lines,
+                    default_cell = defaults[1], faces, display)
     for id in 0:n-1
         name = styles.names[id + 1]
         kind = get(typed, Int32(id), nothing)
@@ -190,7 +192,6 @@ function add_font_face!(styles::StyleIndex, name::AbstractString)
     return n
 end
 
-const _SVG_NS = "urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0"
 
 """
     added_faces_xml(styles) -> String

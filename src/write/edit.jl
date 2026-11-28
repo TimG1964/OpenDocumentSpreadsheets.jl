@@ -222,12 +222,7 @@ function setdata!(ws::Worksheet, ref::AbstractString, value)
         is_valid_cellname(p) && return setdata!(ws, CellRef(p), value)
         is_valid_cellrange(p) && return setdata!(ws, CellRange(p), value)
     end
-    typed = try
-        parse_sheet_ref(ref)
-    catch e
-        e isa ODSError || rethrow()
-        nothing
-    end
+    typed = _tryparse_sheet_ref(ref)
     typed === nothing || return setdata!(ws, typed, value)
     # a defined name, the sheet's or the file's, that refers to cells (phase 5); a name can't read
     # as a reference, so references are tried first: they need no names read

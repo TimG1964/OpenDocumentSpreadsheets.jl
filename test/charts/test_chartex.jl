@@ -71,19 +71,16 @@ end
     # each title's text, without the spans LibreOffice puts in it
     titles(text) = [replace(m.captures[2], r"<[^>]*>" => "") for m in eachmatch(r"<chart:(title|subtitle)\b[^>]*>(.*?)</chart:\1>"s, text)]
     @test titles(OC._object_text(OC._frame(t))) == ["Spread", "Six months", "Sales", "Months"]
-    if isfile(SOFFICE) && lo_version(SOFFICE) >= LO_FIXTURE_VERSION
+    if lo_ok(LO_FIXTURE_VERSION)
         mktempdir() do dir
             p = joinpath(dir, "h.ods"); OpenDocumentSpreadsheets.writeods(p, xf)
             out = joinpath(dir, "lo")
-            run(pipeline(`$SOFFICE -env:UserInstallation=$(lo_profile_url(joinpath(dir, "profile"))) --headless --norestore --convert-to ods --outdir $out $p`;
-                         stdout = devnull, stderr = devnull))
+            lo_convert(p, "ods"; outdir = out, profile = lo_profile_url(joinpath(dir, "profile")))
             c = only(getCharts(readods(joinpath(out, "h.ods"))))
             @test c isa OC.ChartEx && OC.getChartTypes(c) == [:histogram]
             @test [x.values.ref for x in getChartSeries(c)] == ["Data.B2:B7"]
             @test sort(titles(OC._object_text(OC._frame(c)))) == sort(["Spread", "Six months", "Sales", "Months"])
         end
-    else
-        @test_skip false
     end
 end
 
@@ -133,18 +130,15 @@ end
         @test_throws E OC.setMarker(h, 1; symbol = :square)
         @test_throws E OC.setSeriesExplosion(h, 1, 10)
         @test_throws E OC.makeCombo(h)
-        if isfile(SOFFICE) && lo_version(SOFFICE) >= LO_FIXTURE_VERSION
+        if lo_ok(LO_FIXTURE_VERSION)
             out = joinpath(dir, "lo")
-            run(pipeline(`$SOFFICE -env:UserInstallation=$(lo_profile_url(joinpath(dir, "profile"))) --headless --norestore --convert-to ods --outdir $out $(collect(values(paths)))`;
-                         stdout = devnull, stderr = devnull))
+            lo_convert(collect(values(paths)), "ods"; outdir = out, profile = lo_profile_url(joinpath(dir, "profile")))
             back(k, kind) = only(getCharts(readods(joinpath(out, basename(paths[(k, kind)])))))
             for (k, (_, get)) in enumerate(cases)
                 h, col = back(k, :histogram), back(k, :column)
                 @test h isa OC.ChartEx && OC.getChartTypes(h) == [:histogram]    # still a histogram
                 @test seen(get(h)) == seen(get(col))                          # kept as LibreOffice keeps a column chart's
             end
-        else
-            @test_skip false
         end
     end
 end
@@ -179,10 +173,9 @@ end
             @test OC.getChartTitle(cs[1]) == "On its own sheet" && OC.getAxisTitle(cs[1], :x) == "Month"
             @test [x.values.ref for x in getChartSeries(cs[1])] == ["Data.B2:B7"]
         end
-        if isfile(SOFFICE) && lo_major(SOFFICE) >= LO_FIXTURE_MAJOR
+        if lo_ok(LO_FIXTURE_MAJOR)
             out = joinpath(dir, "lo")
-            run(pipeline(`$SOFFICE -env:UserInstallation=$(lo_profile_url(joinpath(dir, "profile"))) --headless --norestore --convert-to ods --outdir $out $p $f`;
-                         stdout = devnull, stderr = devnull))
+            lo_convert([p, f], "ods"; outdir = out, profile = lo_profile_url(joinpath(dir, "profile")))
             for path in (joinpath(out, "cs.ods"), joinpath(out, "cs.fods.ods"))
                 isfile(path) || (path = joinpath(out, "cs.ods"))
                 cs = getCharts(readods(path))
@@ -197,8 +190,6 @@ end
                 end
                 @test OC.getChartTitle(cs[1]) == "On its own sheet"
             end
-        else
-            @test_skip false
         end
     end
     # a chart sheet copied, and the data's sheet renamed

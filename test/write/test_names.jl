@@ -293,10 +293,7 @@ end
 end
 
 @testset "LibreOffice evaluates the names" begin
-    if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the names oracle (set ODS_SOFFICE)"
-        @test_skip false
-    else
+    if lo_ok(; what = "the names oracle")
         dir = mktempdir()
         profile = lo_profile_url(joinpath(dir, "lo-profile"))
         # experiment 028's sheet-relative names, used from two sheets
@@ -331,8 +328,7 @@ end
         setFormula(pf["Data"], "Z1"; val = "=Seven*SUM(NR)")
         nrsum = sum(x -> x isa Number ? x : 0, pf["NR"])
         push!(files, writeods(joinpath(dir, "patched.ods"), pf))
-        run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to fods --outdir $(joinpath(dir, "lo")) $files`;
-                     stdout = devnull, stderr = devnull))
+        lo_convert(files, "fods"; outdir = joinpath(dir, "lo"), profile = profile)
         lo = readods(joinpath(dir, "lo", "new.fods"))
         want = Dict(split(l, '\t')[1] => parse(Float64, split(l, '\t')[2]) for l in eachline(joinpath(NAMES, "lo-names-values.tsv")))
         @test lo["S"]["E4"] == want["S.E4=fx_a"] && lo["T"]["E4"] == want["T.E4=fx_a"]

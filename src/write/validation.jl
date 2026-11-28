@@ -221,26 +221,26 @@ function _file_rules(xf::ODSFile)
             while (rg = findnext(_RULE_RX, s, pos)) !== nothing && last(rg) <= last(sp)
                 x = SubString(s, rg)
                 tag = SubString(x, 1, something(findfirst('>', x), ncodeunits(x)))
-                name = something(_attr_in(tag, "table:name"), "")
-                t, op, f1, f2 = _dv_parse_condition(_attr_in(tag, "table:condition"))
+                name = something(_tag_attr(tag, "table:name"), "")
+                t, op, f1, f2 = _dv_parse_condition(_tag_attr(tag, "table:condition"))
                 pt = nothing; pr = nothing; showin = true; et = nothing; er = nothing; showerr = false; style = :stop
                 h = _rule_message(x, "table:help-message")
                 if h !== nothing
-                    pt = _attr_in(h[1], "table:title"); showin = something(_attr_in(h[1], "table:display"), "true") == "true"
+                    pt = _tag_attr(h[1], "table:title"); showin = something(_tag_attr(h[1], "table:display"), "true") == "true"
                     pr = isempty(h[2]) ? nothing : h[2]
                 end
                 e = _rule_message(x, "table:error-message")
                 if e !== nothing
-                    et = _attr_in(e[1], "table:title"); showerr = something(_attr_in(e[1], "table:display"), "true") == "true"
+                    et = _tag_attr(e[1], "table:title"); showerr = something(_tag_attr(e[1], "table:display"), "true") == "true"
                     er = isempty(e[2]) ? nothing : e[2]
-                    mt = something(_attr_in(e[1], "table:message-type"), "stop")
+                    mt = something(_tag_attr(e[1], "table:message-type"), "stop")
                     style = mt == "warning" ? :warning : mt == "information" ? :information : :stop
                 end
-                dl = something(_attr_in(tag, "table:display-list"), "unsorted")
-                rule = ValRule(t, op, f1, f2, something(_attr_in(tag, "table:allow-empty-cell"), "true") == "true",
+                dl = something(_tag_attr(tag, "table:display-list"), "unsorted")
+                rule = ValRule(t, op, f1, f2, something(_tag_attr(tag, "table:allow-empty-cell"), "true") == "true",
                                dl != "no", showin, pt, pr, showerr, et, er, style,
-                               something(_attr_in(tag, "table:base-cell-address"), ""),
-                               _attr_in(tag, "table:case-sensitive") == "true", dl == "sort-ascending")
+                               something(_tag_attr(tag, "table:base-cell-address"), ""),
+                               _tag_attr(tag, "table:case-sensitive") == "true", dl == "sort-ascending")
                 push!(out, FileRule(name, rg, rule))
                 pos = nextind(s, last(rg))
             end
@@ -658,9 +658,12 @@ end
 #
 
 # The blocks a validation's range names on a sheet, as (rows, cols).
-function _dv_blocks(ws::Worksheet, rng)
+# The areas a target names on `ws` (a range, or rows and columns), as (rows, cols): whole rows and
+# columns reach the sheet's edge. A target on another sheet, or one naming no cells, is an error.
+# The one check for validations, conditional formats and coloured data bars.
+function _sheet_areas(ws::Worksheet, target...)
     out = _Area[]
-    for (w, blocks) in format_targets(ws, rng)
+    for (w, blocks) in format_targets(ws, target...)
         w === ws || throw(ODSError("The range names another sheet than `$(ws.name)`."))
         for b in blocks
             push!(out, b.kind === :cells ? (b.rows, b.cols) : b.kind === :rows ? (b.rows, 1:SheetCore.MAX_COLS) : (1:SheetCore.MAX_ROWS, b.cols))
@@ -770,7 +773,7 @@ function addDataValidation(ws::Worksheet, rng; type::Union{Nothing,Symbol} = not
     sortEntries && dropdown === false && throw(ODSError("`sortEntries` sorts a list's drop-down, so it needs `dropdown=true`."))
     errorStyle in DV_ERROR_STYLES ||
         throw(ODSError("Invalid `errorStyle` `:$errorStyle`. Must be one of $(join(DV_ERROR_STYLES, ", "))."))
-    blocks = _dv_blocks(ws, rng)
+    blocks = _sheet_areas(ws, rng)
     # `:any` with no message restricts nothing: LibreOffice stores no validation then (F-061)
     if type === :any && all(isnothing, (promptTitle, prompt, errorTitle, error))
         _set_val_blocks!(ws, blocks, nothing)
@@ -816,7 +819,7 @@ LibreOffice drops it. The file must be writable.
 """
 function deleteDataValidation(ws::Worksheet, rng)
     _require_writable(ws, "delete a data validation")
-    target = rng isa Colon ? _Area[(1:SheetCore.MAX_ROWS, 1:SheetCore.MAX_COLS)] : _dv_blocks(ws, rng)
+    target = rng isa Colon ? _Area[(1:SheetCore.MAX_ROWS, 1:SheetCore.MAX_COLS)] : _sheet_areas(ws, rng)
     within(a) = isempty(foldl((rest, b) -> [p for x in rest for p in _area_minus(x, b)], target; init = _Area[a]))
     n = 0
     for (_, areas) in _sheet_rules(ws)

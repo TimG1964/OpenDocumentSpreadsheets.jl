@@ -82,17 +82,14 @@ end
     xf = openods(q; mode = "rw"); xf["Table"]["B3"] = 99
     writeods(q, xf; overwrite = true, display_text = false)
     @test readods(q)["Table"]["B3"] == 99 && readods(q)["Table"]["B4"] == 2
-    if !isempty(SOFFICE) && isfile(SOFFICE)
+    if lo_ok()
         # LibreOffice shows values written without display text
         out = joinpath(dir, "lo")
         profile = lo_profile_url(joinpath(dir, "lo-profile"))
         src = joinpath(dir, "tfalse.ods")
-        run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to csv --outdir $out $src`;
-                     stdout = devnull, stderr = devnull))
+        lo_convert(src, "csv"; outdir = out, profile = profile)
         csv = read(joinpath(out, "tfalse.csv"), String)
         @test occursin("1,0.5,", csv) && occursin("TRUE", csv) && occursin("a", csv)
-    else
-        @test_skip false
     end
 end
 

@@ -156,10 +156,7 @@ end
 end
 
 @testset "LibreOffice reads the links" begin
-    if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the hyperlinks oracle (set ODS_SOFFICE)"
-        @test_skip false
-    else
+    if lo_ok(; what = "the hyperlinks oracle")
         dir = mktempdir()
         profile = lo_profile_url(joinpath(dir, "lo-profile"))
         xf = newods("Data"); ws = xf["Data"]
@@ -171,10 +168,8 @@ end
         a = writeods(joinpath(dir, "new.ods"), xf)
         b = writeods(joinpath(dir, "own.fods"), _edit_links_file())
         # the new file converted beside itself, so that its relative link stays as it is (F-065)
-        run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to fods --outdir $dir $a`;
-                     stdout = devnull, stderr = devnull))
-        run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to fods --outdir $(joinpath(dir, "lo")) $b`;
-                     stdout = devnull, stderr = devnull))
+        lo_convert(a, "fods"; outdir = dir, profile = profile)
+        lo_convert(b, "fods"; outdir = joinpath(dir, "lo"), profile = profile)
         @test _links(readods(joinpath(dir, "new.fods"))["Data"]) == _links(xf["Data"])
         lo = readods(joinpath(dir, "lo", "own.fods"))["Own"]
         @test _links(lo) == _links(readods(b)["Own"])

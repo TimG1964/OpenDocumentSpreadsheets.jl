@@ -433,10 +433,7 @@ end
 end
 
 @testset "LibreOffice opens what we write" begin
-    if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the write oracle (set ODS_SOFFICE)"
-        @test_skip false
-    else
+    if lo_ok(; what = "the write oracle")
         dir = mktempdir()
         profile = lo_profile_url(joinpath(dir, "lo-profile"))
         # a new file: values, typed styles, formulas computed by LibreOffice
@@ -456,8 +453,7 @@ end
             setFormula(xf["Formulas"], "F1"; val = "=SUM(Table.B3:B6)")
         end
         for f in (new, pat)
-            run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to ods --outdir $(joinpath(dir, "lo")) $f`;
-                         stdout = devnull, stderr = devnull))
+            lo_convert(f, "ods"; outdir = joinpath(dir, "lo"), profile = profile)
         end
         r = readods(joinpath(dir, "lo", "new.ods"))["Data"]       # LibreOffice's re-save
         @test r["A1"] == 7 && r["B1"] == 0.5 && r["C1"] == Date(2024, 3, 5) && r["D1"] == DateTime(2024, 3, 5, 13, 45, 30)
@@ -553,4 +549,15 @@ end
     # a reference without its sheet is refused, saying what is wanted
     err = try O.getComment(xf, "B2"); nothing catch e; e end
     @test err isa ODSError && occursin("with its sheet", err.msg)
+end
+
+@testset "sheet names: one check for every way of naming a sheet (code review Phase 4)" begin
+    # the streaming writer refuses what `addsheet!` and `renamesheet!` refuse: an apostrophe at
+    # either end too, which it used to let through
+    for bad in ("'quoted", "end'", "a[1]", "a:b")         # (an empty name is given one: `Sheet2`)
+        @test_throws ODSError streamods(s -> addsheet!(s, bad), tmp("bad.ods"))
+        @test_throws ODSError addsheet!(newods(), bad)
+    end
+    # and a streamed table's name as `addtable!` checks one
+    @test_throws ODSError streamods(s -> addsheet!(s, "S", (a = [1],); as_table = true, table_name = "A1"), tmp("t.ods"))
 end

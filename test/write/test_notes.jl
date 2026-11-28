@@ -160,10 +160,7 @@ end
 end
 
 @testset "LibreOffice reads the notes and threads" begin
-    if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the notes oracle (set ODS_SOFFICE)"
-        @test_skip false
-    else
+    if lo_ok(; what = "the notes oracle")
         dir = mktempdir()
         profile = lo_profile_url(joinpath(dir, "lo-profile"))
         xf = newods("Data"); ws = xf["Data"]
@@ -176,8 +173,7 @@ end
         files = [writeods(joinpath(dir, "new.ods"), xf)]
         a, b = _edit_notes_files()
         push!(files, writeods(joinpath(dir, "own.fods"), a), writeods(joinpath(dir, "import.fods"), b))
-        run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to fods --outdir $(joinpath(dir, "lo")) $files`;
-                     stdout = devnull, stderr = devnull))
+        lo_convert(files, "fods"; outdir = joinpath(dir, "lo"), profile = profile)
         threads = lo_version(SOFFICE) >= LO_FIXTURE_VERSION   # an older LibreOffice drops the threads (CI's 26.x)
         threads || @info "LibreOffice $(lo_version(SOFFICE)) is older than the fixtures' $LO_FIXTURE_VERSION: its reading of threads is not checked"
         for (f, x) in (("new", xf), ("own", a), ("import", b))

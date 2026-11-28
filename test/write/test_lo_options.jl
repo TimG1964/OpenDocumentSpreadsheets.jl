@@ -165,10 +165,7 @@ end
 end
 
 @testset "LibreOffice reads the options" begin
-    if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the options oracle (set ODS_SOFFICE)"
-        @test_skip false
-    else
+    if lo_ok(; what = "the options oracle")
         dir = mktempdir()
         profile = lo_profile_url(joinpath(dir, "lo-profile"))
         function opts!(ws)
@@ -187,8 +184,7 @@ end
         p = openods(joinpath(@__DIR__, "..", "data", "validation", "lo-validation-own.fods"); mode = "rw")
         opts!(p["Own"])
         c = writeods(joinpath(dir, "own.fods"), p)
-        run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to fods --outdir $(joinpath(dir, "lo")) $a $b $c`;
-                     stdout = devnull, stderr = devnull))
+        lo_convert([a, b, c], "fods"; outdir = joinpath(dir, "lo"), profile = profile)
         seen(x) = ([(v.caseSensitive, v.sortEntries) for v in O_X.getDataValidations(x) if string(v.range) in ("B1:B3", "B5")],
                    O_X.getCellProtection(x, "A1"), O_X.getCellProtection(x, "A2"), O_X.getComment(x, "C1").date,
                    [(i.alt, i.description) for i in O_X.getImages(x) if i.from == "D4"], O_X.getPrintOptions(x),

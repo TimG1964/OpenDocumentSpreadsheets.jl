@@ -189,18 +189,14 @@ end
 end
 
 @testset "LibreOffice reads the extras of edited cells" begin
-    if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the cell extras oracle (set ODS_SOFFICE)"
-        @test_skip false
-    else
+    if lo_ok(; what = "the cell extras oracle")
         dir = mktempdir()
         profile = lo_profile_url(joinpath(dir, "lo-profile"))
         a = writeods(joinpath(dir, "links.fods"), _edit_links(openods(LINKS_OWN; mode = "rw")))
         xf = openods(IMAGES_OWN; mode = "rw")
         xf["Own"]["D2"] = "here"
         b = writeods(joinpath(dir, "img.fods"), xf)
-        run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to fods --outdir $(joinpath(dir, "lo")) $a $b`;
-                     stdout = devnull, stderr = devnull))
+        lo_convert([a, b], "fods"; outdir = joinpath(dir, "lo"), profile = profile)
         _check_links(sheet_cells(read(joinpath(dir, "lo", "links.fods"), String), "Own"); lo = true)
         cells = sheet_cells(read(joinpath(dir, "lo", "img.fods"), String), "Own")
         @test _kidtags(cells["D2"]) == ["text:p", "draw:frame"]

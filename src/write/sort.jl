@@ -184,16 +184,13 @@ function _rows_singles!(rows::Vector{RowData}, a::Int, b::Int)
     return rows
 end
 
-const _END_CELL_RX = r"table:end-cell-address=\"([^\"]*)\""
-
 # A shape's XML (current numbers) with its end cell moved `d` rows, as its anchor moves (F-072).
 function _shift_end_cell(x::String, d::Int, sheet::String)
-    m = match(_END_CELL_RX, x)
-    m === nothing && return x
-    v = XML.unescape(String(m.captures[1]))
+    v = _tag_attr(x, "table:end-cell-address")
+    v === nothing && return x
     nv = rewrite_address(v, RowMove(d), RefContext(sheet; marked = false))
     (nv === nothing || nv == v) && return x
-    return replace(x, _END_CELL_RX => "table:end-cell-address=\"" * _escape_attr(nv) * "\""; count = 1)
+    return _set_attrs(x, Pair{String,Union{Nothing,String}}["table:end-cell-address" => _escape_attr(nv)])
 end
 
 _sort_cleared(ws::Worksheet, r::Int, c::Int) = (sc = ws.sortclear; sc !== nothing && (r, c) in sc)

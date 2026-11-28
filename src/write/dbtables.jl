@@ -69,7 +69,6 @@ struct Table
 end
 
 const _ANON_DB = "__Anonymous_Sheet_DB__"
-const _CALCEXT_NS = "urn:org:documentfoundation:names:experimental:calc:xmlns:calcext:1.0"
 
 # SUBTOTAL's codes for the totals functions, which ignore hidden rows (XLSX.jl's TOTALS_ROW_FUNCTIONS,
 # as LibreOffice's import writes them).
@@ -141,15 +140,15 @@ function _db_push!(out::Vector{_DBNow}, x::String, byname, kind::Symbol, k::Int,
     isempty(x) && return                                   # its target is gone (F-043)
     e = something(findfirst('>', x), ncodeunits(x))
     tag = SubString(x, 1, e)
-    a = _attr_in(tag, "table:target-range-address")
+    a = _tag_attr(tag, "table:target-range-address")
     a === nothing && return
     p = _db_address(a)
     p === nothing && return
     ws = get(byname, p[1], nothing)
     ws === nothing && return
-    push!(out, _DBNow(something(_attr_in(tag, "table:name"), ""), ws, p[2], p[3], p[4], p[5],
-                      _attr_in(tag, "table:contains-header") != "false", _attr_in(tag, "calcext:contains-footer") == "true",
-                      _attr_in(tag, "table:display-filter-buttons") == "true", kind, k, order, x))
+    push!(out, _DBNow(something(_tag_attr(tag, "table:name"), ""), ws, p[2], p[3], p[4], p[5],
+                      _tag_attr(tag, "table:contains-header") != "false", _tag_attr(tag, "calcext:contains-footer") == "true",
+                      _tag_attr(tag, "table:display-filter-buttons") == "true", kind, k, order, x))
 end
 
 # Every database range now, in the file's order (the file's, then copies', then those added).
@@ -227,7 +226,7 @@ function _rewrite_db_refs!(xf::ODSFile, op)
     keep = trues(length(e.model))
     for (i, m) in enumerate(e.model)
         a = _db_target(m)
-        v = _replay(_rl, a, Any[op], m.sheet.name, 0, 0)
+        v = _replay(_rl, a, RefOp[op], m.sheet.name, 0, 0)
         v == a && continue
         p = occursin("#REF!", v) ? nothing : _db_address(v)
         if p === nothing
@@ -367,8 +366,11 @@ _col0(t::Table) = column_number(t.ref.start)
 
 # A table's name, checked as LibreOffice checks a database range's (F-050, F-070); "" gives the first
 # free `TableN`.
-function _new_table_name(xf::ODSFile, name::AbstractString)
-    used = Set(uppercase(d.name) for d in _db_now(xf))
+_new_table_name(xf::ODSFile, name::AbstractString) = _table_name(Set{String}(uppercase(d.name) for d in _db_now(xf)), name)
+
+# A table's name against the names in use (`used`, upper case): the one check, for `addtable!`
+# and the streaming writer's tables.
+function _table_name(used::Set{String}, name::AbstractString)
     if isempty(name)
         i = 1
         while uppercase("Table$i") in used; i += 1; end

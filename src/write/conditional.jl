@@ -26,7 +26,7 @@ _cf_split(x::AbstractString) = String[m.match for m in eachmatch(_CF_RX, x)]
 function _cf_rewritten(x::String, ops, sheet::String; withcopy::Bool = false)
     isempty(ops) && return x
     io = IOBuffer()
-    rewrite_xml(io, RefRewriter(Any[ops...], x; withcopy), x, 1, ncodeunits(x); sheet)
+    rewrite_xml(io, RefRewriter(RefOp[ops...], x; withcopy), x, 1, ncodeunits(x); sheet)
     return String(take!(io))
 end
 
@@ -94,7 +94,7 @@ function _rewrite_cf_refs!(xf::ODSFile, op)
         st = ws.cfs
         (st === nothing || isempty(st.list)) && continue
         # (an unedited file sheet's text is rewritten the same way by the patched save)
-        st.list = _cf_split(_cf_rewritten(join(st.list), Any[op], ws.name))
+        st.list = _cf_split(_cf_rewritten(join(st.list), RefOp[op], ws.name))
     end
     return
 end
@@ -103,7 +103,7 @@ end
 function _copy_cfs!(new::Worksheet, ws::Worksheet, op)
     ws.cfs === nothing && return
     isempty(ws.cfs.list) && return
-    new.cfs = CfState(_cf_split(_cf_rewritten(join(ws.cfs.list), Any[op], ws.name; withcopy = true)), true, 0:-1, 0)
+    new.cfs = CfState(_cf_split(_cf_rewritten(join(ws.cfs.list), RefOp[op], ws.name; withcopy = true)), true, 0:-1, 0)
     return
 end
 
@@ -128,8 +128,8 @@ end
 
 function _cf_target(x::AbstractString)
     e = _start_tag_end(x)
-    v = _attr_in(SubString(x, 1, e), "calcext:target-range-address")
-    return v === nothing ? "" : XML.unescape(v)
+    v = _tag_attr(SubString(x, 1, e), "calcext:target-range-address")
+    return something(v, "")
 end
 
 # The entries of a format: (kind, start tag) for each, in order.
@@ -142,8 +142,7 @@ function _cf_type(kind::AbstractString, tag::AbstractString)
     kind == "color-scale" && return "colorScale"
     kind == "data-bar" && return "dataBar"
     kind == "icon-set" && return "iconSet"
-    v = something(_attr_in(tag, "calcext:value"), "")
-    v = XML.unescape(v)
+    v = something(_tag_attr(tag, "calcext:value"), "")
     if startswith(v, "formula-is(")
         # the import's form of blanks (F-074)
         occursin(r"^formula-is\(LEN\(TRIM\(\[[^\]]*\]\)\)=0\)$", v) && return "containsBlanks"
@@ -213,7 +212,7 @@ even where it overlaps. With `:`, every rule on the sheet goes. The file must be
 """
 function deleteConditionalFormats(ws::Worksheet, rng)
     _require_writable(ws, "clear conditional formats")
-    target = rng isa Colon ? _Area[(1:SheetCore.MAX_ROWS, 1:SheetCore.MAX_COLS)] : _cf_blocks(ws, rng)
+    target = rng isa Colon ? _Area[(1:SheetCore.MAX_ROWS, 1:SheetCore.MAX_COLS)] : _sheet_areas(ws, rng)
     within(a) = isempty(foldl((rest, b) -> [p for x in rest for p in _area_minus(x, b)], target; init = _Area[a]))
     st = _cf_state(ws)
     n = 0
@@ -234,17 +233,6 @@ function deleteConditionalFormats(ws::Worksheet, rng)
 end
 
 # The blocks a range names on a sheet, as (rows, cols) (the forms of `format_targets`).
-function _cf_blocks(ws::Worksheet, rng)
-    out = _Area[]
-    for (w, blocks) in format_targets(ws, rng)
-        w === ws || throw(ODSError("The range names another sheet than `$(ws.name)`."))
-        for b in blocks
-            push!(out, b.kind === :cells ? (b.rows, b.cols) : b.kind === :rows ? (b.rows, 1:SheetCore.MAX_COLS) : (1:SheetCore.MAX_ROWS, b.cols))
-        end
-    end
-    isempty(out) && throw(ODSError("The range names no cells."))
-    return out
-end
 
 # Whether a file has rules a new or patched content.xml writes, so that it declares `calcext`.
 _has_cfs(xf::ODSFile) = any(ws -> ws.cfs !== nothing && (ws.cfs.edited || ws.entry === nothing) && !isempty(ws.cfs.list), _sheets(xf))

@@ -56,6 +56,14 @@ const _USUAL_NS = [
 ]
 const _PREFIX_OF_URI = Dict(u => p for (p, u) in _USUAL_NS)
 const _URI_OF_PREFIX = Dict(p => u for (p, u) in _USUAL_NS)
+
+# The declarations of usual namespaces, ` xmlns:p="uri"` for each prefix: every namespace the
+# package declares is written from the table above (code review Phase 4).
+_xmlns(prefixes) = join(" xmlns:$p=\"$(_URI_OF_PREFIX[p])\"" for p in prefixes)
+# The namespaces every content or styles part written or patched declares; a new part adds
+# `meta`, `dc` and `xlink` (`_NS_DECL`).
+const _BASE_NS = ("office", "style", "text", "table", "number", "fo", "of")
+const _NS_DECL = _xmlns((_BASE_NS..., "meta", "dc", "xlink"))
 const _XML_NS = "http://www.w3.org/XML/1998/namespace"
 
 # Attributes whose value starts with a namespace prefix that LibreOffice resolves as a name

@@ -43,10 +43,13 @@ function _dv_xml_by_cell(xf, sheet)
     return out
 end
 
+# The fixture's rules (each `table:content-validation`), counted from it.
+const _DV_OWN_RULES = count("<table:content-validation ", read(_vd("lo-validation-own.fods"), String))
+
 @testset "LibreOffice's own validations" begin
     xf = readods(_vd("lo-validation-own.fods")); ws = xf["Own"]
     v = O_V.getDataValidations(ws)
-    @test length(v) == 19
+    @test length(v) == _DV_OWN_RULES == 19
     @test string(v[1].range) == "Own.B1:B1~Own.B24:B24~Own.B26:B26"         # one rule, three cells
     @test (v[1].type, v[1].operator, v[1].formula1, v[1].formula2) == (:whole, :between, "1", "10")
     @test (v[2].type, v[2].operator, v[2].formula1) == (:decimal, :greaterThan, "1.5")
@@ -66,7 +69,7 @@ end
     @test _dv_key(O_V.getDataValidation(ws, "C21")) == g[(21, 3)] == _dv_key(v[18])
     @test O_V.getDataValidation(ws, 21, 3).range == v[18].range
     @test O_V.getDataValidation(ws, "A1") === nothing
-    @test length(O_V.getDataValidations(xf)) == 19
+    @test length(O_V.getDataValidations(xf)) == _DV_OWN_RULES
     p = openods(_vd("lo-validation-own.fods"); mode = "rw")
     @test deleteDataValidation(p["Own"], "B1") == 0                        # B24 has it too
     @test deleteDataValidation(p, "Own.A1:B1,B20:C23") == 1                # val18's cells
@@ -83,7 +86,7 @@ end
         @test _dv_grid(ws) == lo
         r = readods(writeods(joinpath(mktempdir(), "removed.$ext"), p))
         @test _dv_grid(r["Own"]) == lo
-        @test length(O_V._file_rules(r)) == 19                              # val1 is still used by B24
+        @test length(O_V._file_rules(r)) == _DV_OWN_RULES                   # val1 is still used by B24
     end
     p = openods(_vd("lo-validation-own.fods"); mode = "rw")
     @test deleteDataValidation(p["Own"], "B2") == 1
@@ -92,10 +95,10 @@ end
     @test !occursin("table:name=\"val2\"", s) && !occursin("table:name=\"val9\"", s)
     @test occursin("table:name=\"val3\"", s)                                # names kept (D-075)
     @test !occursin(r"\n\s*\n\s*<table:content-validation ", s)            # no blank lines left
-    @test length(O_V.getDataValidations(readods(dp)["Own"])) == 17
+    @test length(O_V.getDataValidations(readods(dp)["Own"])) == _DV_OWN_RULES - 2
     # all removed: the element goes
     p = openods(_vd("lo-validation-own.fods"); mode = "rw")
-    @test deleteDataValidation(p["Own"], :) == 19
+    @test deleteDataValidation(p["Own"], :) == _DV_OWN_RULES
     s = read(writeods(joinpath(mktempdir(), "none.fods"), p), String)
     @test !occursin("content-validation", s)
 end
@@ -285,10 +288,7 @@ end
 end
 
 @testset "LibreOffice reads the validations" begin
-    if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the validation oracle (set ODS_SOFFICE)"
-        @test_skip false
-    else
+    if lo_ok(; what = "the validation oracle")
         dir = mktempdir()
         profile = lo_profile_url(joinpath(dir, "lo-profile"))
         xf = newods("S"); ws = xf["S"]
@@ -303,8 +303,7 @@ end
         addDataValidation(p["Own"], "H1:H3"; type = :textLength, operator = :lessThan, formula1 = 5)
         deleteDataValidation(p["Own"], "B2"); insertRows(p["Own"], 21); deleteRows(p["Own"], 5)
         c = writeods(joinpath(dir, "own.fods"), p)
-        run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to fods --outdir $(joinpath(dir, "lo")) $a $b $c`;
-                     stdout = devnull, stderr = devnull))
+        lo_convert([a, b, c], "fods"; outdir = joinpath(dir, "lo"), profile = profile)
         @test _dv_grid(readods(joinpath(dir, "lo", "new.fods"))["S"]) == _dv_grid(ws)
         @test _dv_grid(readods(joinpath(dir, "lo", "newflat.fods"))["S"]) == _dv_grid(ws)
         @test _dv_grid(readods(joinpath(dir, "lo", "own.fods"))["Own"]) == _dv_grid(p["Own"])

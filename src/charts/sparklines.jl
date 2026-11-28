@@ -137,9 +137,9 @@ end
 
 # A sparkline's cell (row, col) on its sheet, or nothing.
 function _spark_cell(x::AbstractString)
-    m = match(r"calcext:cell-address=\"([^\"]*)\"", x)
-    m === nothing && return nothing
-    a = _range_areas(XML.unescape(String(m.captures[1])))
+    v = _tag_attr(x, "calcext:cell-address")
+    v === nothing && return nothing
+    a = _range_areas(v)
     (isempty(a) || a[1][2] === nothing) && return nothing
     return (first(a[1][2]), first(a[1][3]))
 end
@@ -178,8 +178,7 @@ are now.
 function getSparklines(ws::Worksheet)
     out = []
     for g in _spark_state(ws).list
-        tag = match(r"<calcext:sparkline-group\b[^>]*>", g).match
-        a(k) = (m = match(Regex("calcext:" * k * "=\"([^\"]*)\""), tag); m === nothing ? nothing : XML.unescape(String(m.captures[1])))
+        a(k) = _tag_attr(g, "calcext:" * k)
         flag(k) = a(k) == "true"
         type = something(findfirst(==(something(a("type"), "line")), _SPARK_TYPES), :line)
         empty = something(findfirst(==(something(a("display-empty-cells-as"), "zero")), _SPARK_EMPTY), :zero)
@@ -188,14 +187,13 @@ function getSparklines(ws::Worksheet)
         lw = a("line-width")
         colors = map(_SPARK_COLORS) do (att, _)
             c = a(att)
-            c === nothing ? nothing : "FF" * uppercase(lstrip(c, '#'))
+            c === nothing ? nothing : SheetCore.parse_odf_color(c)
         end
         sparks = Pair{String,String}[]
         for m in eachmatch(r"<calcext:sparkline\s[^>]*/>", g)
             cell = _spark_cell(m.match)
-            d = match(r"calcext:data-range=\"([^\"]*)\"", m.match)
-            push!(sparks, (cell === nothing ? "" : _cellname(cell...)) =>
-                          (d === nothing ? "" : _spark_short(XML.unescape(String(d.captures[1])))))
+            d = _tag_attr(m.match, "calcext:data-range")
+            push!(sparks, (cell === nothing ? "" : _cellname(cell...)) => (d === nothing ? "" : _spark_short(d)))
         end
         push!(out, (sparklines = sparks, type = type, map(flag, _SPARK_FLAGS)..., emptyCells = empty,
                     lineWeight = lw === nothing ? 0.75 : something(tryparse(Float64, replace(lw, "pt" => "")), 0.75),

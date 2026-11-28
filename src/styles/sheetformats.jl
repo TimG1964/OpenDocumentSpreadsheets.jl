@@ -104,7 +104,9 @@ function _split_rows!(rows::Vector{RowData}, r::Int)
     return rows
 end
 
-# The runs of the row list at row `r` (empty if none).
+# The runs of the row list at row `r` (empty if none). The result is read, never changed: a row with
+# none gets the shared `_NO_RUNS` (no vector made per lookup, on the save's per-cell path), which must
+# stay empty (runtests.jl checks it after the suite).
 const _NO_RUNS = CellRun[]
 _runs_of(rows::Vector{RowData}, r::Integer) = (rd = _row_at(rows, r); rd === nothing ? _NO_RUNS : rd.runs)
 

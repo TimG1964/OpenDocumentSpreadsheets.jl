@@ -74,16 +74,13 @@ end
             b = readods(path)["Rich"]
             @test all(k -> getRichTextString(b, k, 1) == _RICH_CASES[k], eachindex(_RICH_CASES))
         end
-        if isfile(SOFFICE)
+        if lo_ok()
             out = joinpath(dir, "lo")
-            run(pipeline(`$SOFFICE -env:UserInstallation=$(lo_profile_url(joinpath(dir, "profile"))) --headless --norestore --convert-to ods --outdir $out $p`;
-                         stdout = devnull, stderr = devnull))
+            lo_convert(p, "ods"; outdir = out, profile = lo_profile_url(joinpath(dir, "profile")))
             lo = readods(joinpath(out, "r.ods"))["Rich"]
             for (k, v) in enumerate(_RICH_CASES)
                 @test (k, _runs(getRichTextString(lo, k, 1))) == (k, _runs(v))
             end
-        else
-            @test_skip false
         end
     end
 end
@@ -164,15 +161,12 @@ end
         p = joinpath(dir, "c.ods"); writeods(p, xf)
         b = OCR.getCharts(readods(p))[1]
         @test tr(OCR.getChartTitleText(b)) == tr(dt)
-        if isfile(SOFFICE)
+        if lo_ok()
             out = joinpath(dir, "lo")
-            run(pipeline(`$SOFFICE -env:UserInstallation=$(lo_profile_url(joinpath(dir, "profile"))) --headless --norestore --convert-to ods --outdir $out $p`;
-                         stdout = devnull, stderr = devnull))
+            lo_convert(p, "ods"; outdir = out, profile = lo_profile_url(joinpath(dir, "profile")))
             lc = OCR.getCharts(readods(joinpath(out, "c.ods")))[1]
             @test tr(OCR.getChartTitleText(lc)) == tr(dt)
             @test OCR.getAxisTitleText(lc, :y).paragraphs[1].runs[2].props.baseline > 0
-        else
-            @test_skip false
         end
     end
 end

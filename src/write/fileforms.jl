@@ -4,12 +4,7 @@
 
 # A sheet-qualified reference as its sheet and the cell or range on it.
 function _on_sheet(xf::ODSFile, ref::AbstractString)
-    r = try
-        parse_sheet_ref(String(ref))
-    catch e
-        e isa ODSError || rethrow()
-        nothing
-    end
+    r = _tryparse_sheet_ref(String(ref))
     r isa SheetCellRef && return getsheet(xf, r.sheet), r.cellref
     r isa SheetCellRange && return getsheet(xf, r.sheet), r.rng
     throw(ODSError("`$ref` is not a cell or range with its sheet (`\"Sheet1.A1\"`, `\"Sheet1.A1:B2\"`)."))

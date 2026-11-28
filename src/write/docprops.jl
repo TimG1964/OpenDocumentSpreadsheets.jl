@@ -75,8 +75,7 @@ function _meta_set!(m::MetaEdits, tag::String, xml::Union{Nothing,String}; name 
     return
 end
 
-_meta_elem(tag, text) = "<$tag>" * _escape_text_string(text) * "</$tag>"
-_escape_text_string(s) = (io = IOBuffer(); _escape_text(io, String(s)); String(take!(io)))
+_meta_elem(tag, text) = "<$tag>" * _xtext(String(text)) * "</$tag>"
 
 function _user_xml(name, type::Union{Nothing,String}, text)
     io = IOBuffer()

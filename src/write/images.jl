@@ -145,7 +145,7 @@ end
 
 const _HREF_RX = r"\bxlink:href=\"([^\"]*)\""
 _attr_cm(xml::AbstractString, name::AbstractString) =
-    (v = _attr_in(SubString(xml, 1, something(findfirst('>', xml), ncodeunits(xml))), name); v === nothing ? nothing : _length_cm(v))
+    (v = _tag_attr(SubString(xml, 1, something(findfirst('>', xml), ncodeunits(xml))), name); v === nothing ? nothing : _length_cm(v))
 
 # A frame holding a picture. A chart's frame also holds a `draw:image`, its replacement picture, after
 # its `draw:object` (F-079): it is no picture.
@@ -224,7 +224,7 @@ end
 # The cell a frame ends in (current numbers): its end cell, mapped (`orig`: given in original numbers),
 # else where its offsets and size take it from (r, c).
 function _frame_end(ws::Worksheet, xml::AbstractString, r::Int, c::Int, orig::Bool)
-    ea = _attr_in(SubString(xml, 1, something(findfirst('>', xml), ncodeunits(xml))), "table:end-cell-address")
+    ea = _tag_attr(SubString(xml, 1, something(findfirst('>', xml), ncodeunits(xml))), "table:end-cell-address")
     if ea !== nothing
         cell = last(split(ea, '.'))
         if is_valid_cellname(cell)

@@ -292,7 +292,7 @@ See also [`getTabColor`](@ref), [`deleteTabColor`](@ref).
 """
 function setTabColor(ws::Worksheet, color)
     _require_writable(ws, "set a tab colour")
-    c = "#" * lowercase(SheetCore.get_color(color)[3:end])
+    c = SheetCore.odf_color(color)
     p = _sheet_props(ws)
     p.tabcolor == c || _restyle_table!(ws, p.display, c)
     return nothing
@@ -307,8 +307,7 @@ files.
 function getTabColor(ws::Worksheet)
     c = _sheet_props(ws).tabcolor
     c === nothing && return nothing
-    h = lstrip(c, '#')
-    return length(h) == 6 ? "FF" * uppercase(h) : nothing
+    return SheetCore.parse_odf_color(c)
 end
 
 """

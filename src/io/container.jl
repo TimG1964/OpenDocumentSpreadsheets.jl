@@ -5,7 +5,7 @@ const MEDIATYPE_ODS = "application/vnd.oasis.opendocument.spreadsheet"
 const MEDIATYPE_OTS = "application/vnd.oasis.opendocument.spreadsheet-template"
 const SPREADSHEET_MEDIATYPES = (MEDIATYPE_ODS, MEDIATYPE_OTS)
 
-const NS_MANIFEST = "urn:oasis:names:tc:opendocument:xmlns:manifest:1.0"
+const NS_MANIFEST = _URI_OF_PREFIX["manifest"]
 
 """
     ManifestEntry(path, mediatype, version)

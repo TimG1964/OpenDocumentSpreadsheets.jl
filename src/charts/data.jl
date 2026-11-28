@@ -207,7 +207,6 @@ function _chart_ref(xf::ODSFile, addr::Union{Nothing,AbstractString})
             # whole columns and rows: up to the sheet's used cells
             if rows == 1:SheetCore.MAX_ROWS || cols == 1:SheetCore.MAX_COLS
                 d = OpenDocumentSpreadsheets.get_dimension(ws)
-                d === nothing && continue
                 rows = first(rows):min(last(rows), OpenDocumentSpreadsheets.row_number(d.stop))
                 cols = first(cols):min(last(cols), OpenDocumentSpreadsheets.column_number(d.stop))
             end

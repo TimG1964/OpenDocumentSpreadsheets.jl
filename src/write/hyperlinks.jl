@@ -12,8 +12,6 @@
 # no tooltips (an error), no link over a range (a link per cell), and keeps a relative URL
 # relative to the package (`../report.pdf`).
 
-const _XLINK_NS = "http://www.w3.org/1999/xlink"
-const _DRAW_NS = "urn:oasis:names:tc:opendocument:xmlns:drawing:1.0"
 
 const HyperlinkInfo = NamedTuple{(:sheet, :ref, :url, :location, :display, :tooltip),
     Tuple{String,String,Union{Nothing,String},Union{Nothing,String},Union{Nothing,String},Union{Nothing,String}}}

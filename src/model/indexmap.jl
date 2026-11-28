@@ -15,8 +15,6 @@ mutable struct IndexMap
 end
 IndexMap(max::Integer) = IndexMap(Int(max), [(1, Int(max), 1)])
 
-# Whether nothing was inserted or deleted.
-isidentity(m::IndexMap) = m.segs == [(1, m.max, 1)]
 
 """
     insert_lines!(m, at, n)

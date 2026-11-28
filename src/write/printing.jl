@@ -710,30 +710,6 @@ const _FIELD_XML = Dict('P' => "<text:page-number>1</text:page-number>", 'N' => 
                         'A' => "<text:sheet-name>???</text:sheet-name>",
                         'Q' => "<text:file-name text:display=\"full\">???</text:file-name>")   # Q: &Z&F, the whole path
 
-# Text with its spaces as ODF keeps them: a run of several, or one at the start or end of a
-# paragraph, as <text:s/>.
-function _odf_text(io::IO, s::AbstractString, atstart::Bool, atend::Bool)
-    i = firstindex(s)
-    while i <= lastindex(s)
-        c = s[i]
-        if c == ' '
-            j = i
-            while j <= lastindex(s) && s[j] == ' '
-                j = nextind(s, j)
-            end
-            n = length(SubString(s, i, prevind(s, j)))
-            if n == 1 && !(atstart && i == firstindex(s)) && !(atend && j > lastindex(s))
-                print(io, ' ')
-            else
-                print(io, n == 1 ? "<text:s/>" : "<text:s text:c=\"$n\"/>")
-            end
-            i = j
-        else
-            _escape_text(io, string(c))
-            i = nextind(s, i)
-        end
-    end
-end
 
 # One section's codes as ODF paragraphs (`\n` starts a new one).
 function _section_xml(xf::ODSFile, text::AbstractString)
@@ -752,7 +728,7 @@ function _section_xml(xf::ODSFile, text::AbstractString)
             _isplain(f) || print(io, "<text:span text:style-name=\"", _font_style!(xf, f), "\">")
             for m in k:j
                 x = runs[m][2]
-                x isa Char ? print(io, _FIELD_XML[x]) : _odf_text(io, x, m == 1, m == length(runs))
+                x isa Char ? print(io, _FIELD_XML[x]) : _write_line(io, x, m == 1, m == length(runs))
             end
             _isplain(f) || print(io, "</text:span>")
             k = j + 1
@@ -894,7 +870,8 @@ function _text_style_font(xf::ODSFile, doc::AbstractString, name::AbstractString
     sz = _get(a, "fo:font-size")
     sz === nothing || (p = _length_pt(sz); p === nothing || (f.size = round(Int, p)))
     col = _get(a, "fo:color")
-    col === nothing || (f.color = uppercase(lstrip(col, '#')))
+    rgb = col === nothing ? nothing : SheetCore.parse_odf_color(col)
+    rgb === nothing || (f.color = rgb[3:end])
     u = _get(a, "style:text-underline-style", "none")
     f.under = u == "none" ? :none : _get(a, "style:text-underline-type", "single") == "double" ? :double : :single
     f.strike = _get(a, "style:text-line-through-style", "none") != "none"

@@ -180,7 +180,7 @@ end
     rm(p)
 end
 
-if isfile(SOFFICE) && lo_major(SOFFICE) >= LO_FIXTURE_MAJOR
+if lo_ok(LO_FIXTURE_MAJOR)
     @testset "LibreOffice reads the charts after operations" begin
         mktempdir() do dir
             files = String[]
@@ -193,8 +193,7 @@ if isfile(SOFFICE) && lo_major(SOFFICE) >= LO_FIXTURE_MAJOR
             end
             profile = joinpath(dir, "profile")
             out = joinpath(dir, "out")
-            run(pipeline(`$SOFFICE -env:UserInstallation=$(lo_profile_url(profile)) --headless --norestore --convert-to fods --outdir $out $files`;
-                         stdout = devnull, stderr = devnull))
+            lo_convert(files, "fods"; outdir = out, profile = lo_profile_url(profile))
             lo = _lo_chart_ops()
             for p in files
                 op = replace(basename(p), "op-" => "", ".ods" => "")
@@ -205,7 +204,4 @@ if isfile(SOFFICE) && lo_major(SOFFICE) >= LO_FIXTURE_MAJOR
             end
         end
     end
-else
-    @info "LibreOffice chart oracle skipped (set ODS_SOFFICE, or LibreOffice $(LO_FIXTURE_MAJOR) or later)"
-    @test_skip false
 end

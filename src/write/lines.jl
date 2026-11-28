@@ -27,10 +27,10 @@ function _rows_inserted(rows::Vector{RowData}, at::Int, n::Int)
             push!(out, rd)
         end
     end
-    return _rows_clipped(out)
+    return _clip_rows!(out)
 end
 
-function _rows_clipped(rows::Vector{RowData})
+function _clip_rows!(rows::Vector{RowData})
     M = SheetCore.MAX_ROWS
     while !isempty(rows) && rows[end].row > M
         pop!(rows)
@@ -120,7 +120,7 @@ end
 
 # Column and row format runs (contiguous from line 1): `n` lines inserted before `at`, which take
 # the format `new` (a run of length n at `at`, or nothing to repeat a blank one).
-function _formats_inserted(v::Vector{T}, at::Int, n::Int, new::T, max::Int) where {T<:Union{ColFormat,RowFormat}}
+function _insert_formats!(v::Vector{T}, at::Int, n::Int, new::T, max::Int) where {T<:Union{ColFormat,RowFormat}}
     isempty(v) && return v
     stop = _stop(v[end])
     at > stop + 1 && return v                     # past the formats: nothing to move
@@ -148,7 +148,7 @@ function _formats_inserted(v::Vector{T}, at::Int, n::Int, new::T, max::Int) wher
     return v
 end
 
-function _formats_deleted(v::Vector{T}, d1::Int, d2::Int) where {T<:Union{ColFormat,RowFormat}}
+function _delete_formats!(v::Vector{T}, d1::Int, d2::Int) where {T<:Union{ColFormat,RowFormat}}
     cnt = d2 - d1 + 1
     out = T[]
     for r in v
@@ -524,21 +524,21 @@ function _shift_lines_now!(xf::ODSFile, ws::Worksheet, sheets, s::SheetStore, f:
             above = at > 1 ? _fmt_at(f.rows, at - 1) : nothing
             new = above === nothing ? _blank(RowFormat, at, n) :
                   RowFormat(at, n, above.style, above.default, _VISIBLE, above.ncells)
-            _formats_inserted(f.rows, at, n, new, maxl)
+            _insert_formats!(f.rows, at, n, new, maxl)
         else
-            _formats_deleted(f.rows, d1, d2)
+            _delete_formats!(f.rows, d1, d2)
         end
     else
         if n > 0
             left = at > 1 ? _fmt_at(f.cols, at - 1) : nothing
             pushed = _fmt_at(f.cols, at)
             new = ColFormat(at, n, pushed === nothing ? "" : pushed.style, left === nothing ? Int32(-1) : left.default, _VISIBLE)
-            _formats_inserted(f.cols, at, n, new, maxl)
+            _insert_formats!(f.cols, at, n, new, maxl)
             # rows whose cells reach the new columns cover them too
             f.rows = [r.ncells >= at ? RowFormat(r.row, r.count, r.style, r.default, r.visibility, min(Int(r.ncells) + n, maxl)) : r
                       for r in f.rows]
         else
-            _formats_deleted(f.cols, d1, d2)
+            _delete_formats!(f.cols, d1, d2)
             f.rows = [r.ncells >= d1 ? RowFormat(r.row, r.count, r.style, r.default, r.visibility, max(d1 - 1, Int(r.ncells) - (d2 - d1 + 1))) : r
                       for r in f.rows]
         end

@@ -20,7 +20,13 @@ _renumber!(xf::ODSFile) = (foreach(((i, ws),) -> ws.index = i, enumerate(xf.shee
 
 # A sheet name for an existing sheet or a new one: LibreOffice's rules (D-028), and not another
 # sheet's name in any case.
-function _check_rename(xf::ODSFile, ws::Union{Nothing,Worksheet}, name::AbstractString)
+_check_rename(xf::ODSFile, ws::Union{Nothing,Worksheet}, name::AbstractString) =
+    _check_sheetname(name, (s.name for s in _sheets(xf) if s !== ws), "$(xf.source) already has a sheet named `$name`.")
+
+# A sheet name by LibreOffice's rules (D-028), for every way of making or renaming a sheet (the
+# streaming writer's too): not empty, none of the characters it refuses, no apostrophe at either
+# end, text XML can hold, and none of `taken` in any case (`dup`: the error then).
+function _check_sheetname(name::AbstractString, taken, dup::AbstractString)
     isempty(name) && throw(ODSError("A sheet name can't be empty."))
     for c in _BAD_SHEETNAME_CHARS
         occursin(c, name) && throw(ODSError("The sheet name `$name` holds `$c`, which LibreOffice does not allow in sheet names."))
@@ -28,8 +34,7 @@ function _check_rename(xf::ODSFile, ws::Union{Nothing,Worksheet}, name::Abstract
     (startswith(name, '\'') || endswith(name, '\'')) &&
         throw(ODSError("A sheet name can't start or end with an apostrophe: `$name`."))
     _check_xml_text(name)
-    any(s -> s !== ws && _same_sheetname(s.name, name), _sheets(xf)) &&
-        throw(ODSError("$(xf.source) already has a sheet named `$name`."))
+    any(t -> _same_sheetname(t, name), taken) && throw(ODSError(dup))
     return nothing
 end
 
@@ -239,7 +244,7 @@ function _copy_objects!(xf::ODSFile, t::String)
         else
             push!(xf.objcopies, old => new)
         end
-        eo = _xml_attr_escape(old)
+        eo = _xattr(old)
         t = replace(t, "\"./$eo\"" => "\"./$new\"", "\"./ObjectReplacements/$eo\"" => "\"./ObjectReplacements/$new\"")
     end
     return t
@@ -267,16 +272,15 @@ function _copy_database_ranges!(xf::ODSFile, src::String, dst::String, op::Sheet
     end
     names = Set{String}(m.name for m in xf.dbedits.model)
     for x in current
-        m = match(r"table:name=\"([^\"]*)\"", x)
-        m === nothing || push!(names, XML.unescape(m.captures[1]))
+        n = _tag_attr(x, "table:name")
+        n === nothing || push!(names, n)
     end
     for x in current
-        m = match(r"table:target-range-address=\"([^\"]*)\"", x)
-        m === nothing && continue
-        target = XML.unescape(m.captures[1])
-        ends = parse_ref(SubString(target, _areas(String(target))[1]...))
+        target = _tag_attr(x, "table:target-range-address")
+        target === nothing && continue
+        ends = parse_ref(SubString(target, _areas(target)[1]...))
         (ends !== nothing && ends[1].sheet !== nothing && _same_sheet(ends[1].sheet, src)) || continue
-        name = XML.unescape(match(r"table:name=\"([^\"]*)\"", x).captures[1])
+        name = something(_tag_attr(x, "table:name"), "")
         base = name
         k = 2
         newname = startswith(name, "__Anonymous_Sheet_DB__") ? "__Anonymous_Sheet_DB__" * string(length(xf.sheets) - 1) :
@@ -286,9 +290,9 @@ function _copy_database_ranges!(xf::ODSFile, src::String, dst::String, op::Sheet
             newname = "$(base)_$k"
         end
         push!(names, newname)
-        rw = RefRewriter(Any[SheetCopy(op.src, op.dst, true, op.order)], x; withcopy = true)
+        rw = RefRewriter(RefOp[SheetCopy(op.src, op.dst, true, op.order)], x; withcopy = true)
         io = IOBuffer(); rewrite_xml(io, rw, x, 1, ncodeunits(x)); y = String(take!(io))
-        y = replace(y, r"table:name=\"[^\"]*\"" => "table:name=\"" * _escape_attr(newname) * "\""; count = 1)
+        y = _set_attrs(y, Pair{String,Union{Nothing,String}}["table:name" => _escape_attr(newname)])
         push!(xf.extras, (y, length(xf.ops)))
     end
     return
@@ -361,7 +365,7 @@ function _copysheet_now!(xf::ODSFile, ws::Worksheet, sheets, name::String)
         t = _table_text_now(ws)
         # references repointed (relative sheet names), the table renamed
         io = IOBuffer()
-        rewrite_xml(io, RefRewriter(Any[op], t; withcopy = true), t, 1, ncodeunits(t); sheet = ws.name)
+        rewrite_xml(io, RefRewriter(RefOp[op], t; withcopy = true), t, 1, ncodeunits(t); sheet = ws.name)
         t = String(take!(io))
         e = _start_tag_end(t)
         t = _set_attrs(SubString(t, 1, e), Pair{String,Union{Nothing,String}}["table:name" => _escape_attr(name)]; open = true) *
@@ -372,16 +376,16 @@ function _copysheet_now!(xf::ODSFile, ws::Worksheet, sheets, name::String)
         extra = join(_name_xml(NameDef(dn.name, name, dn.range, dn.expression, dn.base)) for dn in localize)
         if span !== nothing
             seg = t[first(span):last(span)]
-            io = IOBuffer(); rewrite_xml(io, RefRewriter(Any[all], seg; withcopy = true), seg, 1, ncodeunits(seg); sheet = name)
+            io = IOBuffer(); rewrite_xml(io, RefRewriter(RefOp[all], seg; withcopy = true), seg, 1, ncodeunits(seg); sheet = name)
             seg = String(take!(io))
             if !isempty(extra)
-                ex = IOBuffer(); rewrite_xml(ex, RefRewriter(Any[all], extra; withcopy = true), extra, 1, ncodeunits(extra); sheet = name)
+                ex = IOBuffer(); rewrite_xml(ex, RefRewriter(RefOp[all], extra; withcopy = true), extra, 1, ncodeunits(extra); sheet = name)
                 k = findlast("</table:named-expressions>", seg)
                 seg = seg[1:prevind(seg, first(k))] * String(take!(ex)) * seg[first(k):end]
             end
             t = t[1:prevind(t, first(span))] * seg * t[nextind(t, last(span)):end]
         elseif !isempty(extra)
-            ex = IOBuffer(); rewrite_xml(ex, RefRewriter(Any[all], extra; withcopy = true), extra, 1, ncodeunits(extra); sheet = name)
+            ex = IOBuffer(); rewrite_xml(ex, RefRewriter(RefOp[all], extra; withcopy = true), extra, 1, ncodeunits(extra); sheet = name)
             t = t[1:prevind(t, at)] * "<table:named-expressions>" * String(take!(ex)) * "</table:named-expressions>" * t[at:end]
         end
         t = _copy_objects!(xf, t)

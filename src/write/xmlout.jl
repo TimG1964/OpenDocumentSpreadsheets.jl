@@ -6,56 +6,6 @@
 # written in their shortest exact form (D-026); a formula is written without a result,
 # which LibreOffice computes on load (F-028).
 
-# Whether `s` holds none of the given ASCII bytes (most texts and names need no escaping:
-# they are then written at once, phase 3).
-@inline function _none_of(s::AbstractString, bytes)
-    for b in codeunits(s)
-        b in bytes && return false
-    end
-    return true
-end
-const _TEXT_SPECIAL = (UInt8('&'), UInt8('<'), UInt8('>'))
-const _ATTR_SPECIAL = (UInt8('&'), UInt8('<'), UInt8('>'), UInt8('"'), UInt8('\n'), UInt8('\r'), UInt8('\t'))
-
-function _escape_text(io::IO, s::AbstractString)
-    _none_of(s, _TEXT_SPECIAL) && (write(io, s); return)
-    for c in s
-        if c == '&'
-            print(io, "&amp;")
-        elseif c == '<'
-            print(io, "&lt;")
-        elseif c == '>'
-            print(io, "&gt;")
-        else
-            print(io, c)
-        end
-    end
-end
-
-function _escape_attr(io::IO, s::AbstractString)
-    _none_of(s, _ATTR_SPECIAL) && (write(io, s); return)
-    for c in s
-        if c == '&'
-            print(io, "&amp;")
-        elseif c == '<'
-            print(io, "&lt;")
-        elseif c == '>'
-            print(io, "&gt;")
-        elseif c == '"'
-            print(io, "&quot;")
-        elseif c == '\n'
-            print(io, "&#10;")
-        elseif c == '\r'
-            print(io, "&#13;")
-        elseif c == '\t'
-            print(io, "&#9;")
-        else
-            print(io, c)
-        end
-    end
-end
-_escape_attr(s::AbstractString) = sprint(_escape_attr, s)
-
 # A text as paragraphs (F-021): lines become text:p; a run of n > 1 spaces, or a space at
 # the start or end of a paragraph, becomes text:s; tabs become text:tab.
 function _write_paragraphs(io::IO, s::AbstractString)
@@ -70,32 +20,39 @@ function _write_paragraphs(io::IO, s::AbstractString)
             continue
         end
         print(io, "<text:p>")
-        chars = collect(line)
-        i = 1
-        n = length(chars)
-        while i <= n
-            c = chars[i]
-            if c == ' '
-                j = i
-                while j < n && chars[j + 1] == ' '
-                    j += 1
-                end
-                run = j - i + 1
-                if run == 1 && i != 1 && j != n
-                    print(io, ' ')
-                else
-                    run == 1 ? print(io, "<text:s/>") : print(io, "<text:s text:c=\"", run, "\"/>")
-                end
-                i = j + 1
-            elseif c == '\t'
-                print(io, "<text:tab/>")
-                i += 1
-            else
-                c == '&' ? print(io, "&amp;") : c == '<' ? print(io, "&lt;") : c == '>' ? print(io, "&gt;") : print(io, c)
-                i += 1
-            end
-        end
+        _write_line(io, line, true, true)
         print(io, "</text:p>")
+    end
+end
+
+# Text within a paragraph, as ODF keeps it: a run of several spaces, or one space at the start
+# (`atstart`: the text starts its paragraph) or end (`atend`) of the paragraph, as text:s; a tab
+# as text:tab; the rest escaped.
+function _write_line(io::IO, line::AbstractString, atstart::Bool, atend::Bool)
+    chars = collect(line)
+    i = 1
+    n = length(chars)
+    while i <= n
+        c = chars[i]
+        if c == ' '
+            j = i
+            while j < n && chars[j + 1] == ' '
+                j += 1
+            end
+            run = j - i + 1
+            if run == 1 && !(atstart && i == 1) && !(atend && j == n)
+                print(io, ' ')
+            else
+                run == 1 ? print(io, "<text:s/>") : print(io, "<text:s text:c=\"", run, "\"/>")
+            end
+            i = j + 1
+        elseif c == '\t'
+            print(io, "<text:tab/>")
+            i += 1
+        else
+            c == '&' ? print(io, "&amp;") : c == '<' ? print(io, "&lt;") : c == '>' ? print(io, "&gt;") : print(io, c)
+            i += 1
+        end
     end
 end
 

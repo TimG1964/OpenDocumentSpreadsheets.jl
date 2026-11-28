@@ -162,10 +162,7 @@ end
 end
 
 @testset "LibreOffice keeps derived styles" begin
-    if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the style oracle (set ODS_SOFFICE)"
-        @test_skip false
-    else
+    if lo_ok(; what = "the style oracle")
         dir = mktempdir()
         profile = lo_profile_url(joinpath(dir, "lo-profile"))
         xf = newods("S")
@@ -175,8 +172,7 @@ end
         put!(ws, "A1", Date(2024, 1, 2), bd); put!(ws, "A2", Date(2024, 1, 2), bd); put!(ws, "A3", Date(2024, 1, 2), bd)
         ws["A2"] = 5; ws["A3"] = true
         f = writeods(joinpath(dir, "derived.ods"), xf)
-        run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to ods --outdir $(joinpath(dir, "lo")) $f`;
-                     stdout = devnull, stderr = devnull))
+        lo_convert(f, "ods"; outdir = joinpath(dir, "lo"), profile = profile)
         r = openods(joinpath(dir, "lo", "derived.ods"))
         rs = r["S"]
         @test rs["A1"] == Date(2024, 1, 2) && rs["A2"] === Int64(5) && rs["A3"] === true

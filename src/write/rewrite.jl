@@ -26,16 +26,16 @@ The operations to replay (`xf.ops`) on the text of `src` (content.xml or the fla
   (new body, new base)), which the `style:map`s that duplicate them take
 """
 struct RefRewriter
-    ops::Vector{Any}
+    ops::Vector{RefOp}
     cf::Dict{Tuple{String,String},Tuple{String,String}}
     src::String
     hits::Vector{Int}
     # the operations for a chart's references: those but sheet copies, which leave a copied chart
     # pointing at its source (F-083)
-    chartops::Vector{Any}
+    chartops::Vector{RefOp}
 end
-RefRewriter(ops::Vector{Any}, cf::Dict{Tuple{String,String},Tuple{String,String}}, src::String, hits::Vector{Int}) =
-    RefRewriter(ops, cf, src, hits, Any[op for op in ops if !(op isa SheetCopy)])
+RefRewriter(ops::Vector{RefOp}, cf::Dict{Tuple{String,String},Tuple{String,String}}, src::String, hits::Vector{Int}) =
+    RefRewriter(ops, cf, src, hits, RefOp[op for op in ops if !(op isa SheetCopy)])
 
 const _REF_RX = r"(?:formula|expression|condition|range-address|cell-address|print-ranges|calcext:value|notify-on-update-of-ranges|error-upper-range|error-lower-range|data-range)="
 
@@ -53,8 +53,8 @@ end
 
 # A `SheetCopy` in the log only orders things (settings.xml, D-053): its rewriting was done to the
 # copy's own text when the copy was made, so it is replayed only when asked (`withcopy`).
-function RefRewriter(ops::Vector{Any}, src::String; withcopy::Bool = false)
-    ops = withcopy ? ops : Any[op for op in ops if !(op isa SheetCopy)]
+function RefRewriter(ops::Vector{RefOp}, src::String; withcopy::Bool = false)
+    ops = withcopy ? ops : RefOp[op for op in ops if !(op isa SheetCopy)]
     rw = RefRewriter(ops, Dict{Tuple{String,String},Tuple{String,String}}(), src, _ref_hits(src))
     return cf_rewrites!(rw, src)
 end
@@ -67,7 +67,7 @@ end
 
 # Replays the operations on `s`, with `f(s, op, ctx)` rewriting one value. The text's sheet and
 # cell are where they were when each operation happened: they follow renames and line shifts.
-function _replay(f, s::String, ops::Vector{Any}, sheet::String, row::Int, col::Int; kw...)
+function _replay(f, s::String, ops::Vector{RefOp}, sheet::String, row::Int, col::Int; kw...)
     for op in ops
         s = f(s, op, RefContext(sheet; row, col, kw...))
         if op isa LineShift && _same_sheet(op.sheet, sheet)
@@ -160,7 +160,7 @@ function _new_attr_values(rw::RefRewriter, tag::AbstractString, attrs::Vector{Pa
         # elements LibreOffice drops (F-043, F-047): a validation based on a deleted sheet, and a
         # conditional format or database range whose target is gone
         if tag == "table:content-validation" && base !== nothing
-            sheetops = Any[op for op in rw.ops if !(op isa LineShift)]
+            sheetops = RefOp[op for op in rw.ops if !(op isa LineShift)]
             _replay(_rl, base, sheetops, bs, 0, 0) == "#REF!" && return :drop
         end
         for (k, dropk) in (("calcext:target-range-address", "calcext:conditional-format"),

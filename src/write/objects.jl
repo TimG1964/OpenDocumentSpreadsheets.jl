@@ -203,7 +203,7 @@ function _rewrite_chart_refs!(xf, op)
     isempty(xf.chartobjs) && return
     n = length(xf.ops) + (isnewfile(xf) ? 0 : 1)
     for (name, o) in xf.chartobjs
-        o.text = _rewritten(_chart_text_now(xf, name), Any[op])
+        o.text = _rewritten(_chart_text_now(xf, name), RefOp[op])
         o.nops = n
     end
     return

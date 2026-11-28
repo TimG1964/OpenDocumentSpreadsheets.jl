@@ -259,7 +259,7 @@ function _line_attrs(c, styles::StyleIndex, repeatkey::AbstractString)
     n = 1; style = ""; default = Int32(-1); vis = _VISIBLE
     for (k, v) in XML.eachattribute!(c)
         if k == repeatkey
-            n = max(1, something(tryparse(Int, v), 1))
+            n = _file_count(v, 1, 1, SheetCore.MAX_ROWS)
         elseif k == "table:style-name"
             style = String(v)
         elseif k == "table:default-cell-style-name"
@@ -294,13 +294,13 @@ function _read_row_formats!(f::SheetFormats, c, styles::StyleIndex, store::Sheet
             k = 1; s = Int32(-1); cs = 1; rs = 1
             for (key, v) in XML.eachattribute!(ch)
                 if key == "table:number-columns-repeated"
-                    k = max(1, something(tryparse(Int, v), 1))
+                    k = _file_count(v, 1, 1, SheetCore.MAX_ROWS)
                 elseif key == "table:style-name"
                     s = style_id(styles, v)
                 elseif key == "table:number-columns-spanned"
-                    cs = max(1, something(tryparse(Int, v), 1))
+                    cs = _file_count(v, 1, 1, SheetCore.MAX_ROWS)
                 elseif key == "table:number-rows-spanned"
-                    rs = max(1, something(tryparse(Int, v), 1))
+                    rs = _file_count(v, 1, 1, SheetCore.MAX_ROWS)
                 end
             end
             k = min(k, SheetCore.MAX_COLS - col + 1)

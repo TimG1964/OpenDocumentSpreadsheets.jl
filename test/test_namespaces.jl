@@ -89,7 +89,7 @@ end
 end
 
 @testset "LibreOffice's variants (experiment 029)" begin
-    @test length(NS_VERDICT) == 19
+    @test Set(keys(NS_VERDICT)) == Set(f for f in readdir(NSDIR) if !endswith(f, ".tsv"))   # a verdict for every variant
     for (f, verdict) in sort!(collect(NS_VERDICT))
         path = joinpath(NSDIR, f)
         if verdict == "not a spreadsheet"
@@ -158,10 +158,7 @@ end
 end
 
 @testset "LibreOffice reads what OpenDocumentSpreadsheets saves from them" begin
-    if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping (set ODS_SOFFICE)"
-        @test_skip false
-    else
+    if lo_ok()
         mktempdir() do dir
             for f in ("lo-tables-swap.ods", "lo-tables-default.fods")
                 out = joinpath(dir, "saved-" * f)
@@ -170,8 +167,7 @@ end
                 writeods(out, xf; overwrite = true)
                 profile = lo_profile_url(joinpath(dir, "lo-profile"))
                 csvdir = joinpath(dir, "csv-" * f)
-                run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to csv --outdir $csvdir $out`;
-                             stdout = devnull, stderr = devnull))
+                lo_convert(out, "csv"; outdir = csvdir, profile = profile)
                 csv = joinpath(csvdir, splitext(basename(out))[1] * ".csv")
                 @test isfile(csv) && occursin("edited", read(csv, String))
             end

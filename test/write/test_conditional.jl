@@ -157,18 +157,14 @@ end
     end
 
     @testset "LibreOffice reads the saved rules" begin
-        if isempty(SOFFICE) || !isfile(SOFFICE)
-            @info "LibreOffice not found; skipping the conditional formats oracle (set ODS_SOFFICE)"
-            @test_skip false
-        else
+        if lo_ok(; what = "the conditional formats oracle")
             dir = mktempdir()
             profile = lo_profile_url(joinpath(dir, "lo-profile"))
             xf = openods(_cfd("lo-cf-import.ods"); mode = "rw")
             deleteConditionalFormats(xf["CF"], "B1:K10"); deleteConditionalFormats(xf["Other"], :)
             insertRows(xf["CF"], 20; count = 2); deleteColumns(xf["CF"], "C")
             a = writeods(joinpath(dir, "patched.ods"), xf)
-            run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to fods --outdir $(joinpath(dir, "lo")) $a`;
-                         stdout = devnull, stderr = devnull))
+            lo_convert(a, "fods"; outdir = joinpath(dir, "lo"), profile = profile)
             r = readods(joinpath(dir, "lo", "patched.fods"))
             @test _cf_ours(r["CF"]) == _cf_ours(xf["CF"])
             @test isempty(getConditionalFormats(r["Other"]))       # the empty element kept the maps out

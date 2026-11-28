@@ -87,10 +87,9 @@ const _KIND_TAGS = Dict(:column => [:barChart], :bar => [:barChart], :stackedCol
             @test [getChartTypes(c) for c in getCharts(back)] == [_KIND_TAGS[k] for k in kinds]
             @test [getChartKind(c) for c in getCharts(back)] == kinds
         end
-        if isfile(SOFFICE) && lo_major(SOFFICE) >= LO_FIXTURE_MAJOR
+        if lo_ok(LO_FIXTURE_MAJOR)
             out = joinpath(dir, "lo")
-            run(pipeline(`$SOFFICE -env:UserInstallation=$(lo_profile_url(joinpath(dir, "profile"))) --headless --norestore --convert-to ods --outdir $out $p $f`;
-                         stdout = devnull, stderr = devnull))
+            lo_convert([p, f], "ods"; outdir = out, profile = lo_profile_url(joinpath(dir, "profile")))
             for path in (joinpath(out, "kinds.ods"), joinpath(out, "kinds.fods.ods"))
                 isfile(path) || (path = replace(path, "kinds.fods.ods" => "kinds.ods"))
                 lo = readods(path)
@@ -105,8 +104,6 @@ const _KIND_TAGS = Dict(:column => [:barChart], :bar => [:barChart], :stackedCol
                     @test (kind, OC.getChartTitle(c)) == (kind, "Kind $kind")
                 end
             end
-        else
-            @test_skip false
         end
     end
 end
@@ -287,16 +284,13 @@ end
         back = readods(p)
         @test OC.getChartTitle(getChart(back, n.name)) == "Added"
         @test [s.values.ref for s in getChartSeries(getChart(back, n.name))] == ["Data.B3:B8", "Data.C3:C8"]
-        if isfile(SOFFICE) && lo_major(SOFFICE) >= LO_FIXTURE_MAJOR
+        if lo_ok(LO_FIXTURE_MAJOR)
             out = joinpath(dir, "lo")
-            run(pipeline(`$SOFFICE -env:UserInstallation=$(lo_profile_url(joinpath(dir, "profile"))) --headless --norestore --convert-to ods --outdir $out $p`;
-                         stdout = devnull, stderr = devnull))
+            lo_convert(p, "ods"; outdir = out, profile = lo_profile_url(joinpath(dir, "profile")))
             lo = readods(joinpath(out, "added.ods"))
             @test length(getCharts(lo)) == 10
             s = [x for x in getCharts(lo) if OC.getChartTitle(x) == "Added"]
             @test length(s) == 1 && [r.values.ref for r in getChartSeries(s[1])] == ["Data.B3:B8", "Data.C3:C8"]
-        else
-            @test_skip false
         end
     end
 end

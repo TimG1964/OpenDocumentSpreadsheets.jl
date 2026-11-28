@@ -210,12 +210,7 @@ function _parse_name_ref(ref::String, ws::Union{Nothing,Worksheet})
         return x isa CellRef ? SheetCellRef(ws.name, x) : x isa CellRange ? SheetCellRange(ws.name, x) :
                x isa ColumnRange ? SheetColumnRange(ws.name, x) : SheetRowRange(ws.name, x)
     end
-    r = try
-        parse_sheet_ref(ref)
-    catch e
-        e isa Union{ODSError,SheetCore.SheetCoreError} || rethrow()
-        nothing
-    end
+    r = _tryparse_sheet_ref(ref)
     r === nothing || return r
     # a list whose areas name their sheet, or leave it out
     if ws !== nothing && _is_list(ref)

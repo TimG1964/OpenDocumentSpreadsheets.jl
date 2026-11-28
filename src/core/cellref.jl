@@ -69,7 +69,14 @@ struct CellRef
     end
 end
 
-#=
+abstract type AbstractCellRange end
+abstract type ContiguousCellRange <: AbstractCellRange end
+abstract type AbstractSheetCellRange <: AbstractCellRange end
+abstract type ContiguousSheetCellRange <: AbstractSheetCellRange end
+
+"""
+    CellRange("A1:C4")
+
 A `CellRange` represents a rectangular range of cells in a spreadsheet.
 
 `CellRange("A1:C4")` denotes cells ranging from `A1` (upper left corner) to `C4` (bottom right corner).
@@ -79,13 +86,7 @@ As a convenience, `@range_str` macro is provided.
 ```julia
 cr = SheetCore.range"A1:C4"
 ```
-=#
-
-abstract type AbstractCellRange end
-abstract type ContiguousCellRange <: AbstractCellRange end
-abstract type AbstractSheetCellRange <: AbstractCellRange end
-abstract type ContiguousSheetCellRange <: AbstractSheetCellRange end
-
+"""
 struct CellRange <: ContiguousCellRange
     start::CellRef
     stop::CellRef
@@ -426,7 +427,7 @@ end
 const RGX_CELLRANGE_START = r"^[A-Z]+[0-9]+"
 const RGX_CELLRANGE_STOP = r"[A-Z]+[0-9]+$"
 
-#=
+"""
     split_cellrange(n::AbstractString) -> start_name, stop_name
 
 Splits a string representing a cell range into its cell names.
@@ -437,7 +438,7 @@ Splits a string representing a cell range into its cell names.
 julia> SheetCore.split_cellrange("AB12:CD24")
 ("AB12", "CD24")
 ```
-=#
+"""
 @inline function split_cellrange(n::AbstractString)
     s = split(n, ":")
     length(s) != 2 && throw(SheetCoreError("$n is not a valid cell range."))
@@ -572,7 +573,9 @@ column_number(c::CellRef) :: Int = c.column_number
 
 column_name(c::CellRef) :: String = encode_column_number(column_number(c))
 
-#=
+"""
+    relative_cell_position(ref, rng) -> (row, column)
+
 Returns (row, column) representing a `ref` position relative to `rng`.
 
 For example, for a range "B2:D4", we have:
@@ -584,8 +587,7 @@ For example, for a range "B2:D4", we have:
 * "C4" relative position is (3, 2)
 
 * "D4" relative position is (3, 3)
-=#
-
+"""
 function relative_cell_position(ref::CellRef, rng::CellRange)
     ref ∉ rng && throw(SheetCoreError("$ref is outside range $rng."))
 

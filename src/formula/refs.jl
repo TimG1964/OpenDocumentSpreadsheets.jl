@@ -184,7 +184,7 @@ render_ref(ends::Vector{RefEnd}) = join((e.text for e in ends), ':')
 
 # --- the operations ------------------------------------------------------------------------------
 
-abstract type RefOp end
+# `RefOp`, their type, is declared with the file's struct (model/workbook.jl).
 
 """
     LineShift(sheet, axis, at, n, order)

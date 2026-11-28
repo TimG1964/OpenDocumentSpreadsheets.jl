@@ -6,17 +6,8 @@
 # Styles to values
 #
 
-# A length (`0.3cm`, `2mm`, `1pt`, `0.1in`) in points.
-function _pt(v::Union{Nothing,AbstractString})
-    v === nothing && return nothing
-    m = match(r"^(-?[0-9.]+)(cm|mm|in|pt|pc|px)?$", strip(v))
-    m === nothing && return nothing
-    x = parse(Float64, m.captures[1])
-    u = something(m.captures[2], "pt")
-    f = u == "cm" ? 72 / 2.54 : u == "mm" ? 72 / 25.4 : u == "in" ? 72.0 : u == "pc" ? 12.0 : u == "px" ? 0.75 : 1.0
-    return round(x * f; digits = 2)
-end
-_hex(v::AbstractString) = uppercase(lstrip(v, '#'))
+# A length (`0.3cm`, `2mm`, `1pt`, `0.1in`) in points, to 2 decimals.
+_pt(v::Union{Nothing,AbstractString}) = (p = v === nothing ? nothing : _length_pt(v); p === nothing ? nothing : round(p; digits = 2))
 _bool(v) = v === nothing ? nothing : v == "true"
 _num(v) = v === nothing ? nothing : tryparse(Float64, v)
 
@@ -24,8 +15,10 @@ _num(v) = v === nothing ? nothing : tryparse(Float64, v)
 function _color(d::Dict{String,String}, attr::String, theme::String; alpha::Float64 = 1.0)
     v = get(d, attr, nothing)
     v === nothing && return nothing
+    argb = SheetCore.parse_odf_color(v)          # `transparent`, or no colour: none
+    argb === nothing && return nothing
     t = get(d, theme, nothing)
-    rgb = _hex(v)
+    rgb = argb[3:end]
     return t === nothing ? DrawingColor(:srgb, rgb, Pair{Symbol,Int}[], rgb, alpha) :
                            DrawingColor(:scheme, t, Pair{Symbol,Int}[], rgb, alpha)
 end
@@ -152,6 +145,10 @@ _title_node(doc) = get(_children(doc.chart, "chart:title"), 1, nothing)
 _legend_node(doc) = get(_children(doc.chart, "chart:legend"), 1, nothing)
 _wall_node(doc) = (pa = _plot_area(doc); pa === nothing ? nothing : get(_children(pa, "chart:wall"), 1, nothing))
 _maybe(f, x) = x === nothing ? nothing : f(x)
+
+# A `chart:repeated` count (`nothing`: not given): read as the sheet reader reads a repeat count
+# (Int64, cut to 1 … the sheet's rows), so 32-bit and 64-bit builds read a file alike.
+_repeated(v) = v === nothing ? 1 : _file_count(v, 1, 1, SheetCore.MAX_ROWS)
 
 """
     getChartTitleText(c) -> Union{Nothing,DrawingText}
@@ -318,7 +315,7 @@ function _points(doc::_ChartDoc, s)
     out = Tuple{Int,Any}[]
     k = 0
     for p in _children(s, "chart:data-point")
-        n = something(tryparse(Int, something(_get(p, "chart:repeated"), "1")), 1)
+        n = _repeated(_get(p, "chart:repeated"))
         if _get(p, "chart:style-name") !== nothing
             for j in 0:n-1
                 push!(out, (k + j, p))

@@ -28,7 +28,7 @@ end
 
 The name OpenFormula stores for a function LibreOffice shows as `ui_name` (`IFS` →
 `COM.MICROSOFT.IFS`, `WEEKS` → `ORG.OPENOFFICE.WEEKS`). Names are matched without regard to
-case; an unknown name is returned in upper case, as typed.
+case; an unknown name is returned as it was typed.
 """
 function odff_function_name(name::AbstractString)
     return get(UI_TO_ODFF, uppercase(name), String(name))

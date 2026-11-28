@@ -14,12 +14,9 @@ const SC = SheetCore
 
 const _FMT_COLOR_HEX = Dict("black" => "#000000", "blue" => "#0000ff", "cyan" => "#00ffff", "green" => "#00ff00",
                             "magenta" => "#ff00ff", "red" => "#ff0000", "white" => "#ffffff", "yellow" => "#ffff00")
-const _LOEXT_NS = "urn:org:documentfoundation:names:experimental:office:xmlns:loext:1.0"
 
 _needs_loext(styles::StyleIndex) = (sh = styles.sheet[1]; sh !== nothing && sh.needs_loext)
 
-_xtext(s::AbstractString) = sprint(_escape_text, s)
-_xattr(s::AbstractString) = sprint(_escape_attr, s)
 
 # One section as a data style: its element, attributes, children, and whether it uses
 # LibreOffice's `loext:` attributes.

@@ -25,11 +25,7 @@ end
 _cm_from(w_cm::Float64, unit::Symbol) = unit === :chars ? round(w_cm / CHAR_WIDTH_CM; digits = 8) :
     (haskey(_CM_PER, unit) ? round(w_cm / _CM_PER[unit]; digits = 8) : throw(ODSError("Invalid unit `$unit`: give :chars, :cm, :mm, :in or :pt.")))
 
-function _length_text(cm::Float64)
-    x = round(cm; digits = 8)
-    s = isinteger(x) ? string(Int(x)) : rstrip(rstrip(@sprintf("%.8f", x), '0'), '.')
-    return s * "cm"
-end
+_length_text(cm::Float64) = _decimal_text(cm; digits = 8) * "cm"
 function _length_cm(s::Union{Nothing,AbstractString})
     s === nothing && return nothing
     p = _length_pt(s)

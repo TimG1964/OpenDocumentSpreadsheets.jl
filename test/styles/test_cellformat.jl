@@ -386,10 +386,7 @@ end
 end
 
 @testset "LibreOffice keeps fonts, fills, borders and alignment" begin
-    if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the cell format oracle (set ODS_SOFFICE)"
-        @test_skip false
-    else
+    if lo_ok(; what = "the cell format oracle")
         dir = mktempdir()
         profile = lo_profile_url(joinpath(dir, "lo-profile"))
         f = newods("F"); s = f["F"]
@@ -405,8 +402,7 @@ end
         setFont(x["S01-gaps"], "A1:C1"; bold = true, name = "Courier New")
         f1 = writeods(joinpath(dir, "new.ods"), f)
         f2 = writeods(joinpath(dir, "patched.ods"), x)
-        run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to ods --outdir $(joinpath(dir, "lo")) $f1 $f2`;
-                     stdout = devnull, stderr = devnull))
+        lo_convert([f1, f2], "ods"; outdir = joinpath(dir, "lo"), profile = profile)
         r = openods(joinpath(dir, "lo", "new.ods"))
         rs = r["F"]
         for c in ("A1", "B2", "C3", "D4", "F100", "Z8", "A1:A1")

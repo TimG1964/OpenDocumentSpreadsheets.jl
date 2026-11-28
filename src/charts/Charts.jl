@@ -16,7 +16,7 @@ using ..OpenDocumentSpreadsheets: OpenDocumentSpreadsheets, ODSFile, Worksheet, 
     getcell, Cell, get_odsfile, hassheet, getFormat, FileFrame, _chart_text_now,
     _sheets, _file_frames, _frame_end, _current_line, _line_at, _attr_cm, _sort_cleared, _moved_now,
     _rewritten, _object_source, read_part_text, partnames, _areas, parse_ref, _style_code,
-    ImageData, ChartObj, _tree!, _tree_edited!, _start_tag_end, _font_keys, CellRange, row_number, column_number, CellRef, _col_cm, _row_cm, _frame_edit!, _touch_cell!,
+    ImageData, ChartObj, _tree!, _tree_edited!, _start_tag_end, _font_keys, _xmlns, _file_count, _tag_attr, _length_pt, _decimal_text, CellRange, row_number, column_number, CellRef, _col_cm, _row_cm, _frame_edit!, _touch_cell!,
     _escape_attr, _escape_text, _check_xml_text, _space_count, _content_error, _new_object_name, _require_writable, numfmt_to_odf, _ds_body, addsheet!, _spark_state,
     RichTextString, RichTextRun
 using Colors: Colors

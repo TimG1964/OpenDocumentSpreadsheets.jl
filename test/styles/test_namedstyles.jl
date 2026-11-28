@@ -174,10 +174,7 @@ end
 end
 
 @testset "LibreOffice keeps named styles" begin
-    if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the named styles oracle (set ODS_SOFFICE)"
-        @test_skip false
-    else
+    if lo_ok(; what = "the named styles oracle")
         dir = mktempdir()
         profile = lo_profile_url(joinpath(dir, "lo-profile"))
         f = newods("N"); s = f["N"]
@@ -194,8 +191,7 @@ end
         addCellStyle(g, "a&b"; font = (size = 16, name = "Liberation Mono"), format = "0.0%")
         w["A1"] = 0.25; setCellStyle(w, "A1", "a&b"); setCellStyle(w, "B1", "Warning")
         f2 = writeods(joinpath(dir, "patched2.ods"), g)
-        run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to ods --outdir $(joinpath(dir, "lo")) $f1 $f2 $f3`;
-                     stdout = devnull, stderr = devnull))
+        lo_convert([f1, f2, f3], "ods"; outdir = joinpath(dir, "lo"), profile = profile)
         for (mine, lo) in ((f1, "new.ods"), (f3, "flat.ods"))
             a = openods(mine)["N"]; b = openods(joinpath(dir, "lo", lo))["N"]
             for c in ("A1", "A2", "A3", "A4")

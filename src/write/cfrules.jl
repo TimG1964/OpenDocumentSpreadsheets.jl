@@ -248,7 +248,7 @@ end
 
 # A rule's target on a sheet: its areas, and the target and base addresses.
 function _cf_target_of(ws::Worksheet, rng)
-    areas = _cf_blocks(ws, rng)
+    areas = _sheet_areas(ws, rng)
     q = SheetCore.quoteit(ws.name)
     cell(r, c) = q * "." * SheetCore.encode_column_number(c) * string(r)
     target = join((cell(first(r), first(c)) * ":" * cell(last(r), last(c)) for (r, c) in areas), ' ')
@@ -651,23 +651,13 @@ setConditionalFormat(ws::Worksheet, rng, type::Symbol; kw...) = _cf_set!(ws, rng
 setConditionalFormat(ws::Worksheet, rows, cols, type::Symbol; kw...) = _cf_set!(ws, _cf_rowscols(rows, cols), type, kw)
 setConditionalFormat(xf::ODSFile, ref::AbstractString, type::Symbol; kw...) = setConditionalFormat(_dv_sheet_ref(xf, ref)..., type; kw...)
 
-# (rows, cols) as a range `_cf_blocks` takes.
+# (rows, cols) as a range `_sheet_areas` takes.
 struct _RowsCols
     rows::Any
     cols::Any
 end
 _cf_rowscols(rows, cols) = _RowsCols(rows, cols)
-_cf_blocks(ws::Worksheet, rc::_RowsCols) = _cf_blocks_rc(ws, rc.rows, rc.cols)
-function _cf_blocks_rc(ws::Worksheet, rows, cols)
-    out = _Area[]
-    for (w, blocks) in format_targets(ws, rows, cols)
-        for b in blocks
-            push!(out, b.kind === :cells ? (b.rows, b.cols) : b.kind === :rows ? (b.rows, 1:SheetCore.MAX_COLS) : (1:SheetCore.MAX_ROWS, b.cols))
-        end
-    end
-    isempty(out) && throw(ODSError("The range names no cells."))
-    return out
-end
+_sheet_areas(ws::Worksheet, rc::_RowsCols) = _sheet_areas(ws, rc.rows, rc.cols)
 
 """
     setColoredDataBars(sheet, rng; bands=5, colors=["green", "red"], breaks=nothing, gte=true,
@@ -689,7 +679,7 @@ function setColoredDataBars(ws::Worksheet, rng; bands::Int = 5, colors = ["green
     showVal, direction, min_type, min_val, max_type, max_val =
         map((k, v) -> _cf_string(k, v), (:showVal, :direction, :min_type, :min_val, :max_type, :max_val),
             (showVal, direction, min_type, min_val, max_type, max_val))
-    areas = _cf_blocks(ws, rng)
+    areas = _sheet_areas(ws, rng)
     length(areas) == 1 || throw(ODSError("`setColoredDataBars` takes one contiguous range."))
     rr, cc = areas[1]
     # the checks first: a refused call leaves the range's formats

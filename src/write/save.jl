@@ -5,11 +5,6 @@
 # contributors. A file that was read is saved by patching its parts (D-023); a new one is
 # written whole, in ODF 1.4 by default (D-006).
 
-const _NS_DECL = join([" xmlns:$p=\"$u\"" for (p, u) in vcat(_NAMESPACES, [
-    "meta" => "urn:oasis:names:tc:opendocument:xmlns:meta:1.0",
-    "dc" => "http://purl.org/dc/elements/1.1/",
-    "xlink" => "http://www.w3.org/1999/xlink"])])
-
 const _STYLES_BODY = """<office:styles><style:default-style style:family="table-cell"/><style:style style:name="Default" style:family="table-cell"/></office:styles>"""
 
 _generator() = "OpenDocumentSpreadsheets.jl/$(pkgversion(@__MODULE__))"
@@ -40,12 +35,28 @@ const _XMLDECL = """<?xml version="1.0" encoding="UTF-8"?>\n"""
 # svg for them and for notes' sizes, loext for LibreOffice's extensions and threads (phase 6 step 4).
 function _faces(xf::ODSFile)
     fx = added_faces_xml(xf.styles)
-    lx = _needs_loext(xf.styles) || _needs_protection_loext(xf) || _has_threads(xf) ? " xmlns:loext=\"$_LOEXT_NS\"" : ""
-    sx = !isempty(fx) || _has_notes(xf) || _has_frames(xf) ? " xmlns:svg=\"$_SVG_NS\"" : ""
-    dx = _has_frames(xf) ? " xmlns:draw=\"$_DRAW_NS\"" : ""         # pictures (phase 6 step 5)
-    cx = _has_footers(xf) || _has_cfs(xf) || _has_sparks(xf) ? " xmlns:calcext=\"$_CALCEXT_NS\"" : ""   # tables' totals rows (phase 6 step 7), rules (phase 7)
-    return (sx * lx * dx * cx, isempty(fx) ? "" : "<office:font-face-decls>$fx</office:font-face-decls>")
+    ns = _xmlns(p for p in _content_ns(xf) if p != "xlink")   # a new part declares xlink (`_NS_DECL`)
+    return (ns, isempty(fx) ? "" : "<office:font-face-decls>$fx</office:font-face-decls>")
 end
+
+# The namespaces content.xml needs besides the base ones, for what was added to it: one rule for a
+# new file and a patched one. svg: font faces, notes' sizes, pictures; loext: LibreOffice's
+# extensions and threads (phase 6 step 4); xlink and draw: pictures and links (phase 6 step 5);
+# calcext: tables' totals rows (phase 6 step 7), conditional formats (phase 7), sparklines.
+function _content_ns(xf::ODSFile)
+    need = String[]
+    (!isempty(added_faces_xml(xf.styles)) || _has_notes(xf) || _has_frames(xf)) && push!(need, "svg")
+    (_needs_loext(xf.styles) || _needs_protection_loext(xf) || _has_threads(xf)) && push!(need, "loext")
+    (_needs_xlink(xf.styles) || _has_frames(xf)) && push!(need, "xlink")
+    _has_frames(xf) && push!(need, "draw")
+    (_has_footers(xf) || _has_cfs(xf) || _has_sparks(xf)) && push!(need, "calcext")
+    return need
+end
+
+# The namespaces styles.xml needs besides the base ones: svg for the font faces it declares
+# (`faces`, their XML), loext for LibreOffice's extensions.
+_styles_ns(styles::StyleIndex, faces::AbstractString) =
+    String[p for (p, yes) in (("svg", !isempty(faces)), ("loext", _needs_loext(styles))) if yes]
 
 # A new file's content.xml, written to `io` as it is made (D-048). The styles come first:
 # writing the sheets adds none (styles are added when cells are set or formatted).
@@ -111,7 +122,7 @@ end
 # A new file's styles.xml, with the named styles OpenDocumentSpreadsheets added (D-045).
 function _new_styles(xf::ODSFile, version)
     fx = faces_xml(_named_faces(xf.styles))
-    ns = (isempty(fx) ? "" : " xmlns:svg=\"$_SVG_NS\"") * (_needs_loext(xf.styles) ? " xmlns:loext=\"$_LOEXT_NS\"" : "")
+    ns = _xmlns(_styles_ns(xf.styles, fx))
     autos, masters = _page_styles_xml(xf)                     # page styles (phase 5 step 10)
     return new_styles_xml(version, named_styles_xml(xf.styles), ns, fx; autos, masters)
 end
@@ -124,7 +135,7 @@ function write_new_flat(io::IO, xf::ODSFile, version, mediatype; display::Bool =
     svg, faces = _faces(xf)
     # view settings (phase 5 step 8): office:settings after the meta, with the namespaces LibreOffice needs to read them
     vs = _views_edited(xf) ? _settings_views(xf, "<office:settings></office:settings>") : ""
-    vns = isempty(vs) ? "" : " xmlns:config=\"$_CONFIG_NS\" xmlns:ooo=\"$_OOO_NS\""
+    vns = isempty(vs) ? "" : _xmlns(("config", "ooo"))
     print(io, _XMLDECL, "<office:document", _NS_DECL, svg, vns, " office:version=\"", version, "\" office:mimetype=\"", mediatype, "\">",
           _meta_body(xf), vs, faces, replace(_STYLES_BODY, "</office:styles>" => named_styles_xml(xf.styles) * "</office:styles>"), "<office:automatic-styles>", added_styles_xml(xf.styles, used_styles(xf)), _table_styles_xml(xf),
           first(_page_styles_xml(xf)), "</office:automatic-styles>")
@@ -249,14 +260,15 @@ function _patched_parts(xf::ODSFile; display::Bool = true)
     end
     # charts added (phase 8)
     append!(parts, _chart_parts(xf, o -> keepif(o)))
-    # a package without settings.xml gets one when views were set (phase 5 step 8)
-    _views_edited(xf) && !("settings.xml" in partnames(cont)) &&
-        push!(parts, PackagePart("settings.xml", _settings_views(xf, _new_settings_xml(xf.version in WRITABLE_ODF_VERSIONS ? xf.version : DEFAULT_ODF_VERSION))))
-    # a package without meta.xml gets one when properties were set (phase 5 step 11)
-_meta_edited(xf) && !("meta.xml" in partnames(cont)) &&
-    push!(parts, PackagePart("meta.xml", new_meta_xml(xf, xf.version in WRITABLE_ODF_VERSIONS ? xf.version : DEFAULT_ODF_VERSION)))
-# a package without styles.xml gets one when it needs named styles
-    (has_named_styles(xf.styles) || _pages_edited(xf)) && !("styles.xml" in partnames(cont)) && push!(parts, PackagePart("styles.xml", _new_styles(xf, xf.version in WRITABLE_ODF_VERSIONS ? xf.version : DEFAULT_ODF_VERSION)))
+    # a part the package lacks, made new in the file's version (or the default, for one it can't write)
+    v = xf.version in WRITABLE_ODF_VERSIONS ? xf.version : DEFAULT_ODF_VERSION
+    have = partnames(cont)
+    # settings.xml, when views were set (phase 5 step 8)
+    _views_edited(xf) && !("settings.xml" in have) && push!(parts, PackagePart("settings.xml", _settings_views(xf, _new_settings_xml(v))))
+    # meta.xml, when properties were set (phase 5 step 11)
+    _meta_edited(xf) && !("meta.xml" in have) && push!(parts, PackagePart("meta.xml", new_meta_xml(xf, v)))
+    # styles.xml, when it needs named styles or page styles
+    (has_named_styles(xf.styles) || _pages_edited(xf)) && !("styles.xml" in have) && push!(parts, PackagePart("styles.xml", _new_styles(xf, v)))
     return parts
 end
 

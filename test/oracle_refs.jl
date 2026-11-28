@@ -35,6 +35,12 @@ end
 
 basesheet(addr) = something(parse_ref(addr)[1].sheet, "")
 
+# Every formula of a file's model, by (sheet, row, column): the saved file is compared with it
+# (write/test_lines.jl, write/test_sheetops.jl).
+model_formulas(xf) = Dict((ws.name, Int(rd.row), Int(r.col)) => r.data.formula
+                          for ws in OpenDocumentSpreadsheets._sheets(xf) for rd in OpenDocumentSpreadsheets._cached_store(ws).rows
+                          for r in rd.runs if r.data.formula !== nothing)
+
 # A conditional format's references as seen from its target's top-left cell: what it means.
 function cf_meaning(cond, base, target)
     b = parse_ref(base)[1]

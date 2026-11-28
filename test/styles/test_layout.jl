@@ -184,10 +184,7 @@ end
 end
 
 @testset "LibreOffice keeps widths and heights" begin
-    if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the layout oracle (set ODS_SOFFICE)"
-        @test_skip false
-    else
+    if lo_ok(; what = "the layout oracle")
         dir = mktempdir()
         profile = lo_profile_url(joinpath(dir, "lo-profile"))
         f = newods("L"); s = f["L"]
@@ -197,8 +194,7 @@ end
         f1 = writeods(joinpath(dir, "l.ods"), f)
         p2 = joinpath(dir, "s.ods")
         writetable(p2, [[1, 2]], ["n"]; streaming = true, column_widths = [25], column_formats = Dict(1 => "0.00"))
-        run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to ods --outdir $(joinpath(dir, "lo")) $f1 $p2`;
-                     stdout = devnull, stderr = devnull))
+        lo_convert([f1, p2], "ods"; outdir = joinpath(dir, "lo"), profile = profile)
         r = openods(joinpath(dir, "lo", "l.ods"))["L"]
         @test getColumnWidth(r, "A1"; unit = :cm) ≈ getColumnWidth(s, "A1"; unit = :cm) atol = 0.002
         @test getColumnWidth(r, "C1"; unit = :cm) ≈ 3 atol = 0.002

@@ -218,10 +218,7 @@ end
 end
 
 @testset "LibreOffice reads the groups" begin
-    if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the groups oracle (set ODS_SOFFICE)"
-        @test_skip false
-    else
+    if lo_ok(; what = "the groups oracle")
         dir = mktempdir()
         profile = lo_profile_url(joinpath(dir, "lo-profile"))
         fresh = lo_groups_file()
@@ -230,8 +227,7 @@ end
         pf = openods(joinpath(VIS, "lo-groups.fods"); mode = "rw")
         groupRows(pf["H"], 110:112; collapsed = true); ungroupColumns(pf["G"], "D"); insertRows(pf["I"], 16; count = 3)
         push!(files, writeods(joinpath(dir, "patched.fods"), pf))
-        run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to fods --outdir $(joinpath(dir, "lo")) $files`;
-                     stdout = devnull, stderr = devnull))
+        lo_convert(files, "fods"; outdir = joinpath(dir, "lo"), profile = profile)
         for s in ("G", "H", "I")
             @test group_structure(joinpath(dir, "lo", "new.fods"), s) == fixture_structure("lo-groups-$s.txt")
         end

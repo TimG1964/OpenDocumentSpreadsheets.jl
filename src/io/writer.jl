@@ -142,9 +142,6 @@ function _check_parts(parts)
     "content.xml" in seen || throw(ArgumentError("a package must have a content.xml part"))
 end
 
-_xml_attr_escape(s::AbstractString) =
-    replace(s, '&' => "&amp;", '<' => "&lt;", '>' => "&gt;", '"' => "&quot;")
-
 """
     manifest_xml(parts, mediatype, version) -> String
 
@@ -153,13 +150,13 @@ The text of `META-INF/manifest.xml` for the given parts.
 function manifest_xml(parts, mediatype::AbstractString, version::AbstractString)
     io = IOBuffer()
     print(io, """<?xml version="1.0" encoding="UTF-8"?>\n""",
-          """<manifest:manifest xmlns:manifest="$NS_MANIFEST" manifest:version="$(_xml_attr_escape(version))">\n""",
-          """ <manifest:file-entry manifest:full-path="/" manifest:version="$(_xml_attr_escape(version))" manifest:media-type="$mediatype"/>\n""")
+          """<manifest:manifest xmlns:manifest="$NS_MANIFEST" manifest:version="$(_xattr(version))">\n""",
+          """ <manifest:file-entry manifest:full-path="/" manifest:version="$(_xattr(version))" manifest:media-type="$mediatype"/>\n""")
     for p in parts
         # a directory entry is listed only when it has a media type (LibreOffice lists its
         # Configurations2/ folder so)
         endswith(p.name, "/") && isempty(p.mediatype) && continue
-        print(io, """ <manifest:file-entry manifest:full-path="$(_xml_attr_escape(p.name))" manifest:media-type="$(_xml_attr_escape(p.mediatype))"/>\n""")
+        print(io, """ <manifest:file-entry manifest:full-path="$(_xattr(p.name))" manifest:media-type="$(_xattr(p.mediatype))"/>\n""")
     end
     print(io, "</manifest:manifest>\n")
     String(take!(io))

@@ -161,8 +161,6 @@ end
     @test any(e -> e.path == "Object 1/" && e.mediatype == "application/vnd.oasis.opendocument.chart", c.manifest)
     @test occursin("./Object 2", read_xml(c, :content))
     # sequences of sheet and line operations, with edits, save as the model is
-    formulas(xf) = Dict((ws.name, Int(rd.row), Int(r.col)) => r.data.formula
-                        for ws in _sheets(xf) for rd in _cached_store(ws).rows for r in rd.runs if r.data.formula !== nothing)
     seqs = [
         xf -> (renamesheet!(xf["Data"], "Daten"); insertRows(xf["Daten"], 3); copysheet!(xf["Daten"]); deleteColumns(xf["Daten (copy)"], "A")),
         xf -> (copysheet!(xf["Other"], "O2"); deletesheet!(xf, "Data"); movesheet!(xf, "O2"; before = 1); xf["O2"]["A1"] = "x"),
@@ -179,16 +177,13 @@ end
             @test isequal(back[ws.name][:], ws[:])
             @test isequal(getMergedCells(back[ws.name]), getMergedCells(ws))
         end
-        @test formulas(back) == formulas(xf)
+        @test model_formulas(back) == model_formulas(xf)
         @test Dict(dn.name => dn.range for dn in OpenDocumentSpreadsheets._wb_names(back)) == Dict(dn.name => dn.range for dn in OpenDocumentSpreadsheets._wb_names(xf))
     end
 end
 
 @testset "LibreOffice reads the sheet operations as its own" begin
-    if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the sheet operations oracle (set ODS_SOFFICE)"
-        @test_skip false
-    else
+    if lo_ok(; what = "the sheet operations oracle")
         dir = mktempdir()
         profile = lo_profile_url(joinpath(dir, "lo-profile"))
         names = ["op_rename_data", "op_delete_data", "op_copy_other_end", "op_move_z_first"]
@@ -198,8 +193,7 @@ end
             apply_sheetop!(xf, name)
             push!(files, writeods(joinpath(dir, name * ".ods"), xf))
         end
-        run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to fods --outdir $(joinpath(dir, "lo")) $files`;
-                     stdout = devnull, stderr = devnull))
+        lo_convert(files, "fods"; outdir = joinpath(dir, "lo"), profile = profile)
         for name in names
             got = saved_refs(joinpath(dir, "lo", name * ".fods"); keysheet = true)
             want = SHEETOPS[name]

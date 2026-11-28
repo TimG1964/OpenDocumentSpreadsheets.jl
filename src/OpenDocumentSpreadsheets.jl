@@ -14,7 +14,7 @@ import Tables
 import Unicode
 import XML
 import ZipArchives
-using Printf: @printf, @sprintf
+using Printf: @printf
 using SHA: sha1                       # protection keys (phase 5 step 9)
 using Base64: base64encode
 
@@ -31,6 +31,7 @@ include("corenames.jl")
 __init__() = (SheetCore.ERROR_NAME[] = "ODSError"; nothing)
 
 # container I/O (phase 0)
+include("io/xmltext.jl")
 include("io/namespaces.jl")
 include("io/container.jl")
 include("io/sheetindex.jl")
@@ -45,6 +46,7 @@ include("model/sheetreader.jl")
 include("model/sheetscan.jl")
 include("styles/formats.jl")
 include("model/indexmap.jl")
+include("model/editstate.jl")
 include("model/workbook.jl")
 include("model/access.jl")
 include("model/rows.jl")

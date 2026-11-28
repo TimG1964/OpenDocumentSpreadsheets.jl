@@ -209,3 +209,37 @@ end
                     <table:table-cell table:number-columns-spanned="2" office:value-type="float" office:value="1"/></table:table-row></table:table>""")[1]
     @test last(_sheet_read(ws, true)) == [OpenDocumentSpreadsheets.SheetCore.CellRange("B1048576:C1048576")]
 end
+
+@testset "formats read huge counts as the cells do (code review Phase 4; 32-bit safe)" begin
+    O = OpenDocumentSpreadsheets
+    # counts past 2^31 (a 32-bit `Int` didn't parse them, and read 1) are cut to the sheet
+    ws = open_fods("""<table:table table:name="S"><table:table-column table:number-columns-repeated="3000000000"/>
+                      <table:table-row table:number-rows-repeated="3000000000"><table:table-cell table:number-columns-repeated="99999999999"/></table:table-row></table:table>""")[1]
+    f = O.sheet_formats(ws)
+    @test Int(f.cols[end].col) + Int(f.cols[end].count) - 1 == O.SheetCore.MAX_COLS
+    @test isempty(f.rows) || Int(f.rows[end].row) + Int(f.rows[end].count) - 1 == O.SheetCore.MAX_ROWS
+end
+
+@testset "one helper per job (code review Phase 4)" begin
+    O = OpenDocumentSpreadsheets
+    # numbers in attributes: decimal, never an exponent; exact digits for whole numbers past 2^31
+    @test O._decimal_text(1e-7) == "0.0000001" && O._decimal_text(-2.5e-5) == "-0.000025"
+    @test O._decimal_text(3e9) == "3000000000" && O._decimal_text(1e20) == "100000000000000000000"
+    @test O._decimal_text(1 / 3) == "0.3333333333333333" && O._decimal_text(1 / 3; digits = 4) == "0.3333"
+    @test O._decimal_text(-0.0) == "0" && O._decimal_text(12.50) == "12.5"
+    @test O._decimal_text(1.23456789e20; digits = 4) == "123456789000000000000"   # no rounding noise
+    @test O._fmt_num(2.99999) == "3" && O._length_text(2.54 / 3) == "0.84666667cm"
+    @test_throws ArgumentError O._decimal_text(Inf)
+    # lengths: one reader, picas too
+    @test O._length_pt("1pc") == 12 && O._length_pt(" 2.54cm ") ≈ 72 && O.Charts._pt("0.3cm") == 8.5 && O.Charts._pt("x") === nothing
+    # a start tag's attribute: the name whole, either quote, a `>` in a value, unescaped
+    t = """<a x:b='1' b="it's &amp; &gt;" c="p>q"><b b="no"/></a>"""
+    @test O._tag_attr(t, "b") == "it's & >" && O._tag_attr(t, "x:b") == "1" && O._tag_attr(t, "c") == "p>q"
+    @test O._tag_attr(t, "d") === nothing && O._tag_attr("<a/>", "b") === nothing
+    @test O._props_dict(""" fo:color="#ff0000" style:font-name='A&amp;B'""") == Dict("fo:color" => "#ff0000", "style:font-name" => "A&B")
+    # a conditional format's value is unescaped once: a literal `&lt;` stays `&lt;`
+    @test O._cf_target("""<calcext:conditional-format calcext:target-range-address="S.A1:A2&amp;lt;"/>""") == "S.A1:A2&lt;"
+    # namespaces: every declaration from the one table
+    @test O._xmlns(("svg", "loext")) == " xmlns:svg=\"$(O._URI_OF_PREFIX["svg"])\" xmlns:loext=\"$(O._URI_OF_PREFIX["loext"])\""
+    @test O._styles_ns(O.StyleIndex(), "") == String[]
+end

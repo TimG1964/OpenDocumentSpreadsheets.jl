@@ -291,10 +291,7 @@ end
 end
 
 @testset "LibreOffice reads the shifted references as its own" begin
-    if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the shift oracle (set ODS_SOFFICE)"
-        @test_skip false
-    else
+    if lo_ok(; what = "the shift oracle")
         dir = mktempdir()
         profile = lo_profile_url(joinpath(dir, "lo-profile"))
         o = load_oracle(joinpath(SHIFT, "lo-shift-refs.tsv"))
@@ -305,8 +302,7 @@ end
             apply_op!(xf, name)
             push!(files, writeods(joinpath(dir, name * ".fods"), xf))
         end
-        run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to fods --outdir $(joinpath(dir, "lo")) $files`;
-                     stdout = devnull, stderr = devnull))
+        lo_convert(files, "fods"; outdir = joinpath(dir, "lo"), profile = profile)
         for name in names
             got = saved_refs(joinpath(dir, "lo", name * ".fods"))
             want = o[name]
@@ -323,8 +319,6 @@ end
 # as the model is (values, formulas, merges, formats), on every sheet, zipped and flat.
 @testset "sequences: the saved file is the model" begin
     dir = mktempdir()
-    formulas(xf) = Dict((ws.name, Int(rd.row), Int(r.col)) => r.data.formula
-                        for ws in _sheets(xf) for rd in _cached_store(ws).rows for r in rd.runs if r.data.formula !== nothing)
     seqs = [
         xf -> (insertRows(xf["Data"], 5; count = 2); deleteColumns(xf["Data"], "C"); insertColumns(xf["Data"], "B"; count = 3)),
         xf -> (deleteRows(xf["Data"], "3:4"); xf["Data"]["A3"] = "edited"; insertRows(xf["Data"], 2); setFont(xf["Data"], "B2:C9"; bold = true)),
@@ -344,7 +338,7 @@ end
             @test isequal(b[:], ws[:])
             @test isequal(getMergedCells(b), getMergedCells(ws))
         end
-        @test formulas(back) == formulas(xf)
+        @test model_formulas(back) == model_formulas(xf)
         ws = xf["Data"]; b = back["Data"]
         dim = OpenDocumentSpreadsheets.get_dimension(ws)
         @test all(style_name(back.styles, effective_style(b, r, c)) == style_name(xf.styles, effective_style(ws, r, c))

@@ -158,10 +158,7 @@ end
 end
 
 @testset "LibreOffice reads the hidden lines, sheets and tab colours" begin
-    if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the visibility oracle (set ODS_SOFFICE)"
-        @test_skip false
-    else
+    if lo_ok(; what = "the visibility oracle")
         dir = mktempdir()
         profile = lo_profile_url(joinpath(dir, "lo-profile"))
         xf = newods("A")
@@ -174,8 +171,7 @@ end
         setSheetVisibility(pf["S2"], :visible); setTabColor(pf["S2"], "00FFFF"); setSheetVisibility(pf["S3"], :hidden)
         setRowHidden(pf["S1"], 6); setColumnHidden(pf["S1"], "C"; hidden = false)
         push!(files, writeods(joinpath(dir, "patched.fods"), pf))
-        run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to fods --outdir $(joinpath(dir, "lo")) $files`;
-                     stdout = devnull, stderr = devnull))
+        lo_convert(files, "fods"; outdir = joinpath(dir, "lo"), profile = profile)
         lo = readods(joinpath(dir, "lo", "new.fods"))
         @test [getSheetVisibility(lo[i]) for i in 1:3] == [:visible, :hidden, :visible]
         @test [getTabColor(lo[i]) for i in 1:3] == [nothing, "FF112233", "FFFF8000"]

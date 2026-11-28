@@ -202,10 +202,7 @@ end
 # LibreOffice as the oracle (Q-005): `SOFFICE`, from runtests.jl.
 
 @testset "LibreOffice opens what we write" begin
-    if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the oracle round trip (set ODS_SOFFICE)"
-        @test_skip false
-    else
+    if lo_ok(; what = "the oracle round trip")
         mktempdir() do dir
             xml = replace(content_xml(["Data" => "hello"]), "<text:p>hello</text:p>" => "<text:p>hello</text:p>")
             for (v, fmt, mt) in [("1.4", "ods", MEDIATYPE_ODS), ("1.3", "ods", MEDIATYPE_ODS), ("1.4", "ots", MEDIATYPE_OTS)]
@@ -214,8 +211,7 @@ end
                               mediatype = mt, version = v)
                 profile = lo_profile_url(joinpath(dir, "lo-profile"))
                 outdir = joinpath(dir, "csv")
-                run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to csv --outdir $outdir $p`;
-                             stdout = devnull, stderr = devnull))
+                lo_convert(p, "csv"; outdir = outdir, profile = profile)
                 csv = joinpath(outdir, splitext(basename(p))[1] * ".csv")
                 @test isfile(csv) && strip(read(csv, String)) == "hello"
             end
@@ -253,13 +249,9 @@ end
             @test occursin("manifest:full-path=\"/\" manifest:version=\"1.2\"", m)
             push!(paths, p)
         end
-        if isempty(SOFFICE) || !isfile(SOFFICE)
-            @info "LibreOffice not found; skipping the edited ODF 1.2 oracle (set ODS_SOFFICE)"
-            @test_skip false
-        else
+        if lo_ok(; what = "the edited ODF 1.2 oracle")
             out = joinpath(dir, "lo")
-            run(pipeline(`$SOFFICE -env:UserInstallation=$(lo_profile_url(joinpath(dir, "lo-profile"))) --headless --norestore --convert-to fods --outdir $out $paths`;
-                         stdout = devnull, stderr = devnull))
+            lo_convert(paths, "fods"; outdir = out, profile = lo_profile_url(joinpath(dir, "lo-profile")))
             for (p, (name, _)) in zip(paths, edits)
                 f = joinpath(out, splitext(basename(p))[1] * ".fods")
                 @test isfile(f)                                   # LibreOffice opened it

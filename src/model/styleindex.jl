@@ -85,26 +85,26 @@ needs them (`stylesheet`, styles/stylesheet.jl):
 - `display`: the named cell styles, by the name LibreOffice shows; `added_named`: those
   OpenDocumentSpreadsheets added, written to styles.xml
 """
-mutable struct StyleSheet
+Base.@kwdef mutable struct StyleSheet
     cells::Vector{CellStyle}
     automatic::Vector{Bool}
     datastyles::Dict{String,String}
     datainfo::Dict{String,DataStyleInfo}
-    dedup::Dict{CellStyle,Int32}
-    added::Vector{Int32}
-    added_data::Vector{String}
-    retyped::Dict{Tuple{Int32,Symbol},Int32}
-    data_dedup::Dict{String,String}   # added data styles by their XML (with `$NAME` for the name)
+    dedup::Dict{CellStyle,Int32} = Dict{CellStyle,Int32}()
+    added::Vector{Int32} = Int32[]
+    added_data::Vector{String} = String[]
+    retyped::Dict{Tuple{Int32,Symbol},Int32} = Dict{Tuple{Int32,Symbol},Int32}()
+    data_dedup::Dict{String,String} = Dict{String,String}()   # added data styles by their XML (with `$NAME` for the name)
     lines::Vector{LineStyles}         # [columns, rows]
     default_cell::CellStyle           # the `style:default-style` of family table-cell (its properties)
     faces::Set{String}                # the declared font faces (`style:font-face`), by name
-    added_faces::Vector{String}       # font faces OpenDocumentSpreadsheets declared, in order
-    code_styles::Dict{String,String}  # number format codes → their added data style ("" for General)
-    numfmt_ids::Dict{String,Int}      # custom number format codes → their numFmtId (164 on), as getFormat meets them
-    needs_loext::Bool                 # added data styles use LibreOffice's `loext:` attributes
+    added_faces::Vector{String} = String[]       # font faces OpenDocumentSpreadsheets declared, in order
+    code_styles::Dict{String,String} = Dict{String,String}()  # number format codes → their added data style ("" for General)
+    numfmt_ids::Dict{String,Int} = Dict{String,Int}()      # custom number format codes → their numFmtId (164 on), as getFormat meets them
+    needs_loext::Bool = false                 # added data styles use LibreOffice's `loext:` attributes
     display::Dict{String,String}      # named cell styles: display name (else name) → style name
-    added_named::Vector{Int32}        # named cell styles OpenDocumentSpreadsheets added, in order (styles.xml's office:styles)
-    resolved::Dict{Tuple{Int32,Bool},NTuple{3,Dict{String,String}}}   # `resolved_props` by (id, defaults); read-only
+    added_named::Vector{Int32} = Int32[]        # named cell styles OpenDocumentSpreadsheets added, in order (styles.xml's office:styles)
+    resolved::Dict{Tuple{Int32,Bool},NTuple{3,Dict{String,String}}} = Dict{Tuple{Int32,Bool},NTuple{3,Dict{String,String}}}()   # `resolved_props` by (id, defaults); read-only
 end
 
 """

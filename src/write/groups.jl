@@ -304,27 +304,6 @@ function _finish!(st::_Regroup, k::Int)
     return
 end
 
-# The number of lines of kind `k` a container holds (its own rows or columns: not those of a
-# table inside one of its cells).
-function _lines_in(ln, k::Int)
-    key = k == 1 ? "table:number-rows-repeated" : "table:number-columns-repeated"
-    tag = k == 1 ? "table:table-row" : "table:table-column"
-    n = 0
-    c = XML.Cursor(ln)
-    XML.next!(c)
-    XML.for_each_child!(c) do ch
-        if XML.nodetype(ch) === XML.Element && XML.tag(ch) == tag
-            r = 1
-            for (a, v) in XML.eachattribute!(ch)
-                a == key && (r = _file_count(v, 1, 1, SheetCore.MAX_ROWS))
-            end
-            n += r
-        end
-        XML.skip_element!(ch)
-    end
-    return n
-end
-
 function _regroup_children!(st::_Regroup, c)
     XML.for_each_child!(c) do ch
         XML.nodetype(ch) === XML.Element || return
@@ -348,9 +327,8 @@ function _regroup_children!(st::_Regroup, c)
             k = tg == "table:table-row" ? 1 : 2
             k == 1 && _finish!(st, 2)            # the rows follow the columns
             text = SubString(st.t, first(sp), last(sp))
-            r = match(Regex((k == 1 ? "table:number-rows-repeated" : "table:number-columns-repeated") * "=\"(\\d+)\""),
-                      SubString(text, 1, _start_tag_end(text)))
-            _emit_lines!(st, k, text, r === nothing ? 1 : parse(Int, r.captures[1]))
+            key = k == 1 ? "table:number-rows-repeated" : "table:number-columns-repeated"
+            _emit_lines!(st, k, text, max(1, _attr_int(text, key, 1)))
             st.pos = last(sp) + 1
         else
             # anything else: the lines of a kind end before it

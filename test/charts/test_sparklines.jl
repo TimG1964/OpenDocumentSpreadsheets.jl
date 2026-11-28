@@ -129,7 +129,7 @@ end
 end
 
 @testset "LibreOffice reads our sparklines" begin
-    if isfile(SOFFICE) && lo_major(SOFFICE) >= LO_FIXTURE_MAJOR
+    if lo_ok(LO_FIXTURE_MAJOR)
         xf, sp = _spark_sheet()
         for (k, (nm, kw)) in enumerate(_SPARK_CASES)
             nm == "dateRange" || addSparklines(sp, "F$k", "A$k:E$k"; kw...)
@@ -142,15 +142,12 @@ end
             p = joinpath(dir, "s.ods"); f = joinpath(dir, "sf.fods")
             writeods(p, xf); writeods(f, xf)
             out = joinpath(dir, "lo")
-            run(pipeline(`$SOFFICE -env:UserInstallation=$(lo_profile_url(joinpath(dir, "profile"))) --headless --norestore --convert-to ods --outdir $out $p $f`;
-                         stdout = devnull, stderr = devnull))
+            lo_convert([p, f], "ods"; outdir = out, profile = lo_profile_url(joinpath(dir, "profile")))
             for path in (joinpath(out, "s.ods"), joinpath(out, "sf.ods"))
                 theirs = getSparklines(readods(path)["Spark"])
                 @test Set(theirs) == Set(mine)
                 @test !isempty(OpenDocumentSpreadsheets.getConditionalFormats(readods(path)["Spark"]))
             end
         end
-    else
-        @test_skip false
     end
 end

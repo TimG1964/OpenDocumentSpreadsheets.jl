@@ -115,10 +115,7 @@ end
 end
 
 @testset "LibreOffice keeps OpenDocumentSpreadsheets's merges" begin
-    if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the merge oracle (set ODS_SOFFICE)"
-        @test_skip false
-    else
+    if lo_ok(; what = "the merge oracle")
         dir = mktempdir()
         profile = lo_profile_url(joinpath(dir, "lo-profile"))
         f = newods("M"); s = f["M"]
@@ -131,8 +128,7 @@ end
         mergeCells(x["S01-gaps"], "A1:C2")
         f1 = writeods(joinpath(dir, "m.ods"), f)
         f2 = writeods(joinpath(dir, "p.ods"), x)
-        run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to ods --outdir $(joinpath(dir, "lo")) $f1 $f2`;
-                     stdout = devnull, stderr = devnull))
+        lo_convert([f1, f2], "ods"; outdir = joinpath(dir, "lo"), profile = profile)
         r = openods(joinpath(dir, "lo", "m.ods"))["M"]
         @test getMergedCells(r) == getMergedCells(s)
         @test isequal([r[i, j] for i in 1:5, j in 1:5], [s[i, j] for i in 1:5, j in 1:5])

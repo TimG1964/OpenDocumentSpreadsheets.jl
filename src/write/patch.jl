@@ -39,6 +39,15 @@ _raw_attrs(text::AbstractString) =
 # byte, as a value can end in any character (`style:font-name-asian="宋体"`).
 _unquote_attr(v::AbstractString) = XML.unescape(String(chop(v; head = 1, tail = 1)))
 
+# The value of attribute `name` of the start tag of `text` (unescaped), or `nothing`. Only the
+# start tag is read, the name matched whole, and either quote accepted.
+function _tag_attr(text::AbstractString, name::AbstractString)
+    for (k, v) in _raw_attrs(text)
+        k == name && return _unquote_attr(v)
+    end
+    return nothing
+end
+
 function _attr_int(text::AbstractString, name::AbstractString, default::Int)
     # the attribute in the start tag, preceded by white space and followed by `=` and a quote
     e = _start_tag_end(text)
@@ -734,7 +743,7 @@ end
 function _rewritten(x::String, ops)
     isempty(ops) && return x
     io = IOBuffer()
-    rewrite_xml(io, RefRewriter(Any[ops...], x), x, 1, ncodeunits(x))
+    rewrite_xml(io, RefRewriter(RefOp[ops...], x), x, 1, ncodeunits(x))
     return String(take!(io))
 end
 
@@ -778,16 +787,6 @@ function _write_sheet_now(out::_ChunkedIO, ws::Worksheet, rw::Union{Nothing,RefR
     return
 end
 
-const _NAMESPACES = [
-    "office" => "urn:oasis:names:tc:opendocument:xmlns:office:1.0",
-    "style" => "urn:oasis:names:tc:opendocument:xmlns:style:1.0",
-    "text" => "urn:oasis:names:tc:opendocument:xmlns:text:1.0",
-    "table" => "urn:oasis:names:tc:opendocument:xmlns:table:1.0",
-    "number" => "urn:oasis:names:tc:opendocument:xmlns:datastyle:1.0",
-    "fo" => "urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0",
-    "of" => "urn:oasis:names:tc:opendocument:xmlns:of:1.2",
-]
-
 """
     _top_elements(xml) -> (src, rootspan, children)
 
@@ -811,19 +810,14 @@ function _top_elements(xml::AbstractString)
     return src, XML.sourcespan(root), kids
 end
 
-# The namespace declarations the written XML needs, added to the root's start tag.
-function _ns_splice!(splices, src::AbstractString, rootspan, svg::Bool, loext::Bool; xlink::Bool = false, draw::Bool = false,
-                     calcext::Bool = false)
+# The namespace declarations the written XML needs (the base ones and `need`, prefixes), added to
+# the root's start tag where it doesn't declare them.
+function _ns_splice!(splices, src::AbstractString, rootspan, need)
     roottext = SubString(src, first(rootspan), last(rootspan))
     tagend = first(rootspan) - 1 + _start_tag_end(roottext)
     tagend_at = src[prevind(src, tagend)] == '/' ? prevind(src, tagend) : tagend
     starttag = SubString(src, first(rootspan), tagend)
-    ns = join(" xmlns:$p=\"$u\"" for (p, u) in _NAMESPACES if !occursin("xmlns:$p=", starttag))
-    svg && !occursin("xmlns:svg=", starttag) && (ns *= " xmlns:svg=\"$_SVG_NS\"")
-    loext && !occursin("xmlns:loext=", starttag) && (ns *= " xmlns:loext=\"$_LOEXT_NS\"")
-    xlink && !occursin("xmlns:xlink=", starttag) && (ns *= " xmlns:xlink=\"$_XLINK_NS\"")
-    draw && !occursin("xmlns:draw=", starttag) && (ns *= " xmlns:draw=\"$_DRAW_NS\"")
-    calcext && !occursin("xmlns:calcext=", starttag) && (ns *= " xmlns:calcext=\"$_CALCEXT_NS\"")
+    ns = _xmlns(p for p in (_BASE_NS..., need...) if !occursin("xmlns:$p=", starttag))
     isempty(ns) || push!(splices, (tagend_at, tagend_at - 1, ns))
     return
 end
@@ -917,11 +911,7 @@ _sheet_edited(ws::Worksheet, rw) = ws.touched || _has_edits(ws) || rw !== nothin
 
 # The namespaces the written XML needs, on the root's start tag.
 function _ns_splices!(splices, cx)
-    xf = cx.xf
-    svg = !isempty(added_faces_xml(xf.styles)) || _has_notes(xf) || _has_frames(xf)
-    loext = _needs_loext(xf.styles) || _needs_protection_loext(xf) || _has_threads(xf)
-    _ns_splice!(splices, cx.src, cx.rootspan, svg, loext; xlink = _needs_xlink(xf.styles) || _has_frames(xf),
-                draw = _has_frames(xf), calcext = _has_footers(xf) || _has_cfs(xf) || _has_sparks(xf))
+    _ns_splice!(splices, cx.src, cx.rootspan, _content_ns(cx.xf))
 end
 
 # Font faces (phase 4), in office:font-face-decls, which comes before the styles; and a flat
@@ -1052,8 +1042,7 @@ function _settings_splices!(splices, cx)
     if _views_edited(xf) && xf.container.format === :fods
         # LibreOffice reads view settings only with the config and ooo namespaces declared (F-053)
         roottext = SubString(src, first(cx.rootspan), _root_start_end(cx) - 1)
-        ns = (occursin("xmlns:config=", roottext) ? "" : " xmlns:config=\"$_CONFIG_NS\"") *
-             (occursin("xmlns:ooo=", roottext) ? "" : " xmlns:ooo=\"$_OOO_NS\"")
+        ns = _xmlns(p for p in ("config", "ooo") if !occursin("xmlns:$p=", roottext))
         e = _root_start_end(cx) - 1
         isempty(ns) || push!(splices, (e, e - 1, ns))
     end
@@ -1107,7 +1096,7 @@ function patched_styles(xf::ODSFile, xml::AbstractString)
         end
     end
     fx = faces_xml(filter(n -> !(n in declared), _named_faces(xf.styles)))
-    _ns_splice!(splices, src, rootspan, !isempty(fx), _needs_loext(xf.styles))
+    _ns_splice!(splices, src, rootspan, _styles_ns(xf.styles, fx))
     stylesnode = get(kids, "office:styles", nothing)
     after = something(get(kids, "office:automatic-styles", nothing), get(kids, "office:master-styles", nothing), Some(nothing))
     isempty(fx) || _append_splice!(splices, src, decls, "office:font-face-decls", fx, something(stylesnode, after, Some(nothing)))

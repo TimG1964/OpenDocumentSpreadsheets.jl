@@ -200,10 +200,7 @@ end
 end
 
 @testset "LibreOffice shows OpenDocumentSpreadsheets's formats as it shows the codes" begin
-    if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the number format oracle (set ODS_SOFFICE)"
-        @test_skip false
-    else
+    if lo_ok(; what = "the number format oracle")
         dir = mktempdir()
         profile = lo_profile_url(joinpath(dir, "lo-profile"))
         xf = newods("N"); ws = xf["N"]
@@ -217,10 +214,8 @@ end
         end
         p = writeods(joinpath(dir, "nf.ods"), xf)
         lo = joinpath(dir, "lo")
-        run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to "csv:Text - txt - csv (StarCalc):9,34,76,1,,0,false,false,true" --outdir $lo $p`;
-                     stdout = devnull, stderr = devnull))
-        run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to ods --outdir $lo $p`;
-                     stdout = devnull, stderr = devnull))
+        lo_convert(p, "csv:Text - txt - csv (StarCalc):9,34,76,1,,0,false,false,true"; outdir = lo, profile = profile)
+        lo_convert(p, "ods"; outdir = lo, profile = profile)
         csv = readlines(joinpath(lo, "nf.csv"))
         back = openods(joinpath(lo, "nf.ods"))["N"]                        # LibreOffice's own data styles, read back
         # reading LibreOffice's own file back: its locale short date (`format-source="language"`
@@ -250,7 +245,7 @@ end
     # a condition past 2^31 (an `Int` threw on a 32-bit build) or past 2^63 (threw anywhere)
     @test first(first(first(O.numfmt_to_odf("[>3000000000]0;0")))) == "value()>3000000000"
     @test first(first(first(O.numfmt_to_odf("[>1e20]0;0")))) == "value()>1.0e20"
-    @test O.Charts._num_text(3e9) == "3000000000" && O.Charts._num_text(1e20) == "1.0e20"
+    @test O.Charts._num_text(3e9) == "3000000000" && O.Charts._num_text(1e20) == "100000000000000000000"   # no exponent
     # a digit count from a file is cut at 255, and read the same on a 32-bit build
     @test O._int_attr(Dict("k" => "1000000000"), "k", 0) === 255
     @test O._int_attr(Dict("k" => "3000000000000"), "k", 0) === 255

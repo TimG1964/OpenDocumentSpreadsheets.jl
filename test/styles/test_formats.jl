@@ -237,10 +237,7 @@ end
 end
 
 @testset "LibreOffice keeps the formats" begin
-    if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the formats oracle (set ODS_SOFFICE)"
-        @test_skip false
-    else
+    if lo_ok(; what = "the formats oracle")
         dir = mktempdir()
         profile = lo_profile_url(joinpath(dir, "lo-profile"))
         # a new file, and a patched one
@@ -259,8 +256,7 @@ end
         restyle_cells!(_ -> fmt_bold(st), ws, 2:3, 1:2)
         ws["B3"] = "x"
         f2 = writeods(joinpath(dir, "patched.ods"), xf)
-        run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to ods --outdir $(joinpath(dir, "lo")) $f1 $f2`;
-                     stdout = devnull, stderr = devnull))
+        lo_convert([f1, f2], "ods"; outdir = joinpath(dir, "lo"), profile = profile)
         cm(s) = endswith(s, "cm") ? parse(Float64, s[1:end-2]) : endswith(s, "in") ? 2.54 * parse(Float64, s[1:end-2]) :
                 endswith(s, "mm") ? parse(Float64, s[1:end-2]) / 10 : NaN
         for (file, sheet) in (("new.ods", "N"), ("patched.ods", "S05-styled-empty"))

@@ -16,21 +16,45 @@ const SOFFICE = get(ENV, "ODS_SOFFICE",
 # Windows, file:///tmp/… elsewhere.
 lo_profile_url(path) = "file://" * (startswith(path, "/") ? "" : "/") * replace(path, "\\" => "/")
 
-# The major version of a LibreOffice (`soffice --version`: "LibreOffice 24.2.7.2 …"), or 0 if unknown.
-# Features newer than a distribution's LibreOffice (threaded comments in notes) are checked only
-# with the version the fixtures were made with (`data/lo-version.txt`) or later.
-const _LO_MAJOR = Dict{String,Int}()
-lo_major(soffice) = get!(_LO_MAJOR, soffice) do
-    m = match(r"LibreOffice\s+(\d+)\.", try read(`$soffice --version`, String) catch; "" end)
-    m === nothing ? 0 : parse(Int, m.captures[1])
-end
-const LO_FIXTURE_MAJOR = parse(Int, match(r"LibreOffice\s+(\d+)\.", read(joinpath(DATA, "lo-version.txt"), String)).captures[1])
-# The major and minor version: a distribution's LibreOffice can share the fixtures' major version and
-# still lack a feature of its minor one (CI's 26.x: threaded comments, the histogram; phase 9).
+# The version of a LibreOffice (`soffice --version`: "LibreOffice 24.2.7.2 …"), major and minor, or
+# v"0" if unknown; read once. Features newer than a distribution's LibreOffice (threaded comments in
+# notes) are checked only with the version the fixtures were made with (`data/lo-version.txt`) or
+# later: by major version, or by major and minor where a distribution's LibreOffice can share the
+# fixtures' major version and still lack a feature of its minor one (CI's 26.x: threaded comments,
+# the histogram; phase 9).
 _lo_vnum(s) = (m = match(r"LibreOffice\s+(\d+)\.(\d+)", s); m === nothing ? v"0" : VersionNumber(parse(Int, m.captures[1]), parse(Int, m.captures[2])))
 const _LO_VERSION = Dict{String,VersionNumber}()
 lo_version(soffice) = get!(() -> _lo_vnum(try read(`$soffice --version`, String) catch; "" end), _LO_VERSION, soffice)
+lo_major(soffice) = Int(lo_version(soffice).major)
 const LO_FIXTURE_VERSION = _lo_vnum(read(joinpath(DATA, "lo-version.txt"), String))
+const LO_FIXTURE_MAJOR = Int(LO_FIXTURE_VERSION.major)
+
+# Whether a LibreOffice oracle runs here: LibreOffice is installed and, given `min`, at least that
+# version (an `Int`: the major version; a `VersionNumber`: major and minor). When it doesn't run, a
+# skipped test is recorded, so the summary shows it, and the reason is logged, naming `what`.
+function lo_ok(min::Union{Nothing,Int,VersionNumber} = nothing; what::AbstractString = "a LibreOffice oracle")
+    if isempty(SOFFICE) || !isfile(SOFFICE)
+        @info "LibreOffice not found; skipping $what (set ODS_SOFFICE)"
+    elseif min isa Int && lo_major(SOFFICE) < min || min isa VersionNumber && lo_version(SOFFICE) < min
+        @info "LibreOffice $(lo_version(SOFFICE)) is older than $min; skipping $what"
+    else
+        return true
+    end
+    @test_skip false
+    return false
+end
+
+# Converts `files` (a path, or several) with LibreOffice to `fmt` (`"ods"`, `"fods"`, `"csv"`, or a
+# filter with its options) in `outdir`, with the profile `profile` (a file URL: `lo_profile_url`).
+# LibreOffice's messages are kept: a conversion that fails is an error that shows them.
+function lo_convert(files, fmt::AbstractString; outdir::AbstractString, profile::AbstractString)
+    paths = files isa AbstractString ? [files] : collect(files)
+    err = IOBuffer()
+    cmd = `$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to $fmt --outdir $outdir $paths`
+    success(pipeline(cmd; stdout = devnull, stderr = err)) ||
+        error("LibreOffice could not convert $(join(basename.(paths), ", ")) to $fmt:\n" * String(take!(err)))
+    return outdir
+end
 
 include("oracle_refs.jl")      # the oracle helpers several files share
 
@@ -102,6 +126,7 @@ _group(("write", "write-cells"), "write: cells and sheets") do
     @testfile "row and column edits" "write/test_lines.jl"
     @testfile "sheet operations" "write/test_sheetops.jl"
     @testfile "defined names" "write/test_names.jl"
+    @testfile "read-only files" "test_readonly.jl"
 end
 _group(("write", "write-settings"), "write: sheet settings") do
     @testfile "hidden lines, sheets, tab colours" "write/test_sheetprops.jl"
@@ -160,6 +185,9 @@ end
 _group("aqua", "Aqua") do
     @testfile "package quality" "test_aqua.jl"
 end
+
+# The shared empty run list (`_runs_of`) is read, never changed, by every group that ran.
+isempty(OpenDocumentSpreadsheets._NO_RUNS) || push!(_FAILED, "the shared `_NO_RUNS` was changed")
 
 isempty(_FAILED) || error("Test groups with failures or errors: " * join(_FAILED, ", ") * ".")
 println("All test groups passed.")

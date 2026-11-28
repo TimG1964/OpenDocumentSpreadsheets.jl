@@ -155,7 +155,7 @@ function _text_atts(p::Dict{String,String})
     c = get(p, "fo:color", nothing)
     if c !== nothing
         rgb = SheetCore.parse_odf_color(c)
-        rgb === nothing || push!(a, :color => "FF" * uppercase(lstrip(rgb, '#'))[max(1, end - 5):end])
+        rgb === nothing || push!(a, :color => rgb)
     end
     sz = get(p, "fo:font-size", nothing)
     if sz !== nothing
@@ -171,7 +171,7 @@ end
 # The runs of a cell's paragraphs (`text:p` elements' XML), each span's attributes from `styles`. A line
 # break between paragraphs starts the next paragraph's first run; runs alike are joined.
 function _paragraph_runs(paras::AbstractString, styles)
-    doc = parse(XML.Node, "<r xmlns:text=\"urn:oasis:names:tc:opendocument:xmlns:text:1.0\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">" *
+    doc = parse(XML.Node, "<r" * _xmlns(("text", "xlink")) * ">" *
                           String(paras) * "</r>")
     root = only(c for c in XML.children(doc) if XML.nodetype(c) === XML.Element)
     runs = Tuple{String,Union{Nothing,Vector{Pair{Symbol,Any}}}}[]
@@ -230,17 +230,17 @@ function _file_text_styles(xf)
     b = findfirst("<office:body", src)
     head = b === nothing ? src : SubString(src, 1, first(b))
     for m in eachmatch(r"<style:style\b[^>]*\bstyle:family=\"text\"[^>]*>.*?</style:style>"s, head)
-        nm = match(r"style:name=\"([^\"]*)\"", m.match)
+        nm = _tag_attr(m.match, "style:name")
         nm === nothing && continue
-        tp = match(r"<style:text-properties\b([^>]*?)/?>", m.match)
-        d[XML.unescape(nm.captures[1])] = tp === nothing ? Dict{String,String}() : _props_dict(tp.captures[1])
+        tp = match(r"<style:text-properties\b[^>]*>", m.match)
+        d[nm] = tp === nothing ? Dict{String,String}() : _props_dict(tp.match)
     end
     st.filetexts[1] = d
     return d
 end
 
-_props_dict(p::AbstractString) = Dict{String,String}(String(a.captures[1]) => XML.unescape(String(a.captures[2]))
-                                                    for a in eachmatch(r"([\w:-]+)=\"([^\"]*)\"", p))
+# The attributes in `p` (a start tag, or attributes alone), unescaped.
+_props_dict(p::AbstractString) = Dict{String,String}(String(m.captures[1]) => _unquote_attr(m.captures[2]) for m in eachmatch(_ATTR_RX, p))
 
 """
     getRichTextString(sheet, ref) -> Union{RichTextString, Nothing}

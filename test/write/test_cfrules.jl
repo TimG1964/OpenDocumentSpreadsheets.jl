@@ -353,10 +353,7 @@ _cf_is_band(t) = occursin(r"^CF\.[B-K]11[34]:CF\.[B-K]11[34]$", t)     # setColo
     end
 
     @testset "LibreOffice reads our rules as we wrote them" begin
-        if isempty(SOFFICE) || !isfile(SOFFICE)
-            @info "LibreOffice not found; skipping the conditional formats oracle (set ODS_SOFFICE)"
-            @test_skip false
-        else
+        if lo_ok(; what = "the conditional formats oracle")
             d = mktempdir()
             profile = lo_profile_url(joinpath(d, "lo-profile"))
             # a new file (zipped and flat), and a patched one with rules added, cleared and moved
@@ -368,8 +365,7 @@ _cf_is_band(t) = occursin(r"^CF\.[B-K]11[34]:CF\.[B-K]11[34]$", t)     # setColo
             deleteConditionalFormats(p["Own"], "B2:K10"); insertRows(p["Own"], 3)
             setConditionalFormat(p["Second"], "A5:A9", :timePeriod; operator = "lastYear", style = "Accent 1")
             pf = writeods(joinpath(d, "patched.ods"), p)
-            run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to fods --outdir $(joinpath(d, "lo")) $n $nf $pf`;
-                         stdout = devnull, stderr = devnull))
+            lo_convert([n, nf, pf], "fods"; outdir = joinpath(d, "lo"), profile = profile)
             # every LibreOffice reads the rules (their ranges and kinds)
             rset(f) = Set((string(p.first), p.second.type) for ws in (readods(f)["CF"], readods(f)["Other"]) for p in getConditionalFormats(ws))
             @test rset(joinpath(d, "lo", "new.fods")) == rset(joinpath(d, "lo", "newflat.fods")) == rset(n)

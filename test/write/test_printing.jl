@@ -211,10 +211,7 @@ end
 end
 
 @testset "LibreOffice reads the printing settings" begin
-    if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the printing oracle (set ODS_SOFFICE)"
-        @test_skip false
-    else
+    if lo_ok(; what = "the printing oracle")
         dir = mktempdir()
         profile = lo_profile_url(joinpath(dir, "lo-profile"))
         xf = newods("A"); addsheet!(xf, "B")
@@ -232,8 +229,7 @@ end
         setPageSetup(pf["Plain"]; paperSize = :legal); setPrintArea(pf["Area"], "A1:A3"); deletePrintTitles(pf["TitleRows"])
         setHeaderFooter(pf["HFCenter"]; header = (right = "new",))
         push!(files, writeods(joinpath(dir, "patched.fods"), pf))
-        run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to fods --outdir $(joinpath(dir, "lo")) $files`;
-                     stdout = devnull, stderr = devnull))
+        lo_convert(files, "fods"; outdir = joinpath(dir, "lo"), profile = profile)
         lo = readods(joinpath(dir, "lo", "new.fods"))
         a = lo["A"]
         @test getPageSetup(a) == getPageSetup(xf["A"]) && getPageMargins(a) == getPageMargins(xf["A"])

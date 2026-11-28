@@ -167,10 +167,7 @@ end
 end
 
 @testset "LibreOffice reads the protection" begin
-    if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the protection oracle (set ODS_SOFFICE)"
-        @test_skip false
-    else
+    if lo_ok(; what = "the protection oracle")
         dir = mktempdir()
         profile = lo_profile_url(joinpath(dir, "lo-profile"))
         xf = newods("A"); addsheet!(xf, "B")
@@ -183,8 +180,7 @@ end
         unprotectSheet(pf["Secret"]); protectSheet(pf["Open"]; deleteRows = true); unprotectWorkbook(pf)
         setCellProtection(pf["Open"], "A1"; hidden = true)
         push!(files, writeods(joinpath(dir, "patched.fods"), pf))
-        run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to fods --outdir $(joinpath(dir, "lo")) $files`;
-                     stdout = devnull, stderr = devnull))
+        lo_convert(files, "fods"; outdir = joinpath(dir, "lo"), profile = profile)
         lo = readods(joinpath(dir, "lo", "new.fods"))
         p = getSheetProtection(lo["A"])
         @test p.password && p.insertColumns && p.autoFilter && !p.selectLockedCells && p.selectUnlockedCells && !isSheetProtected(lo["B"])

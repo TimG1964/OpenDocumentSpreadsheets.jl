@@ -84,7 +84,6 @@ Base.hash(s::CellStyle, h::UInt) =
 is_plain(s::CellStyle) = isempty(s.attrs) && isempty(s.cell) && isempty(s.para) && isempty(s.text) && isempty(s.extra)
 
 with_datastyle(s::CellStyle, ds::AbstractString) = CellStyle(s.parent, String(ds), s.attrs, s.cell, s.para, s.text, s.extra)
-with_parent(s::CellStyle, p::AbstractString) = CellStyle(String(p), s.datastyle, s.attrs, s.cell, s.para, s.text, s.extra)
 with_cell(s::CellStyle, p::PropSet) = CellStyle(s.parent, s.datastyle, s.attrs, p, s.para, s.text, s.extra)
 with_para(s::CellStyle, p::PropSet) = CellStyle(s.parent, s.datastyle, s.attrs, s.cell, p, s.text, s.extra)
 with_text(s::CellStyle, p::PropSet) = CellStyle(s.parent, s.datastyle, s.attrs, s.cell, s.para, p, s.extra)

@@ -102,10 +102,7 @@ end
 end
 
 @testset "LibreOffice reads the pictures" begin
-    if isempty(SOFFICE) || !isfile(SOFFICE)
-        @info "LibreOffice not found; skipping the pictures oracle (set ODS_SOFFICE)"
-        @test_skip false
-    else
+    if lo_ok(; what = "the pictures oracle")
         dir = mktempdir()
         profile = lo_profile_url(joinpath(dir, "lo-profile"))
         xf = newods("Img"); ws = xf["Img"]
@@ -116,8 +113,7 @@ end
         addImage(p["Own"], "H3", _im("red.png")); deleteImage(p["Own"], "D2")
         insertRows(p["Own"], 1; count = 2); deleteRows(p["Own"], 12)
         c = writeods(joinpath(dir, "own.ods"), p)
-        run(pipeline(`$SOFFICE -env:UserInstallation=$profile --headless --norestore --convert-to fods --outdir $(joinpath(dir, "lo")) $a $b $c`;
-                     stdout = devnull, stderr = devnull))
+        lo_convert([a, b, c], "fods"; outdir = joinpath(dir, "lo"), profile = profile)
         @test _fromto(O_I.getImages(readods(joinpath(dir, "lo", "new.fods")))) == _fromto(O_I.getImages(xf))
         @test _fromto(O_I.getImages(readods(joinpath(dir, "lo", "newflat.fods")))) == _fromto(O_I.getImages(xf))
         @test _fromto(O_I.getImages(readods(joinpath(dir, "lo", "own.fods"))["Own"])) == _fromto(O_I.getImages(p["Own"]))
